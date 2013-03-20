@@ -1,0 +1,578 @@
+--------- beginning of /dev/log/system
+I/ActivityManager(  181): Starting: Intent { act=com.android.launcher.action.launcheraction flg=0x10000000 cmp=com.android.launcher/.CustomShirtcutActivity bnds=[192,723][288,800] (has extras) } from pid 296
+W/InputManagerService(  181): Window already focused, ignoring focus gain of: com.android.internal.view.IInputMethodClient$Stub$Proxy@408f0d88
+I/ActivityManager(  181): Starting: Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=il.co.egv/.fnc.MainActivity } from pid 296
+I/ActivityManager(  181): Start proc il.co.egv for activity il.co.egv/.fnc.MainActivity: pid=2054 uid=10063 gids={3003, 1015}
+I/ActivityManager(  181): Starting: Intent { cmp=il.co.egv/.fnc.FirstRunActivity } from pid 2054
+I/ActivityManager(  181): Starting: Intent { cmp=il.co.egv/.fnc.firstrun.CheckEmailActivity (has extras) } from pid 2054
+W/InputManagerService(  181): Window already focused, ignoring focus gain of: com.android.internal.view.IInputMethodClient$Stub$Proxy@4090fa00
+D/WifiService(  181): acquireWifiLockLocked: WifiLock{NetworkLocationProvider type=2 binder=android.os.BinderProxy@40846d00}
+D/WifiService(  181): releaseWifiLockLocked: WifiLock{NetworkLocationProvider type=2 binder=android.os.BinderProxy@40846d00}
+I/ActivityManager(  181): Starting: Intent { cmp=il.co.egv/.fnc.findfriends.GetLoginPasswordActivity (has extras) } from pid 2054
+W/InputManagerService(  181): Starting input on non-focused client com.android.internal.view.IInputMethodClient$Stub$Proxy@4098ee00 (uid=10063 pid=2054)
+D/WifiService(  181): ACTION_BATTERY_CHANGED pluggedType: 2
+W/InputManagerService(  181): Window already focused, ignoring focus gain of: com.android.internal.view.IInputMethodClient$Stub$Proxy@407caca0
+I/ActivityManager(  181): Starting: Intent { flg=0x24010000 cmp=il.co.egv/.fnc.MainActivity } from pid 2054
+I/ActivityManager(  181): Starting: Intent { cmp=il.co.egv/.fnc.settings.SettingsActivity } from pid 2054
+W/InputManagerService(  181): Window already focused, ignoring focus gain of: com.android.internal.view.IInputMethodClient$Stub$Proxy@40970aa0
+W/InputManagerService(  181): Window already focused, ignoring focus gain of: com.android.internal.view.IInputMethodClient$Stub$Proxy@408ef200
+W/InputManagerService(  181): Window already focused, ignoring focus gain of: com.android.internal.view.IInputMethodClient$Stub$Proxy@406ef100
+I/ActivityManager(  181): Starting: Intent { cmp=il.co.egv/.fnc.findfriends.GetLoginPasswordActivity (has extras) } from pid 2054
+W/InputManagerService(  181): Window already focused, ignoring focus gain of: com.android.internal.view.IInputMethodClient$Stub$Proxy@4096f930
+--------- beginning of /dev/log/main
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.Utils->textFromStream
+I/System.out( 2054): $# entering method il.co.egv.fnc.Utils->textFromStream (internal origin)
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.InputStreamReader-><init> => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader-><init> => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder-><init> => T=0
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader->readLine => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader->readLine => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader->readLine => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader->readLine => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader->readLine => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader->readLine => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->toString => T=11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.Utils->textFromStream
+I/System.out( 2054): $ ServerCaller->run: internal result from il.co.egv.fnc.Utils->textFromStream => 11
+I/System.out( 2054): $ ServerCaller->run: external call to android.util.Log->i => T=11
+I/System.out( 2054): $! tainted data passed to Log.i => T=11
+I/SERVER RESPONSE( 2054): <?xml version="1.0" encoding="utf-8" ?>
+I/SERVER RESPONSE( 2054): <answer>
+I/SERVER RESPONSE( 2054):     <version>0</version>    <session>551c7220cafecbc71b1181296e84d86b</session>
+I/SERVER RESPONSE( 2054):     <status code="0"></status>
+I/SERVER RESPONSE( 2054): </answer>
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParserFactory->newPullParser => T=0
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->getBytes => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.io.ByteArrayInputStream-><init> => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->setInput => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getEventType => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: external call to org.xmlpull.v1.XmlPullParser->nextText => T=11
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: external call to java.lang.Integer->parseInt => T=11
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: internal call to il.co.egv.fnc.operations.contacts.ContactsVersionResult->setVersion
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionResult->setVersion (internal origin)
+I/System.out( 2054): $ ContactsVersionResult->setVersion: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionResult->setVersion
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->nextText => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getAttributeValue => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.Integer->parseInt => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->setCode
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->setCode (internal origin)
+I/System.out( 2054): $ ContactsVersionOperation->setCode: ARG[0] = 11
+I/System.out( 2054): $ ContactsVersionOperation->setCode: internal call to il.co.egv.fnc.operations.contacts.ContactsVersionResult->setCode
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionResult->setCode (internal origin)
+I/System.out( 2054): $ ContactsVersionResult->setCode: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionResult->setCode
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->setCode
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ ContactsVersionOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=0
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.Config->setSessionId
+I/System.out( 2054): $# entering method il.co.egv.fnc.Config->setSessionId (internal origin)
+I/System.out( 2054): $# exiting method il.co.egv.fnc.Config->setSessionId
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.Integer->valueOf => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->format => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to android.util.Log->i => T=11
+I/System.out( 2054): $! tainted data passed to Log.i => T=11
+I/SERVER METHOD( 2054): server method finished. code: 0, session: 551c7220cafecbc71b1181296e84d86b
+I/System.out( 2054): $ ServerCaller->run: external call to org.apache.http.client.HttpClient->getConnectionManager => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.apache.http.conn.ClientConnectionManager->shutdown => T=11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.ServerCaller->run
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->doInBackground
+I/System.out( 2054): $ ContactsVersionOperation->doInBackground: internal result from il.co.egv.fnc.operations.contacts.ContactsVersionOperation->doInBackground => 0
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionOperation->doInBackground
+I/System.out( 2054): $ ContactsActivity->reload: internal call to il.co.egv.fnc.operations.contacts.ContactsVersionResult->getVersion
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.contacts.ContactsVersionResult->getVersion (internal origin)
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.contacts.ContactsVersionResult->getVersion
+I/System.out( 2054): $ ContactsActivity->reload: internal result from il.co.egv.fnc.operations.contacts.ContactsVersionResult->getVersion => 11
+I/System.out( 2054): $ ContactsActivity->reload: external call to il.co.egv.fnc.contacts.ContactsActivity->findViewById => T=2
+I/System.out( 2054): $ ContactsActivity->reload: external call to android.widget.TextView->setText => T=2
+I/System.out( 2054): $ ContactsActivity->reload: external call to android.widget.TextView->setVisibility => T=2
+I/System.out( 2054): $ ContactsActivity->reload: external call to il.co.egv.fnc.contacts.ContactsActivity->getListView => T=2
+I/System.out( 2054): $ ContactsActivity->reload: external call to android.widget.ListView->setVisibility => T=2
+I/System.out( 2054): $ ContactsActivity->reload: external call to il.co.egv.fnc.contacts.ContactsActivity->setListAdapter => T=2
+I/System.out( 2054): $# exiting method il.co.egv.fnc.contacts.ContactsActivity->reload
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to il.co.egv.fnc.SearchableListActivity->getListView => T=2
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to android.widget.ListView->setSelectionFromTop => T=2
+I/System.out( 2054): $# exiting method il.co.egv.fnc.SearchableListActivity->onResume
+I/System.out( 2054): $# entering method il.co.egv.fnc.ConnectivityBroadcastReceiver->onReceive (external origin)
+I/System.out( 2054): $ ConnectivityBroadcastReceiver->onReceive: external call to android.content.Intent->getBooleanExtra => T=2
+I/System.out( 2054): $# exiting method il.co.egv.fnc.ConnectivityBroadcastReceiver->onReceive
+I/System.out( 2054): $# entering method il.co.egv.fnc.SearchableListActivity->onPause (external origin)
+I/System.out( 2054): $ SearchableListActivity->onPause: external call to android.app.ListActivity->onPause => T=2
+I/System.out( 2054): $ SearchableListActivity->onPause: internal call to il.co.egv.fnc.ConnectivityBroadcastReceiver->deregister
+I/System.out( 2054): $# entering method il.co.egv.fnc.ConnectivityBroadcastReceiver->deregister (internal origin)
+I/System.out( 2054): $ ConnectivityBroadcastReceiver->deregister: external call to android.content.Context->unregisterReceiver => T=2
+I/System.out( 2054): $# exiting method il.co.egv.fnc.ConnectivityBroadcastReceiver->deregister
+I/System.out( 2054): $ SearchableListActivity->onPause: external call to java.util.Timer->cancel => T=2
+I/System.out( 2054): $ SearchableListActivity->onPause: external call to il.co.egv.fnc.SearchableListActivity->findViewById => T=2
+I/System.out( 2054): $ SearchableListActivity->onPause: external call to il.co.egv.fnc.SearchableListActivity->getSystemService => T=2
+I/System.out( 2054): $ system service request: input_method => 0
+I/System.out( 2054): $ SearchableListActivity->onPause: external call to android.view.View->getWindowToken => T=2
+I/System.out( 2054): $ SearchableListActivity->onPause: external call to android.view.inputmethod.InputMethodManager->hideSoftInputFromWindow => T=10
+I/System.out( 2054): $# exiting method il.co.egv.fnc.SearchableListActivity->onPause
+I/System.out( 2054): $# entering method il.co.egv.fnc.SearchableListActivity->onResume (external origin)
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to android.app.ListActivity->onResume => T=2
+I/System.out( 2054): $ SearchableListActivity->onResume: internal call to il.co.egv.fnc.ConnectivityBroadcastReceiver-><init>
+I/System.out( 2054): $# entering method il.co.egv.fnc.ConnectivityBroadcastReceiver-><init> (internal origin)
+I/System.out( 2054): $ ConnectivityBroadcastReceiver-><init>: external call to android.content.BroadcastReceiver-><init> => T=0
+I/System.out( 2054): $ ConnectivityBroadcastReceiver-><init>: external call to android.content.IntentFilter-><init> => T=0
+I/System.out( 2054): $ ConnectivityBroadcastReceiver-><init>: external call to android.content.Context->registerReceiver => T=2
+I/System.out( 2054): $# exiting method il.co.egv.fnc.ConnectivityBroadcastReceiver-><init>
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to il.co.egv.fnc.SearchableListActivity->getListView => T=2
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to android.widget.ListView->getFirstVisiblePosition => T=2
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to android.widget.ListView->getChildAt => T=2
+I/System.out( 2054): $ SearchableListActivity->onResume: internal call to il.co.egv.fnc.SearchableListActivity->reload
+I/System.out( 2054): $# entering method il.co.egv.fnc.calllog.CallLogActivity->reload (internal origin)
+I/System.out( 2054): $ CallLogActivity->reload: internal call to il.co.egv.fnc.calllog.CallLogActivity->getCallLogData
+I/System.out( 2054): $# entering method il.co.egv.fnc.calllog.CallLogActivity->getCallLogData (internal origin)
+I/System.out( 2054): $ CallLogActivity->getCallLogData: external call to java.util.LinkedList-><init> => T=0
+I/System.out( 2054): $ CallLogActivity->getCallLogData: external call to java.util.HashMap-><init> => T=0
+I/System.out( 2054): $ CallLogActivity->getCallLogData: internal call to il.co.egv.fnc.calllog.CallLogActivity->getFilter
+I/System.out( 2054): $# entering method il.co.egv.fnc.SearchableListActivity->getFilter (internal origin)
+I/System.out( 2054): $ SearchableListActivity->getFilter: external call to il.co.egv.fnc.SearchableListActivity->findViewById => T=2
+I/System.out( 2054): $ SearchableListActivity->getFilter: external call to android.widget.EditText->getText => T=2
+I/System.out( 2054): $ SearchableListActivity->getFilter: external call to android.text.Editable->toString => T=2
+I/System.out( 2054): $ SearchableListActivity->getFilter: external call to java.lang.String->trim => T=2
+I/System.out( 2054): $ SearchableListActivity->getFilter: external call to java.lang.String->toLowerCase => T=2
+I/System.out( 2054): $# exiting method il.co.egv.fnc.SearchableListActivity->getFilter
+I/System.out( 2054): $ CallLogActivity->getCallLogData: internal result from il.co.egv.fnc.calllog.CallLogActivity->getFilter => 2
+I/System.out( 2054): $ CallLogActivity->getCallLogData: internal call to il.co.egv.fnc.helpers.DBOpenHelper-><init>
+I/System.out( 2054): $# entering method il.co.egv.fnc.helpers.DBOpenHelper-><init> (internal origin)
+I/System.out( 2054): $ DBOpenHelper-><init>: external call to android.database.sqlite.SQLiteOpenHelper-><init> => T=2
+I/System.out( 2054): $# exiting method il.co.egv.fnc.helpers.DBOpenHelper-><init>
+I/System.out( 2054): $ CallLogActivity->getCallLogData: external call to il.co.egv.fnc.helpers.DBOpenHelper->getReadableDatabase => T=2
+I/System.out( 2054): $ CallLogActivity->getCallLogData: external call to android.database.sqlite.SQLiteDatabase->query => T=11
+I/System.out( 2054): $ CallLogActivity->getCallLogData: external call to android.database.Cursor->moveToNext => T=11
+I/System.out( 2054): $ CallLogActivity->getCallLogData: external call to android.database.Cursor->close => T=11
+I/System.out( 2054): $ CallLogActivity->getCallLogData: external call to android.database.sqlite.SQLiteDatabase->query => T=11
+I/System.out( 2054): $ CallLogActivity->getCallLogData: external call to android.database.Cursor->moveToFirst => T=11
+I/System.out( 2054): $ CallLogActivity->getCallLogData: external call to android.database.Cursor->close => T=11
+I/System.out( 2054): $ CallLogActivity->getCallLogData: external call to android.database.sqlite.SQLiteDatabase->close => T=11
+I/System.out( 2054): $ CallLogActivity->getCallLogData: external call to java.util.Map->isEmpty => T=0
+I/System.out( 2054): $# exiting method il.co.egv.fnc.calllog.CallLogActivity->getCallLogData
+I/System.out( 2054): $ CallLogActivity->reload: internal result from il.co.egv.fnc.calllog.CallLogActivity->getCallLogData => 0
+I/System.out( 2054): $ CallLogActivity->reload: external call to java.util.List->isEmpty => T=0
+I/System.out( 2054): $ CallLogActivity->reload: internal call to il.co.egv.fnc.calllog.CallLogActivity$CallLogAdapter-><init>
+I/System.out( 2054): $# entering method il.co.egv.fnc.calllog.CallLogActivity$CallLogAdapter-><init> (internal origin)
+I/System.out( 2054): $ CallLogActivity$CallLogAdapter-><init>: ARG[0] = 0
+I/System.out( 2054): $ CallLogActivity$CallLogAdapter-><init>: internal call to il.co.egv.fnc.MapArrayAdapter-><init>
+I/System.out( 2054): $# entering method il.co.egv.fnc.MapArrayAdapter-><init> (internal origin)
+I/System.out( 2054): $ MapArrayAdapter-><init>: ARG[0] = 0
+I/System.out( 2054): $ MapArrayAdapter-><init>: external call to android.widget.ArrayAdapter-><init> => T=2
+I/System.out( 2054): $# exiting method il.co.egv.fnc.MapArrayAdapter-><init>
+I/System.out( 2054): $ CallLogActivity$CallLogAdapter-><init>: external call to android.content.Context->getSystemService => T=2
+I/System.out( 2054): $ system service request: layout_inflater => 0
+I/System.out( 2054): $# exiting method il.co.egv.fnc.calllog.CallLogActivity$CallLogAdapter-><init>
+I/System.out( 2054): $ CallLogActivity->reload: internal call to il.co.egv.fnc.calllog.CallLogActivity->setListAdapter
+I/System.out( 2054): $# entering method il.co.egv.fnc.calllog.CallLogActivity->setListAdapter (internal origin)
+I/System.out( 2054): $ CallLogActivity->setListAdapter: internal call to il.co.egv.fnc.helpers.thumbnail.ThumbnailAdapter-><init>
+I/System.out( 2054): $# entering method il.co.egv.fnc.helpers.thumbnail.ThumbnailAdapter-><init> (internal origin)
+I/System.out( 2054): $ ThumbnailAdapter-><init>: internal call to com.commonsware.cwac.adapter.AdapterWrapper-><init>
+I/System.out( 2054): $# entering method com.commonsware.cwac.adapter.AdapterWrapper-><init> (internal origin)
+I/System.out( 2054): $ AdapterWrapper-><init>: external call to android.widget.BaseAdapter-><init> => T=0
+I/System.out( 2054): $ AdapterWrapper-><init>: internal call to com.commonsware.cwac.adapter.AdapterWrapper$1-><init>
+I/System.out( 2054): $# entering method com.commonsware.cwac.adapter.AdapterWrapper$1-><init> (internal origin)
+I/System.out( 2054): $ AdapterWrapper$1-><init>: external call to android.database.DataSetObserver-><init> => T=0
+I/System.out( 2054): $# exiting method com.commonsware.cwac.adapter.AdapterWrapper$1-><init>
+I/System.out( 2054): $ AdapterWrapper-><init>: external call to android.widget.ListAdapter->registerDataSetObserver => T=2
+I/System.out( 2054): $# exiting method com.commonsware.cwac.adapter.AdapterWrapper-><init>
+I/System.out( 2054): $ ThumbnailAdapter-><init>: internal call to il.co.egv.fnc.helpers.thumbnail.ThumbnailAdapter$1-><init>
+I/System.out( 2054): $# entering method il.co.egv.fnc.helpers.thumbnail.ThumbnailAdapter$1-><init> (internal origin)
+I/System.out( 2054): $ ThumbnailAdapter$1-><init>: external call to java.lang.Object-><init> => T=0
+I/System.out( 2054): $# exiting method il.co.egv.fnc.helpers.thumbnail.ThumbnailAdapter$1-><init>
+I/System.out( 2054): $ ThumbnailAdapter-><init>: internal call to com.commonsware.cwac.cache.SimpleWebImageCache->getBus
+I/System.out( 2054): $# entering method com.commonsware.cwac.cache.SimpleWebImageCache->getBus (internal origin)
+I/System.out( 2054): $# exiting method com.commonsware.cwac.cache.SimpleWebImageCache->getBus
+I/System.out( 2054): $ ThumbnailAdapter-><init>: internal result from com.commonsware.cwac.cache.SimpleWebImageCache->getBus => 2
+I/System.out( 2054): $ ThumbnailAdapter-><init>: internal call to il.co.egv.fnc.helpers.thumbnail.ThumbnailAdapter->getBusKey
+I/System.out( 2054): $# entering method il.co.egv.fnc.helpers.thumbnail.ThumbnailAdapter->getBusKey (internal origin)
+I/System.out( 2054): $ ThumbnailAdapter->getBusKey: external call to java.lang.Object->toString => T=0
+I/System.out( 2054): $# exiting method il.co.egv.fnc.helpers.thumbnail.ThumbnailAdapter->getBusKey
+I/System.out( 2054): $ ThumbnailAdapter-><init>: internal result from il.co.egv.fnc.helpers.thumbnail.ThumbnailAdapter->getBusKey => 0
+I/System.out( 2054): $ ThumbnailAdapter-><init>: internal call to il.co.egv.fnc.helpers.thumbnail.ThumbnailBus->register
+I/System.out( 2054): $# entering method com.commonsware.cwac.bus.AbstractBus->register (internal origin)
+I/System.out( 2054): $ AbstractBus->register: internal call to com.commonsware.cwac.bus.AbstractBus->register
+I/System.out( 2054): $# entering method com.commonsware.cwac.bus.AbstractBus->register (internal origin)
+I/System.out( 2054): $ AbstractBus->register: internal call to com.commonsware.cwac.bus.AbstractBus$Registration-><init>
+I/System.out( 2054): $# entering method com.commonsware.cwac.bus.AbstractBus$Registration-><init> (internal origin)
+I/System.out( 2054): $ AbstractBus$Registration-><init>: external call to java.lang.Object-><init> => T=0
+I/System.out( 2054): $# exiting method com.commonsware.cwac.bus.AbstractBus$Registration-><init>
+I/System.out( 2054): $ AbstractBus->register: external call to java.util.concurrent.CopyOnWriteArrayList->add => T=2
+I/System.out( 2054): $# exiting method com.commonsware.cwac.bus.AbstractBus->register
+I/System.out( 2054): $# exiting method com.commonsware.cwac.bus.AbstractBus->register
+I/System.out( 2054): $# exiting method il.co.egv.fnc.helpers.thumbnail.ThumbnailAdapter-><init>
+I/System.out( 2054): $ CallLogActivity->setListAdapter: external call to il.co.egv.fnc.SearchableListActivity->setListAdapter => T=2
+I/System.out( 2054): $# entering method com.commonsware.cwac.adapter.AdapterWrapper->areAllItemsEnabled (external origin)
+I/System.out( 2054): $ AdapterWrapper->areAllItemsEnabled: external call to android.widget.ListAdapter->areAllItemsEnabled => T=2
+I/System.out( 2054): $# exiting method com.commonsware.cwac.adapter.AdapterWrapper->areAllItemsEnabled
+I/System.out( 2054): $# entering method com.commonsware.cwac.adapter.AdapterWrapper->getCount (external origin)
+I/System.out( 2054): $ AdapterWrapper->getCount: external call to android.widget.ListAdapter->getCount => T=2
+I/System.out( 2054): $# exiting method com.commonsware.cwac.adapter.AdapterWrapper->getCount
+I/System.out( 2054): $# entering method com.commonsware.cwac.adapter.AdapterWrapper->getCount (external origin)
+I/System.out( 2054): $ AdapterWrapper->getCount: external call to android.widget.ListAdapter->getCount => T=2
+I/System.out( 2054): $# exiting method com.commonsware.cwac.adapter.AdapterWrapper->getCount
+I/System.out( 2054): $# entering method com.commonsware.cwac.adapter.AdapterWrapper->getViewTypeCount (external origin)
+I/System.out( 2054): $ AdapterWrapper->getViewTypeCount: external call to android.widget.ListAdapter->getViewTypeCount => T=2
+I/System.out( 2054): $# exiting method com.commonsware.cwac.adapter.AdapterWrapper->getViewTypeCount
+I/System.out( 2054): $# exiting method il.co.egv.fnc.calllog.CallLogActivity->setListAdapter
+I/System.out( 2054): $ CallLogActivity->reload: external call to java.util.List->isEmpty => T=2
+I/System.out( 2054): $ CallLogActivity->reload: internal call to il.co.egv.fnc.operations.calllog.CallLogOperation-><init>
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation-><init> (internal origin)
+I/System.out( 2054): $ CallLogOperation-><init>: external call to android.os.AsyncTask-><init> => T=0
+I/System.out( 2054): $ CallLogOperation-><init>: internal call to il.co.egv.fnc.operations.calllog.CallLogResult-><init>
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogResult-><init> (internal origin)
+I/System.out( 2054): $ CallLogResult-><init>: external call to java.lang.Object-><init> => T=0
+I/System.out( 2054): $ CallLogResult-><init>: external call to java.util.ArrayList-><init> => T=0
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogResult-><init>
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation-><init>
+I/System.out( 2054): $ CallLogActivity->reload: external call to java.lang.Integer->valueOf => T=0
+I/System.out( 2054): $ CallLogActivity->reload: external call to il.co.egv.fnc.operations.calllog.CallLogOperation->execute => T=11
+I/System.out( 2054): $ CallLogActivity->reload: external call to android.os.AsyncTask->get => T=11
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation->doInBackground (external origin)
+I/System.out( 2054): $ CallLogOperation->doInBackground: internal call to il.co.egv.fnc.operations.calllog.CallLogOperation->doInBackground
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation->doInBackground (internal origin)
+I/System.out( 2054): $ CallLogOperation->doInBackground: external call to java.lang.String->format => T=11
+I/System.out( 2054): $ CallLogOperation->doInBackground: internal call to il.co.egv.fnc.operations.ServerCaller-><init>
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.ServerCaller-><init> (internal origin)
+I/System.out( 2054): $ ServerCaller-><init>: internal call to il.co.egv.fnc.operations.ServerCaller-><init>
+D/dalvikvm( 2054): GC_CONCURRENT freed 584K, 48% free 3701K/7111K, external 1067K/1446K, paused 3ms+5ms
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.ServerCaller-><init> (internal origin)
+I/System.out( 2054): $ ServerCaller-><init>: external call to java.lang.Object-><init> => T=0
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.ServerCaller-><init>
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.ServerCaller-><init>
+I/System.out( 2054): $ CallLogOperation->doInBackground: internal call to il.co.egv.fnc.operations.ServerCaller->run
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.ServerCaller->run (internal origin)
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCaller->getFullUrlString
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.ServerCaller->getFullUrlString (internal origin)
+I/System.out( 2054): $ ServerCaller->getFullUrlString: external call to android.net.Uri->parse => T=11
+I/System.out( 2054): $ ServerCaller->getFullUrlString: external call to android.net.Uri->buildUpon => T=11
+I/System.out( 2054): $ ServerCaller->getFullUrlString: internal call to il.co.egv.fnc.Config->getSessionId
+I/System.out( 2054): $# entering method il.co.egv.fnc.Config->getSessionId (internal origin)
+I/System.out( 2054): $# exiting method il.co.egv.fnc.Config->getSessionId
+I/System.out( 2054): $ ServerCaller->getFullUrlString: internal result from il.co.egv.fnc.Config->getSessionId => 11
+I/System.out( 2054): $ ServerCaller->getFullUrlString: internal call to il.co.egv.fnc.Config->getSessionId
+I/System.out( 2054): $# entering method il.co.egv.fnc.Config->getSessionId (internal origin)
+I/System.out( 2054): $# exiting method il.co.egv.fnc.Config->getSessionId
+I/System.out( 2054): $ ServerCaller->getFullUrlString: internal result from il.co.egv.fnc.Config->getSessionId => 11
+I/System.out( 2054): $ ServerCaller->getFullUrlString: external call to android.net.Uri$Builder->appendQueryParameter => T=11
+I/System.out( 2054): $ ServerCaller->getFullUrlString: internal call to il.co.egv.fnc.Config->getLanguageCode
+I/System.out( 2054): $# entering method il.co.egv.fnc.Config->getLanguageCode (internal origin)
+I/System.out( 2054): $ Config->getLanguageCode: external call to java.util.Locale->getDefault => T=0
+I/System.out( 2054): $ Config->getLanguageCode: external call to java.util.Locale->getISO3Language => T=0
+I/System.out( 2054): $ Config->getLanguageCode: external call to java.lang.String->toLowerCase => T=0
+I/System.out( 2054): $ Config->getLanguageCode: external call to java.lang.StringBuilder-><init> => T=0
+I/System.out( 2054): $ Config->getLanguageCode: external call to java.lang.StringBuilder->append => T=0
+I/System.out( 2054): $ Config->getLanguageCode: external call to java.lang.StringBuilder->toString => T=0
+I/System.out( 2054): $ Config->getLanguageCode: external call to android.util.Log->i => T=0
+I/CONFIG  ( 2054): lang code: ces
+I/System.out( 2054): $ Config->getLanguageCode: external call to java.util.Map->containsKey => T=0
+I/System.out( 2054): $# exiting method il.co.egv.fnc.Config->getLanguageCode
+I/System.out( 2054): $ ServerCaller->getFullUrlString: internal result from il.co.egv.fnc.Config->getLanguageCode => 10
+I/System.out( 2054): $ ServerCaller->getFullUrlString: external call to android.net.Uri$Builder->appendQueryParameter => T=11
+I/System.out( 2054): $ ServerCaller->getFullUrlString: external call to android.net.Uri$Builder->build => T=11
+I/System.out( 2054): $ ServerCaller->getFullUrlString: external call to android.net.Uri->toString => T=11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.ServerCaller->getFullUrlString
+I/System.out( 2054): $ ServerCaller->run: internal result from il.co.egv.fnc.operations.ServerCaller->getFullUrlString => 11
+I/System.out( 2054): $ ServerCaller->run: external call to android.util.Log->i => T=11
+I/System.out( 2054): $! tainted data passed to Log.i => T=11
+I/SERVER METHOD( 2054): http://abonent.findandcall.com/call/list?version=0&sid=551c7220cafecbc71b1181296e84d86b&lang=045
+I/System.out( 2054): $ ServerCaller->run: external call to org.apache.http.impl.client.DefaultHttpClient-><init> => T=0
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=0
+I/System.out( 2054): $ ServerCaller->run: external call to org.apache.http.client.methods.HttpGet-><init> => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.apache.http.client.HttpClient->execute => T=11
+I/System.out( 2054): $! tainted Apache HTTPClient request executed => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.apache.http.HttpResponse->getStatusLine => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.apache.http.StatusLine->getStatusCode => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.apache.http.HttpResponse->getEntity => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParserFactory->newInstance => T=0
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParserFactory->setNamespaceAware => T=0
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParserFactory->setValidating => T=0
+I/System.out( 2054): $ ServerCaller->run: external call to org.apache.http.HttpEntity->getContent => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.Utils->textFromStream
+I/System.out( 2054): $# entering method il.co.egv.fnc.Utils->textFromStream (internal origin)
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.InputStreamReader-><init> => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader-><init> => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder-><init> => T=0
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader->readLine => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader->readLine => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader->readLine => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader->readLine => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader->readLine => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->append => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.io.BufferedReader->readLine => T=11
+I/System.out( 2054): $ Utils->textFromStream: external call to java.lang.StringBuilder->toString => T=11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.Utils->textFromStream
+I/System.out( 2054): $ ServerCaller->run: internal result from il.co.egv.fnc.Utils->textFromStream => 11
+I/System.out( 2054): $ ServerCaller->run: external call to android.util.Log->i => T=11
+I/System.out( 2054): $! tainted data passed to Log.i => T=11
+I/SERVER RESPONSE( 2054): <?xml version="1.0" encoding="utf-8" ?>
+I/SERVER RESPONSE( 2054): <answer>
+I/SERVER RESPONSE( 2054):         <session>73ba437fd630c8252cf723740b7bf439</session>
+I/SERVER RESPONSE( 2054):     <status code="2003">Call list has not been changed</status>
+I/SERVER RESPONSE( 2054): </answer>
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParserFactory->newPullParser => T=0
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->getBytes => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.io.ByteArrayInputStream-><init> => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->setInput => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getEventType => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ CallLogOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ CallLogOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $ CallLogOperation->additionalParsing: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ CallLogOperation->additionalParsing: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ CallLogOperation->additionalParsing: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ CallLogOperation->additionalParsing: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ CallLogOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->nextText => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ CallLogOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $ CallLogOperation->additionalParsing: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ CallLogOperation->additionalParsing: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ CallLogOperation->additionalParsing: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ CallLogOperation->additionalParsing: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ CallLogOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->getAttributeValue => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.Integer->parseInt => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->setCode
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation->setCode (internal origin)
+I/System.out( 2054): $ CallLogOperation->setCode: ARG[0] = 11
+I/System.out( 2054): $ CallLogOperation->setCode: internal call to il.co.egv.fnc.operations.calllog.CallLogResult->setCode
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogResult->setCode (internal origin)
+I/System.out( 2054): $ CallLogResult->setCode: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogResult->setCode
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation->setCode
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ CallLogOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $ CallLogOperation->additionalParsing: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ CallLogOperation->additionalParsing: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $ CallLogOperation->additionalParsing: external call to org.xmlpull.v1.XmlPullParser->getName => T=11
+I/System.out( 2054): $ CallLogOperation->additionalParsing: external call to java.lang.String->equalsIgnoreCase => T=11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ CallLogOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ CallLogOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ CallLogOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.operations.ServerCallerDelegate->additionalParsing
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing (internal origin)
+I/System.out( 2054): $ CallLogOperation->additionalParsing: ARG[0] = 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation->additionalParsing
+I/System.out( 2054): $ ServerCaller->run: external call to org.xmlpull.v1.XmlPullParser->next => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->equalsIgnoreCase => T=0
+I/System.out( 2054): $ ServerCaller->run: internal call to il.co.egv.fnc.Config->setSessionId
+I/System.out( 2054): $# entering method il.co.egv.fnc.Config->setSessionId (internal origin)
+I/System.out( 2054): $# exiting method il.co.egv.fnc.Config->setSessionId
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.Integer->valueOf => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to java.lang.String->format => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to android.util.Log->i => T=11
+I/System.out( 2054): $! tainted data passed to Log.i => T=11
+I/SERVER METHOD( 2054): server method finished. code: 2003, session: 73ba437fd630c8252cf723740b7bf439
+I/System.out( 2054): $ ServerCaller->run: external call to org.apache.http.client.HttpClient->getConnectionManager => T=11
+I/System.out( 2054): $ ServerCaller->run: external call to org.apache.http.conn.ClientConnectionManager->shutdown => T=11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.ServerCaller->run
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation->doInBackground
+I/System.out( 2054): $ CallLogOperation->doInBackground: internal result from il.co.egv.fnc.operations.calllog.CallLogOperation->doInBackground => 11
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogOperation->doInBackground
+I/System.out( 2054): $ CallLogActivity->reload: internal call to il.co.egv.fnc.operations.calllog.CallLogResult->getCode
+I/System.out( 2054): $# entering method il.co.egv.fnc.operations.calllog.CallLogResult->getCode (internal origin)
+I/System.out( 2054): $# exiting method il.co.egv.fnc.operations.calllog.CallLogResult->getCode
+I/System.out( 2054): $ CallLogActivity->reload: internal result from il.co.egv.fnc.operations.calllog.CallLogResult->getCode => 11
+I/System.out( 2054): $ CallLogActivity->reload: external call to android.util.Log->e => T=0
+E/CALL_LOG_ACTIVITY( 2054): not modified
+I/System.out( 2054): $ CallLogActivity->reload: external call to il.co.egv.fnc.calllog.CallLogActivity->findViewById => T=2
+I/System.out( 2054): $ CallLogActivity->reload: external call to android.widget.TextView->setText => T=2
+I/System.out( 2054): $ CallLogActivity->reload: external call to android.widget.TextView->setVisibility => T=2
+I/System.out( 2054): $ CallLogActivity->reload: external call to il.co.egv.fnc.calllog.CallLogActivity->getListView => T=2
+I/System.out( 2054): $ CallLogActivity->reload: external call to android.widget.ListView->setVisibility => T=2
+I/System.out( 2054): $ CallLogActivity->reload: internal call to il.co.egv.fnc.calllog.CallLogActivity->setListAdapter
+I/System.out( 2054): $# entering method il.co.egv.fnc.calllog.CallLogActivity->setListAdapter (internal origin)
+I/System.out( 2054): $ CallLogActivity->setListAdapter: external call to il.co.egv.fnc.SearchableListActivity->setListAdapter => T=2
+I/System.out( 2054): $# exiting method il.co.egv.fnc.calllog.CallLogActivity->setListAdapter
+I/System.out( 2054): $# exiting method il.co.egv.fnc.calllog.CallLogActivity->reload
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to il.co.egv.fnc.SearchableListActivity->getListView => T=2
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to android.widget.ListView->setSelectionFromTop => T=2
+I/System.out( 2054): $# exiting method il.co.egv.fnc.SearchableListActivity->onResume
+W/IInputConnectionWrapper( 2054): finishComposingText on inactive InputConnection
+I/System.out( 2054): $# entering method il.co.egv.fnc.ConnectivityBroadcastReceiver->onReceive (external origin)
+I/System.out( 2054): $ ConnectivityBroadcastReceiver->onReceive: external call to android.content.Intent->getBooleanExtra => T=2
+I/System.out( 2054): $# exiting method il.co.egv.fnc.ConnectivityBroadcastReceiver->onReceive
+I/System.out( 2054): $# entering method il.co.egv.fnc.SearchableListActivity->onPause (external origin)
+I/System.out( 2054): $ SearchableListActivity->onPause: external call to android.app.ListActivity->onPause => T=2
+I/System.out( 2054): $ SearchableListActivity->onPause: internal call to il.co.egv.fnc.ConnectivityBroadcastReceiver->deregister
+I/System.out( 2054): $# entering method il.co.egv.fnc.ConnectivityBroadcastReceiver->deregister (internal origin)
+I/System.out( 2054): $ ConnectivityBroadcastReceiver->deregister: external call to android.content.Context->unregisterReceiver => T=2
+I/System.out( 2054): $# exiting method il.co.egv.fnc.ConnectivityBroadcastReceiver->deregister
+I/System.out( 2054): $# exiting method il.co.egv.fnc.SearchableListActivity->onPause
+I/System.out( 2054): $# entering method il.co.egv.fnc.SearchActivity->onResume (external origin)
+I/System.out( 2054): $ SearchActivity->onResume: internal call to il.co.egv.fnc.SearchableListActivity->onResume
+I/System.out( 2054): $# entering method il.co.egv.fnc.SearchableListActivity->onResume (internal origin)
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to android.app.ListActivity->onResume => T=0
+I/System.out( 2054): $ SearchableListActivity->onResume: internal call to il.co.egv.fnc.ConnectivityBroadcastReceiver-><init>
+I/System.out( 2054): $# entering method il.co.egv.fnc.ConnectivityBroadcastReceiver-><init> (internal origin)
+I/System.out( 2054): $ ConnectivityBroadcastReceiver-><init>: external call to android.content.BroadcastReceiver-><init> => T=0
+I/System.out( 2054): $ ConnectivityBroadcastReceiver-><init>: external call to android.content.IntentFilter-><init> => T=0
+I/System.out( 2054): $ ConnectivityBroadcastReceiver-><init>: external call to android.content.Context->registerReceiver => T=0
+I/System.out( 2054): $# exiting method il.co.egv.fnc.ConnectivityBroadcastReceiver-><init>
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to il.co.egv.fnc.SearchableListActivity->getListView => T=0
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to android.widget.ListView->getFirstVisiblePosition => T=0
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to android.widget.ListView->getChildAt => T=0
+I/System.out( 2054): $ SearchableListActivity->onResume: internal call to il.co.egv.fnc.SearchableListActivity->reload
+I/System.out( 2054): $# entering method il.co.egv.fnc.SearchableListActivity->reload (internal origin)
+I/System.out( 2054): $# exiting method il.co.egv.fnc.SearchableListActivity->reload
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to il.co.egv.fnc.SearchableListActivity->getListView => T=0
+I/System.out( 2054): $ SearchableListActivity->onResume: external call to android.widget.ListView->setSelectionFromTop => T=0
+I/System.out( 2054): $# exiting method il.co.egv.fnc.SearchableListActivity->onResume
+I/System.out( 2054): $ SearchActivity->onResume: external call to il.co.egv.fnc.SearchActivity->findViewById => T=0
+I/System.out( 2054): $ SearchActivity->onResume: external call to android.widget.AutoCompleteTextView->setText => T=10
+I/System.out( 2054): $# entering method il.co.egv.fnc.SearchActivity$SearchFieldWatcher->beforeTextChanged (external origin)
+I/System.out( 2054): $# exiting method il.co.egv.fnc.SearchActivity$SearchFieldWatcher->beforeTextChanged
+I/System.out( 2054): $# entering method il.co.egv.fnc.SearchActivity$SearchFieldWatcher->onTextChanged (external origin)
+I/System.out( 2054): $ SearchActivity$SearchFieldWatcher->onTextChanged: internal call to il.co.egv.fnc.SearchActivity->access$2
+I/System.out( 2054): $# entering method il.co.egv.fnc.SearchActivity->access$2 (internal origin)
+I/System.out( 2054): $# exiting method il.co.egv.fnc.SearchActivity->access$2
+I/System.out( 2054): $ SearchActivity$SearchFieldWatcher->onTextChanged: internal result from il.co.egv.fnc.SearchActivity->access$2 => 0
+I/System.out( 2054): $ SearchActivity$SearchFieldWatcher->onTextChanged: external call to java.lang.CharSequence->length => T=0
+I/System.out( 2054): $ SearchActivity$SearchFieldWatcher->onTextChanged: external call to android.widget.Button->setEnabled => T=0
+I/System.out( 2054): $# exiting method il.co.egv.fnc.SearchActivity$SearchFieldWatcher->onTextChanged
+I/System.out( 2054): $# entering method il.co.egv.fnc.SearchActivity$SearchFieldWatcher->afterTextChanged (external origin)
+I/System.out( 2054): $# exiting method il.co.egv.fnc.SearchActivity$SearchFieldWatcher->afterTextChanged
+I/System.out( 2054): $# exiting method il.co.egv.fnc.SearchActivity->onResume
+I/System.out( 2054): $# entering method il.co.egv.fnc.ConnectivityBroadcastReceiver->onReceive (external origin)
+I/System.out( 2054): $ ConnectivityBroadcastReceiver->onReceive: external call to android.content.Intent->getBooleanExtra => T=0
+I/System.out( 2054): $# exiting method il.co.egv.fnc.ConnectivityBroadcastReceiver->onReceive
+D/dalvikvm(  258): GC_CONCURRENT freed 598K, 50% free 3200K/6343K, external 1252K/1759K, paused 8ms+3ms
+D/dalvikvm( 1558): GC_CONCURRENT freed 408K, 53% free 2686K/5639K, external 0K/0K, paused 6ms+2ms
