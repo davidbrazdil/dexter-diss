@@ -10,6 +10,7 @@
 \usepackage{units}
 \usepackage{hyperref}
 \usepackage{array}
+\usepackage{listings}
 
 \input{epsf}                            % to allow postscript inclusions
 % On thor and CUS read top of file:
@@ -43,7 +44,6 @@
 \begin{document}
 
 \bibliographystyle{plain}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Title
@@ -186,30 +186,24 @@ The compulsory manifest file contains essential information about the applicatio
 
 Unlike the stack-based JVM, Dalvik uses a register-based programming model with 32-bit register width and variable-length instructions. 64-bit values are stored in two adjecent registers.
 
-Each method can use up to 65,536 virtual registers. Actual mapping to hardware registers depends on the machine architecture. On a typical Android device, the first 16 virtual registers would map to the 16 registers available in the ARM instruction set, and rest would be stored in memory. Depending on the number of arguments and their length, instructions can address either the first 16, first 256, or all 65k virtual registers. If an instruction needs to address a register out of the available range, the register contents are expected to get moved to a lower register first.
+Each method can use up to 65,536 virtual registers. Actual mapping to hardware registers depends on the machine architecture. On a typical Android device, the first 16 virtual registers would map to the 16 registers available in the ARM instruction set, and rest would be stored in memory. Depending on their length, instructions can address either the first 16, first 256, or all 65k virtual registers. If an instruction needs to address a register out of the available range, the register contents are expected to get moved to a lower register first.
 
 \subsubsection{Syntax of Assembly}
-Assembly syntax follows the \textit{dest-then-source} ordering of arguments. Instructions can also contain immediate values, like numeric constants or pointers to objects in constant pools. For example, instruction
+Assembly syntax used in the code examples and instrumentation rules of this dissertation is mostly based on the official Dalvik assembly. It follows the \textit{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g. the instruction
 \begin{center}
 \verb$add-int/lit16 v2, v8, #1234$
 \end{center}
-adds 1234 to the value stored in virtual registers 8, and stores the result into register 2. 
+adds 1234 to the value of register 8, and stores the result into register 2. 
 
-Complete list of supported instructions is available on the Android Developer website.
-
-The example code in this dissertation will loosely follow this syntax. However, since Dexter operates on a representation with unlimited number of registers which get reallocated to the 16-bit range at a later stage, written rules of instrumentation will treat registers like variables, e.g.
+Written rules will treat registers like variables. For example the following piece of code retrieves an element of an array pointed to by \verb$vArray$, and multiplies it by three.
 \begin{center}
-\verb$aget-object rResult, rArray, rIndex$
+\verb$aget-int vElement, vArray, vIndex$ \\
+\verb$mul-int/lit vResult, vElement, #3$
 \end{center}
-retrieves element of a given array at a given index.
 
 For better clarity, the first letters of register names will represent their origin. Names of registers used in the original code will start with \verb$r$, registers added for tainting with \verb$t$, and other with \verb$p$.
 
-In Dalvik, only the lower of two registers representing a 64-bit value is addressed by the instruction. Higher registers are addressed implicitly. For example,
-\begin{center}
-\verb$move-wide v2, v3$
-\end{center}
-moves a wide value from registers \verb$v3$ and \verb$v4$ to registers \verb$v2$ and \verb$v3$. Because Dexter does not reference registers by their number, all actual arguments of instructions will be written out and registers forming a wide argument will be separated by a bar, e.g.
+Register pairs forming a wide argument will be separated by a bar.
 \begin{center}
 \verb$move-wide rTo1|rTo2, rFrom1|rFrom2$
 \end{center}
