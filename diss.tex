@@ -82,14 +82,13 @@ Name:               & \bf \strAuthor                       \\
 College:            & \bf \strCollege                     \\
 Project Title:      & \bf \strTitle \\
 Examination:        & \bf \strExamination, \strYear        \\
-Word Count:         & \bf 1587\footnotemark[1]
-(well less than the 12000 limit) \\
+Word Count:         & \bf 1587\footnotemark[1] \\
 Project Originator: & \strSupervisor                    \\
 Supervisor:         & \strSupervisor                    \\ 
 \end{tabular}
 }
 \footnotetext[1]{This word count was computed
-by {\tt detex diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
+by {\tt detex -n diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
 }
 \stepcounter{footnote}
 
