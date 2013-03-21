@@ -169,9 +169,17 @@ Dalvik is an open-source virtual machine and an essential component of the Andro
 
 Built around the Apache Harmony project, Dalvik runs programs that are compatible with a subset of the Java runtime framework. However, unlike the stack-based JVM, Dalvik uses a register-based architecture. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \textit{.class} files, and then converted to a single Dalvik-compatible \textit{.dex} file using tools in the Android SDK. 
 
-\subsection{APK File Structure}
+\subsection{Application Package Files}
 
+Applications for Android are distributed in Application Package files (APK). These are ZIP files signed by the publisher, which contain:
+\begin{itemize}
+\item the executable \textbf{classes.dex} file
+\item application resources (images, UI layouts, ...)
+\item native code binaries
+\item manifest
+\end{itemize}
 
+The compulsory manifest file contains essential information about the application to the operating system. This includes its unique package name, list of permissions requested by the application, and a list of all its entry points.
 
 \subsection{Bytecode}
 
