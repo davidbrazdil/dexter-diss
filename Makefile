@@ -43,7 +43,7 @@ diss.pdf:	diss.ps
 makefile.txt:	Makefile
 	expand Makefile >makefile.txt
 count:
-	detex diss.tex | tr -cd '0-9A-Za-z \n' | wc -w
+	detex -n diss.tex | tr -cd '0-9A-Za-z \n' | wc -w
 
 proposal.dvi: $(PROP)
 	latex proposal
