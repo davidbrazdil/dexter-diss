@@ -208,6 +208,12 @@ Register pairs forming a wide argument will be separated by a bar.
 \verb$move-wide rTo1|rTo2, rFrom1|rFrom2$
 \end{center}
 
+\subsubsection{Instruction Variants}
+
+To achieve better code density, some of Dalvik instructions come in several variants. They are semantically equivalent, but the more efficient variants can usually address only registers from a lower range, or include smaller constants. A good example of this is the \verb$const$ instruction. Its variant \verb$const/16$ stores a 16-bit constant into a register addressed by an 8-bit number, fitting into 4 bytes. On the other hand, \verb$const/4$ fits into 2 bytes, but can only address registers in the 4-bit range and carry a 4-bit constant.
+
+All variants of semantically equivalent instructions are parsed as the same instruction type in Dexter, and thus will be referred to  by the same name. During the reassembly phase, Dexter automatically outputs the most optimised variant of the instruction possible.
+
 \subsubsection{Instruction Constraints}
 
 \section{Application Installation on Android}
