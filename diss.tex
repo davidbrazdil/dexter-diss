@@ -217,11 +217,34 @@ All variants of semantically equivalent instructions are parsed as the same inst
 
 \section{Data Flow Analysis}
 
-\subsection{Taint Tags}
+\subsection{Taint Tag Storage}
 
-Each piece of data in the memory is assigned a taint tag.
+Different taint tracking systems choose different ways of representing taint tags. This fundamental choice has large effect on the overall design of the system, its capabilities and limits, as well as performance and memory overhead. The authors of TaintDroid decided to store taint tags as 32-bit integers with each bit representing one source of sensitive data. This is a very efficient and compact format, sufficient for the purposes of TaintDroid, but quickly reaches its limits as the functionality is extended. One of the challenges faced by the CleanOS project, which builds on TaintDroid, was the neccessity to potentially track millions of taint sources. Their solution modifies TaintDroid to store taint as a 32-bit pointer into an SQL database, which increases the number of trackable sources, but significantly impedes performance at the same time. 
 
-\subsection{Tag Storage}
+For the sake of simplicity, Dexter adopts the same tag representation as TaintDroid, with one slight alteration. As will be demonstrated later, identification of some sinks relies on distinguishing how certain objects were created. Hence upper bits of the tags are dedicated to represent the potential to create a particular type of sink if passed as an argument of some API calls. The meaning of each bit being set is summarized in table ~\ref{table:TaintTagStorage_BitMeaning}.
+
+\begin{table}
+	\begin{center}
+	\begin{tabular}{|c|l|l|}
+		\firsthline
+		\textbf{Bit} & \textbf{Constant name}        & \textbf{Description} \\
+		\hline
+		0            & \verb$TAINT_SOURCE_CONTACTS$  & contains contact information \\
+		1            & \verb$TAINT_SOURCE_SMS$       & contains text message data \\
+		2            & \verb$TAINT_SOURCE_CALL_LOG$  & contains call history information \\
+		3            & \verb$TAINT_SOURCE_LOCATION$  & contains location information \\
+		4            & \verb$TAINT_SOURCE_BROWSER$   & contains browser data \\
+		5            & \verb$TAINT_SOURCE_DEVICE_ID$ & contains device ID information \\
+		\hline
+		29           & \verb$TAINT_SINK_FILE$        & can form a file-system sink \\
+		30           & \verb$TAINT_SINK_NET$         & can form an Internet sink \\
+		31           & \verb$TAINT_SINK_OUT$         & can form a standard console output sink \\
+		\lasthline
+	\end{tabular}
+	\end{center}
+	\caption{Meanings of bit flags of taint tags}
+	\label{table:TaintTagStorage_BitMeaning}
+\end{table}
 
 \subsection{Intra-Procedural Taint Propagation}
 
