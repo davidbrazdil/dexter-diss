@@ -217,7 +217,7 @@ All variants of semantically equivalent instructions are parsed as the same inst
 
 \section{Data Flow Analysis}
 
-\subsection{Taint Tag Storage}
+\subsection{Taint Tags}
 
 Different taint tracking systems choose different ways of representing taint tags. This fundamental choice has large effect on the overall design of the system, its capabilities and limits, as well as performance and memory overhead. The authors of TaintDroid decided to store taint tags as 32-bit integers where each bit represents one source of sensitive data. This is a very efficient and compact format, sufficient for the purposes of TaintDroid, but quickly reaches its limits as the functionality is extended. One of the challenges faced by the CleanOS project, which builds on TaintDroid, was the neccessity to potentially track millions of taint sources. Their solution alters TaintDroid to store taint as a 32-bit pointer into an SQL database, which increases the number of trackable sources, but significantly impedes performance at the same time. 
 
@@ -245,6 +245,10 @@ For the sake of simplicity, Dexter adopts the same tag representation as TaintDr
 	\caption{Meanings of bit flags of taint tags}
 	\label{table:TaintTagStorage_BitMeaning}
 \end{table}
+
+\subsection{Tag Storage}
+
+
 
 \subsection{Intra-Procedural Taint Propagation}
 
