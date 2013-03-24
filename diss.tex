@@ -229,16 +229,16 @@ For the sake of simplicity, Dexter adopts the same tag representation as TaintDr
 		\firsthline
 		\textbf{Bit} & \textbf{Constant name}        & \textbf{Description} \\
 		\hline
-		0            & \verb$TAINT_SOURCE_CONTACTS$  & contains contact information \\
-		1            & \verb$TAINT_SOURCE_SMS$       & contains text message data \\
-		2            & \verb$TAINT_SOURCE_CALL_LOG$  & contains call history information \\
-		3            & \verb$TAINT_SOURCE_LOCATION$  & contains location information \\
-		4            & \verb$TAINT_SOURCE_BROWSER$   & contains browser data \\
-		5            & \verb$TAINT_SOURCE_DEVICE_ID$ & contains device ID information \\
+		0            & \verb$TAINT_SOURCE_CONTACTS$  & contact information \\
+		1            & \verb$TAINT_SOURCE_SMS$       & text message data \\
+		2            & \verb$TAINT_SOURCE_CALL_LOG$  & call history information \\
+		3            & \verb$TAINT_SOURCE_LOCATION$  & location information \\
+		4            & \verb$TAINT_SOURCE_BROWSER$   & browser data, e.g. bookmarks \\
+		5            & \verb$TAINT_SOURCE_DEVICE_ID$ & device ID, e.g. IMEI/phone number \\
 		\hline
-		29           & \verb$TAINT_SINK_FILE$        & can form a file-system sink \\
-		30           & \verb$TAINT_SINK_NET$         & can form an Internet sink \\
-		31           & \verb$TAINT_SINK_OUT$         & can form a standard console output sink \\
+		29           & \verb$TAINT_SINK_FILE$        & file-system sink \\
+		30           & \verb$TAINT_SINK_NET$         & network sink \\
+		31           & \verb$TAINT_SINK_OUT$         & standard console output sink \\
 		\lasthline
 	\end{tabular}
 	\end{center}
