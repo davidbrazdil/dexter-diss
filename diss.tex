@@ -248,6 +248,19 @@ For the sake of simplicity, Dexter adopts the same tag representation as TaintDr
 
 \subsection{Tag Storage}
 
+To store and propagate taint tags, Dexter must build an attribute system inside the modified application, so that every piece of data accessible by the executable code can carry one if necessary. The way tags are stored differs for objects and for primitives. The crutial difference between these is that when a primitive is copied, operations on one of the copies do not effect the other ones. When a reference to an object is copied, operations on one of the copies is visible by dereferencing any of them.
+
+\subsubsection{Objects}
+
+Objects are uniquely defined by the pointer to their place in memory. Dexter therefore allows to store one taint tag per object reference by adding a globally accessible hash map. The only two supported operation are:
+\begin{description} 
+\item \verb$int get(Object obj)$ \\
+Returns the taint tag of given object. 
+\item \verb$void set(Object obj, int taint)$ \\
+Adds taint to \verb$obj$ by OR-ing its existing entry with the second parameter.
+\end{description}
+
+\subsubsection{Primitives}
 
 
 \subsection{Intra-Procedural Taint Propagation}
