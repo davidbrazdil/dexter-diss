@@ -199,7 +199,7 @@ adds 1234 to the value of register 8, and stores the result into register 2.
 Written rules will treat registers like variables. For example the following piece of code retrieves an element of an array pointed to by \verb$vArray$, and multiplies it by three.
 \begin{center}
 \verb$aget-int vElement, vArray, vIndex$ \\
-\verb$mul-int/lit vResult, vElement, #3$
+\verb$mul-int/lit16 vResult, vElement, #3$
 \end{center}
 
 For better clarity, the first letters of register names will represent their origin. Names of registers used in the original code will start with \verb$r$, registers added for tainting with \verb$t$, and other with \verb$p$.
