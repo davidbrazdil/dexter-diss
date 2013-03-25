@@ -288,6 +288,28 @@ It would be possible to create taint storage for every field inside every instan
 
 \subsection{Intra-Procedural Taint Propagation}
 
+Groups that share the same pattern
+
+\subsubsection{Propagating Instructions}
+\verb$int-to-float$
+
+\subsubsection{Combining Instructions}
+\verb$add-int$
+
+\subsubsection{Instructions Operating on Objects}
+\verb$iget-int$
+
+\subsubsection{Instructions Operating on Arrays}
+\verb$aget-int$
+
+\subsubsection{Instructions Operating on Wide Registers}
+\verb$add-long$
+
+\subsubsection{Instructions Throwing Exceptions}
+\verb$div-int$
+Form of implicit analysis!
+
+
 \subsection{Inter-Procedural Taint Propagation}
 \label{section:TaintPropagation_MethodCalls}
 
