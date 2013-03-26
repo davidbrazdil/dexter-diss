@@ -312,14 +312,14 @@ It would be possible to create taint storage for every field inside every instan
 
 Groups that share the same pattern
 
-\subsubsection{Propagating Instructions}
+\subsubsection{Instructions Propagating Taint}
 
 \centerbox{
 	\asmOrig{int-to-float rTo, rFrom} \\
 	\asm{move tTo, tFrom}
 }
 
-\subsubsection{Combining Instructions}
+\subsubsection{Instructions Combining Taint}
 
 \centerbox{
 	\asmOrig{add-int rResult, rOpA, rOpB} \\
