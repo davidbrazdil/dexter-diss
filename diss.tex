@@ -277,12 +277,14 @@ To store and propagate taint tags, Dexter must build an attribute system inside 
 Objects are uniquely defined by the pointer to their place in memory. Dexter therefore allows to store one taint tag per object reference by adding a globally accessible hash map. The only two supported operation are:
 \begin{description} 
 \item \verb$int get(Object obj)$ \\
-Returns the taint tag of given object. 
+Returns the taint tag of given object. Returns 0 when \verb$obj == null$.
 \item \verb$void set(Object obj, int taint)$ \\
-Adds taint to \verb$obj$ by OR-ing its existing entry with the second parameter.
+Adds taint to \verb$obj$ by OR-ing its existing entry with the second parameter. Does nothing when \verb$obj == null$.
 \end{description}
 
 \subsubsection{Primitives}
+
+\label{section:TaintStorage_Primitives}
 
 In the case of primitives, Dexter needs to create taint storage space everywhere where a primitive might be stored, i.e. method code registers and class fields of primitive type. Primitives can also be stored as method arguments, but this will be covered in section ~\ref{section:TaintPropagation_MethodCalls}.
 
@@ -301,7 +303,7 @@ Extra fields cannot be inserted into class defined outside the scope of the inst
 A special class is created inside the application which contains one field of type \verb$int$ per every external static field that is accessed by the application. Taint tags are stored in these associated fields.
 
 \item instance fields \\
-It would be possible to create taint storage for every field inside every instance of an external class, for example by creating one global map from object references to integers per every accessed external instance field. For the sake of simplicity, a more conservative approach of storing the taint within the taint tag of the object itself was chosen. If this proved to cause taint explosion, the more fine-grained approach could easily be implemented.
+It would be possible to create taint storage for every field inside every instance of an external class, for example by creating one global map from object references to integers per every accessed external instance field. However, it will be shown that it is actually necessary to assign the taint to the object itself, and thus storage space for these fields is not needed.
 
 \end{itemize}
 
@@ -310,66 +312,70 @@ It would be possible to create taint storage for every field inside every instan
 
 \subsection{Intra-Procedural Taint Propagation}
 
-Once taint storage is created, Dexter can insert extra instructions that will propagate taint as data are used. Dalvik supports 217 different opcodes, but these can be divided into groups that share the same propagation logic. General rule of thumb is that for every instruction, taint of all arguments should be acquired from their respective storage spaces, combined and stored to the taint storage of the result. Therefore, only a handful of examples will be presented here to illustrate the principle and explain some subtleties.
+Once taint storage is created, Dexter can insert extra instructions that will propagate taint as data are used. Dalvik supports 217 different opcodes, but these can be divided into groups that share the same propagation logic. General rule of thumb is that for every instruction, taint of all arguments should be acquired from their respective storage spaces, combined and stored to the taint storage of the result. Therefore, only a handful of examples will be presented here to illustrate the principle and to explain some of the subtleties.
 
-The following snippets of Dalvik assembly will always show the original instruction in bold typeface and the inserted instructions in regular font. They will also use the \verb$taint-get$ and \verb$taint-set$ pseudo-instructions (explained in section ~\ref{section:Code_Pseudoinstructions}) as a shorthand for calling the \verb$get$ and \verb$set$ methods of the taint-storing hash map for objects.
+The following snippets of Dalvik assembly will always show the original instruction in bold typeface and the inserted instructions in regular font. They will also use the \verb$taint-get$ and \verb$taint-set$ pseudo-instructions (explained in section ~\ref{section:Code_Pseudoinstructions}) as a shorthand for calling the \verb$get$ and \verb$set$ methods of the taint-storing hash map for objects. Their arguments are:
+\centerbox{
+	\asm{taint-get vResult, vObject} \\
+	\asm{taint-set vAddedTaint, vObject}
+}
 
-\subsubsection{Instructions Propagating Taint}
+\subsubsection{Constants}
 
-
+Constants are created without any taint flags set. Zero should therefore be stored in the appropriate taint register.
 
 \centerbox{
-	\asmOrig{int-to-float rTo, rFrom} \\
-	\asm{move tTo, tFrom}
+	\asmOrig{const rTo, \#num} \\
+	\asm{const tTo, \#0}
 }
 
 \subsubsection{Instructions Combining Taint}
+
+Arithmetic instructions are the simplest example of taint tag combination. Tags of the operands are OR-ed and this combined tag is assigned to the result of the original instruction.
 
 \centerbox{
 	\asmOrig{add-int rResult, rOpA, rOpB} \\
 	\asm{or-int tResult, tOpA, tOpB}
 }
 
-\subsubsection{Instructions Operating on Objects}
-
-object
-\centerbox{
-	\asm{taint-get tObject, rObject} \\
-	\asmOrig{iget-obj rResult, rObject, \#fieldID} \\
-	\asm{taint-set tObject, rResult}
-}
-
-internal-int
-\centerbox{
-	\asm{taint-get tObject, rObject} \\
-	\asm{iget-int tResult, rObject, \#taintField(fieldID)} \\
-	\asm{or-int tResult, tResult, tObject} \\
-	\asmOrig{iget-int rResult, rObject, \#fieldID}
-}
-
-external-int
-\centerbox{
-	\asm{taint-get tResult, rObject} \\
-	\asmOrig{iget-int rResult, rObject, \#fieldID}
-}
-
-\subsubsection{Instructions Operating on Arrays}
-
-\centerbox{
-	\asm{taint-get tArray, rArray} \\
-	\asmOrig{aget-int rResult, rArray, rIndex} \\
-	\asm{or-int tResult, tArray, tIndex}
-}
-
 \subsubsection{Instructions Operating on Wide Registers}
+
+Taint for 64-bit primitives stored in wide register pairs is only stored in the taint register associated with the higher of the two original registers. 
 
 \centerbox{
 	\asmOrig{add-long rResult1 | rResult2, rOpA1 | rOpA2, rOpB1 | rOpB2} \\
 	\asm{or-int tResult1, tOpA1, tOpB1}
 }
 
+This is safe because accessing only one of the registers as a single-width register is an illegal operation. Class containing such instruction will be rejected by Dalvik's preload class verifier.
+
+\subsubsection{Instructions Operating on Objects}
+
+In previous examples, inserted instructions only addressed taint registers. When arguments are reference-based, methods of the hash map are called and these arguments are passed to it. However, they might not be available after the original instruction any more, because they can be overwritten by the instruction's result. 
+
+This problem is illustrated by the following rule, in which the original instruction retrieves a reference stored in an instance class field of some object. Since the object might have been assigned taint after the reference was already stored in its field, taint of the object must be propagated to the result. In case \verb$rValue$ and \verb$rObject$ map to the same register, taint of the object must be retrieved before the original instruction. And because the value of the field is not known before, calls to \verb$taint-set$ must be added after the instruction.
+
+\centerbox{
+	\asm{taint-get tObject, rObject} \\
+	\asmOrig{iget-obj rValue, rObject, \#fieldID} \\
+	\asm{taint-set tObject, rValue}
+}
+
+In the opposite direction, the rule differs for fields defined internally and externally. Because externally defined fields could be accessed by untrackable code, taint must be assigned to the object itself, rather than just the field as in the internal case, so that when the object is passed to external code, it is known that it contains sensitive data. Hence the needlessness for storage space for external instance fields mentioned in section ~\ref{section:TaintStorage_Primitives}.
+
+\centerbox{
+	\asm{taint-get tValue, rValue} \\
+	\asmOrig{iput-obj rValue, rObject, \#externalFieldID} \\
+	\asm{taint-set tValue, rObject}
+}
+
+\subsubsection{Instructions Operating on Arrays}
+
+Arrays are treated in a similar way to external class fields. When retrieving an element, it has to inherit the taint of the array, as well as the taint of the value used as index. Putting a value into an array requires passing its taint and the taint of the index to the array object.
+
 \subsubsection{Instructions Throwing Exceptions}
-Form of implicit analysis!
+
+Some of Dalvik instructions can throw exceptions, depending on the values of arguments passed to them. This is a form of implicit data flow and could potentially leak some sensitive data. For example, integer division will throw \verb$ArithmeticException$ if and only if the divisor is equal to zero, making this information deducible from the fact that the exception was thrown. Dexter deals with this by wrapping every such instruction in a try block, catching the exception, passing the correct taint to it and then throwing it again.
 
 \centerbox{
 	\asm{TRY (ArithmeticException $\Rightarrow$ CATCH\_ABC) \{} \\
@@ -379,8 +385,8 @@ Form of implicit analysis!
 	\asm{\}} \\
 	\asm{CATCH\_ABC:} \\
 	\asm{move-exception pException} \\
-	\asm{or-int pExceptionTaint, tOpA, tOpB} \\
-	\asm{taint-set pExceptionTaint, pException} \\
+	\asm{taint-set tOpB, pException} \\
+	\asm{throw pException} \\	
 	\asm{LABEL\_XYZ:}
 }
 
@@ -403,6 +409,8 @@ Form of implicit analysis!
  }
  \caption{How to write algorithms}
 \end{algorithm}
+
+\subsection{Logic Holes}
 
 \section{Source/Sink Identification}
 
