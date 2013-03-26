@@ -17,7 +17,8 @@
 \usepackage{minibox}
 
 % \usepackage{dejavu}
-\usepackage{courier}
+% \usepackage{courier}
+\usepackage[T1]{fontenc}
 
 \input{epsf}                            % to allow postscript inclusions
 % On thor and CUS read top of file:
@@ -49,8 +50,9 @@
 		\minibox{#1}
 	\end{center}
 }
-\newcommand{\asm}[1] {\footnotesize{\texttt{#1}}}
-\newcommand{\asmOrig}[1] {\textit{\asm{#1}}}
+\newcommand{\asm}[1] {\small{\textsf{#1}}}
+\newcommand{\asmOrig}[1] {\textbf{\asm{#1}}}
+\newcommand{\asmTab} {\hspace{10pt}}
 
 \title{\strTitle}
 \author{\strAuthor}
