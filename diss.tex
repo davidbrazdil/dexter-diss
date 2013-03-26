@@ -301,7 +301,7 @@ Extra fields cannot be inserted into class defined outside the scope of the inst
 A special class is created inside the application which contains one field of type \verb$int$ per every external static field that is accessed by the application. Taint tags are stored in these associated fields.
 
 \item instance fields \\
-It would be possible to create taint storage for every field inside every instance of an external class, for example by creating one global map from object references to integers per every accessed external instance field. For the sake of simplicity, a more conservative approach of storing the taint within the taint tag of the object itself was chosen. In case this proved to cause taint explosion, the more fine-grained approach could easily be implemented.
+It would be possible to create taint storage for every field inside every instance of an external class, for example by creating one global map from object references to integers per every accessed external instance field. For the sake of simplicity, a more conservative approach of storing the taint within the taint tag of the object itself was chosen. If this proved to cause taint explosion, the more fine-grained approach could easily be implemented.
 
 \end{itemize}
 
@@ -310,9 +310,11 @@ It would be possible to create taint storage for every field inside every instan
 
 \subsection{Intra-Procedural Taint Propagation}
 
-Groups that share the same pattern
+
 
 \subsubsection{Instructions Propagating Taint}
+
+
 
 \centerbox{
 	\asmOrig{int-to-float rTo, rFrom} \\
