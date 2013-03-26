@@ -12,13 +12,18 @@
 \usepackage{array}
 \usepackage{listings}
 \usepackage{parskip}
+\usepackage{color}
+\usepackage[noline,plain]{algorithm2e}
+\usepackage{minibox}
+
+% \usepackage{dejavu}
+\usepackage{courier}
 
 \input{epsf}                            % to allow postscript inclusions
 % On thor and CUS read top of file:
 %     /opt/TeX/lib/texmf/tex/dvips/epsf.sty
 % On CL machines read:
 %     /usr/lib/tex/macros/dvips/epsf.tex
-
 
 
 \raggedbottom                           % try to avoid widows and orphans
@@ -39,12 +44,27 @@
 \newcommand{\strYear}{June 2013}
 \newcommand{\strSupervisor}{Dr A. Beresford}
 
+\newcommand{\centerbox}[1] {
+	\begin{center}
+		\minibox{#1}
+	\end{center}
+}
+\newcommand{\asm}[1] {\footnotesize{\texttt{#1}}}
+\newcommand{\asmOrig}[1] {\textit{\asm{#1}}}
+
 \title{\strTitle}
 \author{\strAuthor}
 
 \begin{document}
 
 \bibliographystyle{plain}
+
+\lstset{
+	basicstyle=\small\upshape\ttfamily, % \ttfamily\small,
+	frame=single,
+	escapeinside=\`\`, %{\%*}{*)},
+	captionpos=b
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Title
@@ -191,23 +211,23 @@ Each method can use up to 65,536 virtual registers. Actual mapping to hardware r
 
 \subsubsection{Syntax of Assembly}
 Assembly syntax used in the code examples and instrumentation rules of this dissertation is mostly based on the official Dalvik assembly. It follows the \textit{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g. the instruction
-\begin{center}
-\verb$add-int/lit16 v2, v8, #1234$
-\end{center}
+\centerbox{
+	\asm{add-int/lit16 v2, v8, \#1234}
+}
 adds 1234 to the value of register 8, and stores the result into register 2. 
 
 Written rules will treat registers like variables. For example the following piece of code retrieves an element of an array pointed to by \verb$vArray$, and multiplies it by three.
-\begin{center}
-\verb$aget-int vElement, vArray, vIndex$ \\
-\verb$mul-int/lit16 vResult, vElement, #3$
-\end{center}
+\centerbox{
+	\asm{aget-int vElement, vArray, vIndex} \\
+	\asm{mul-int/lit16 vResult, vElement, \#3}
+}
 
 For better clarity, the first letters of register names will represent their origin. Names of registers used in the original code will start with \verb$r$, registers added for tainting with \verb$t$, and other with \verb$p$.
 
 Register pairs forming a wide argument will be separated by a bar.
-\begin{center}
-\verb$move-wide rTo1|rTo2, rFrom1|rFrom2$
-\end{center}
+\centerbox{
+	\asm{move-wide rTo1|rTo2, rFrom1|rFrom2}
+}
 
 \subsubsection{Instruction Variants}
 
@@ -291,27 +311,63 @@ It would be possible to create taint storage for every field inside every instan
 Groups that share the same pattern
 
 \subsubsection{Propagating Instructions}
-\verb$int-to-float$
+
+\centerbox{
+	\asmOrig{int-to-float rTo, rFrom} \\
+	\asm{move tTo, tFrom}
+}
 
 \subsubsection{Combining Instructions}
-\verb$add-int$
+
+\centerbox{
+	\asmOrig{add-int rResult, rOpA, rOpB} \\
+	\asm{or-int tResult, tOpA, tOpB}
+}
 
 \subsubsection{Instructions Operating on Objects}
-\verb$iget-int$
+
+\centerbox{
+	\asmOrig{iget-int rResult, rObject, \#fieldID}
+}
 
 \subsubsection{Instructions Operating on Arrays}
-\verb$aget-int$
+
+\centerbox{
+	\asmOrig{aget-int rResult, rArray, rIndex}
+}
 
 \subsubsection{Instructions Operating on Wide Registers}
-\verb$add-long$
+
+\centerbox{
+	\asmOrig{add-long rResult1|rResult2, rOpA1|rOpA2, rOpB1|rOpB2}
+}
 
 \subsubsection{Instructions Throwing Exceptions}
-\verb$div-int$
 Form of implicit analysis!
+
+\centerbox{
+	\asmOrig{div-int rResult, rOpA, rOpB}
+}
 
 
 \subsection{Inter-Procedural Taint Propagation}
 \label{section:TaintPropagation_MethodCalls}
+
+\begin{algorithm}[H]
+ \KwData{this text}
+ \KwResult{how to write algorithm with \LaTeX2e }
+ initialization\;
+ \While{not at end of this document}{
+  read current\;
+  \eIf{understand}{
+   go to next section\;
+   current section becomes this one\;
+   }{
+   go back to the beginning of current section\;
+  }
+ }
+ \caption{How to write algorithms}
+\end{algorithm}
 
 \section{Source/Sink Identification}
 
