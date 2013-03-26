@@ -310,7 +310,9 @@ It would be possible to create taint storage for every field inside every instan
 
 \subsection{Intra-Procedural Taint Propagation}
 
+Once taint storage is created, Dexter can insert extra instructions that will propagate taint as data are used. Dalvik supports 217 different opcodes, but these can be divided into groups that share the same propagation logic. General rule of thumb is that for every instruction, taint of all arguments should be acquired from their respective storage spaces, combined and stored to the taint storage of the result. Therefore, only a handful of examples will be presented here to illustrate the principle and explain some subtleties.
 
+The following snippets of Dalvik assembly will always show the original instruction in bold typeface and the inserted instructions in regular font. They will also use the \verb$taint-get$ and \verb$taint-set$ pseudo-instructions (explained in section ~\ref{section:Code_Pseudoinstructions}) as a shorthand for calling the \verb$get$ and \verb$set$ methods of the taint-storing hash map for objects.
 
 \subsubsection{Instructions Propagating Taint}
 
@@ -432,7 +434,7 @@ look at AdCache
 \cleardoublepage
 \chapter{Implementation}
 
-
+\label{section:Code_Pseudoinstructions}
 
 
 \cleardoublepage
