@@ -328,27 +328,56 @@ Groups that share the same pattern
 
 \subsubsection{Instructions Operating on Objects}
 
+object
 \centerbox{
+	\asm{taint-get tObject, rObject} \\
+	\asmOrig{iget-obj rResult, rObject, \#fieldID} \\
+	\asm{taint-set tObject, rResult}
+}
+
+internal-int
+\centerbox{
+	\asm{taint-get tObject, rObject} \\
+	\asm{iget-int tResult, rObject, \#taintField(fieldID)} \\
+	\asm{or-int tResult, tResult, tObject} \\
+	\asmOrig{iget-int rResult, rObject, \#fieldID}
+}
+
+external-int
+\centerbox{
+	\asm{taint-get tResult, rObject} \\
 	\asmOrig{iget-int rResult, rObject, \#fieldID}
 }
 
 \subsubsection{Instructions Operating on Arrays}
 
 \centerbox{
-	\asmOrig{aget-int rResult, rArray, rIndex}
+	\asm{taint-get tArray, rArray} \\
+	\asmOrig{aget-int rResult, rArray, rIndex} \\
+	\asm{or-int tResult, tArray, tIndex}
 }
 
 \subsubsection{Instructions Operating on Wide Registers}
 
 \centerbox{
-	\asmOrig{add-long rResult1|rResult2, rOpA1|rOpA2, rOpB1|rOpB2}
+	\asmOrig{add-long rResult1 | rResult2, rOpA1 | rOpA2, rOpB1 | rOpB2} \\
+	\asm{or-int tResult1, tOpA1, tOpB1}
 }
 
 \subsubsection{Instructions Throwing Exceptions}
 Form of implicit analysis!
 
 \centerbox{
-	\asmOrig{div-int rResult, rOpA, rOpB}
+	\asm{TRY (ArithmeticException $\Rightarrow$ CATCH\_ABC) \{} \\
+	\asmTab\asmOrig{div-int rResult, rOpA, rOpB} \\
+	\asmTab\asm{or-int tResult, tOpA, tOpB} \\
+	\asmTab\asm{goto LABEL\_XYZ} \\
+	\asm{\}} \\
+	\asm{CATCH\_ABC:} \\
+	\asm{move-exception pException} \\
+	\asm{or-int pExceptionTaint, tOpA, tOpB} \\
+	\asm{taint-set pExceptionTaint, pException} \\
+	\asm{LABEL\_XYZ:}
 }
 
 
