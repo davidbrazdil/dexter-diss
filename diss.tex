@@ -189,7 +189,7 @@ appreciated.
 
 Dalvik is an open-source virtual machine and an essential component of the Android operating system. It was developed specifically for use on mobile devices such as smartphones and tablets, and its design was optimised for running on battery-powered systems with low-performance processor and limited memory. 
 
-Built around the Apache Harmony project, Dalvik runs programs that are compatible with a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \textit{.class} files, and then converted to a single Dalvik-compatible \textit{.dex} file using tools in the Android SDK. Thanks to Dalvik's JIT compiler, applications for Android run almost natively while staying independent of the underlying architecture.
+Built around the Apache Harmony project, Dalvik runs programs that are compatible with a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file using tools in the Android SDK. Thanks to Dalvik's JIT compiler, applications for Android run almost natively while staying independent of the underlying architecture.
 
 \subsection{Application Package Files}
 
@@ -212,7 +212,7 @@ Unlike the stack-based JVM, Dalvik uses a register-based programming model with 
 Each method can use up to 65,536 virtual registers. Actual mapping to hardware registers depends on the machine architecture. On a typical Android device, the first 16 virtual registers would map to the 16 registers available in the ARM instruction set, and rest would be stored in memory. Depending on their length, instructions can address either the first 16, first 256, or all 65k virtual registers. If an instruction needs to address a register out of the available range, the register contents are expected to get moved to a lower register first.
 
 \subsubsection{Syntax of Assembly}
-Assembly syntax used in the code examples and instrumentation rules of this dissertation is mostly based on the official Dalvik assembly. It follows the \textit{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g. the instruction
+Assembly syntax used in the code examples and instrumentation rules of this dissertation is mostly based on the official Dalvik assembly. It follows the \emph{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g. the instruction
 \centerbox{
 	\asm{add-int/lit16 v2, v8, \#1234}
 }
