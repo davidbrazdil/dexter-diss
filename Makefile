@@ -8,6 +8,9 @@ DISS = diss.tex refs.bib propbody.tex figs/diagram.eps makefile.txt
 
 PROP = proposal.tex propbody.tex
 
+diss.pdf:	diss.ps
+	ps2pdf diss.ps
+
 help:
 	@echo
 	@echo "USAGE:"
@@ -36,9 +39,6 @@ diss.ps:	$(DISS)
 	latex diss
 	bibtex diss
 	dvips -Ppdf -G0 -t a4 -pp 0-200 -o diss.ps diss.dvi
-
-diss.pdf:	diss.ps
-	ps2pdf diss.ps
 
 makefile.txt:	Makefile
 	expand Makefile >makefile.txt
