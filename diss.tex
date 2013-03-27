@@ -313,7 +313,7 @@ In Dexter's taint propagation logic, primitive arrays are equivalent to external
 \end{itemize}
 
 
-\subsection{Basic Intra-Procedural Taint Propagation}
+\subsection{Basic Taint Propagation Rules}
 
 Once taint storage is created, Dexter can insert extra instructions that will propagate taint as data are used. Dalvik supports 217 different opcodes, but these can be divided into groups that share the same propagation logic. General rule of thumb is that for every instruction, taint of all arguments should be acquired from their respective storage spaces, combined and stored to the taint storage of the result. Therefore, only a handful of examples will be presented here to illustrate the principle and to explain some of the subtleties.
 
@@ -422,7 +422,9 @@ Some of Dalvik instructions can throw exceptions, depending on the values of arg
  \caption{How to write algorithms}
 \end{algorithm}
 
-\subsection{Logic Holes}
+\subsection{Propagation Logic for External Fields}
+
+\subsection{Holes in Propagation Logic}
 
 \section{Source/Sink Identification}
 
