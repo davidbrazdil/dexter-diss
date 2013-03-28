@@ -282,9 +282,15 @@ Objects are uniquely defined by the pointer to their place in memory. Dexter the
 \begin{description} 
 \item \verb$int get(Object obj)$ \\
 Returns the taint tag of given object. Returns zero when \verb$obj == null$.
-\item \verb$void set(Object obj, int taint)$ \\
-Adds taint to \verb$obj$ by OR-ing its existing entry with the second parameter. Does nothing when \verb$obj == null$.
+\item \verb$void set(int taint, Object obj)$ \\
+Adds taint to \verb$obj$ by OR-ing its existing entry with the first parameter. Does nothing when \verb$obj == null$.
 \end{description}
+
+In the following sections, the \verb$taint-get$ and \verb$taint-set$ pseudo-instructions (explained in section ~\ref{section:Code_Pseudoinstructions}) will be used as a shorthand for calling the \verb$get$ and \verb$set$ methods of the hash map. Their syntax follows the signatures above:
+\centerbox{
+	\asm{taint-get vResult, vObject} \\
+	\asm{taint-set vAddedTaint, vObject}
+}
 
 \subsubsection{Primitives}
 
@@ -322,12 +328,6 @@ In Dexter's taint propagation logic, primitive arrays are equivalent to external
 Once taint storage is created, Dexter can insert extra instructions that will propagate taint as data are used. Dalvik supports 217 different opcodes, but these can be divided into groups that share the same propagation logic. General rule of thumb is that for every instruction, taint of all arguments should be acquired from their respective storage spaces, combined and stored to the taint storage of the result. Therefore, only a handful of examples will be presented here to illustrate the principle and to explain some of the subtleties.
 
 The following snippets of Dalvik assembly will always show the original instruction in bold typeface and the inserted instructions in regular font. 
-
-% They will also use the \verb$taint-get$ and \verb$taint-set$ pseudo-instructions (explained in section ~\ref{section:Code_Pseudoinstructions}) as a shorthand for calling the \verb$get$ and \verb$set$ methods of the taint-storing hash map for objects. Their arguments are:
-% \centerbox{
-% 	\asm{taint-get vResult, vObject} \\
-% 	\asm{taint-set vAddedTaint, vObject}
-% }
 
 \subsubsection{Constants}
 
@@ -435,6 +435,7 @@ The five types of method invocation supported by Dalvik are listed in table ~\re
 
 
 \subsubsection{Destination Decidability}
+
 
 \begin{algorithm}[H]
  \KwData{this text}
