@@ -423,9 +423,9 @@ The five types of method invocation supported by Dalvik are listed in table ~\re
 		\verb$invoke-static$    & \cross          & method declared \verb$static$ \\
 		\verb$invoke-direct$    & \cross          & method declared \verb$private$ \\
 		\hline
-		\verb$invoke-virtual$   & \tick           & standard virtual call \\
+		\verb$invoke-virtual$   & \tick           & standard virtual method call \\
 		\verb$invoke-interface$ & \tick           & method declared in an interface \\
-		\verb$invoke-super$     & \tick           & call to closest parent defining the method \\
+		\verb$invoke-super$     & \tick           & call to closest parent implementing the method \\
 		\lasthline
 	\end{tabular}
 	\end{center}
@@ -436,6 +436,7 @@ The five types of method invocation supported by Dalvik are listed in table ~\re
 
 \subsubsection{Destination Decidability}
 
+% Method calls that do not 
 
 \begin{algorithm}[H]
  \KwData{this text}
