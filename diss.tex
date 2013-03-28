@@ -281,7 +281,7 @@ To store and propagate taint tags, Dexter must build an attribute system inside 
 Objects are uniquely defined by the pointer to their place in memory. Dexter therefore allows to store one taint tag per object reference by adding a globally accessible hash map. The only two supported operation are:
 \begin{description} 
 \item \verb$int get(Object obj)$ \\
-Returns the taint tag of given object. Returns 0 when \verb$obj == null$.
+Returns the taint tag of given object. Returns zero when \verb$obj == null$.
 \item \verb$void set(Object obj, int taint)$ \\
 Adds taint to \verb$obj$ by OR-ing its existing entry with the second parameter. Does nothing when \verb$obj == null$.
 \end{description}
