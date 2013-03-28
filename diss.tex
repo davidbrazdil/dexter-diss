@@ -16,6 +16,7 @@
 \usepackage[noline,plain]{algorithm2e}
 \usepackage{minibox}
 \usepackage{amsfonts}
+\usepackage{graphicx}
 
 % \usepackage{dejavu}
 % \usepackage{courier}
@@ -418,10 +419,10 @@ The five types of method invocation supported by Dalvik are listed in table ~\re
 	\begin{center}
 	\begin{tabular}{|l|c|l|}
 		\firsthline
-		\textbf{Opcode}         & \textbf{Vtable} & \textbf{Usage} \\
+		\textbf{Opcode}         & \footnotesize{\textbf{vtable}} & \textbf{Usage} \\
 		\hline
+		\verb$invoke-direct$    & \cross          & method declared \verb$private$ or a constructor \\
 		\verb$invoke-static$    & \cross          & method declared \verb$static$ \\
-		\verb$invoke-direct$    & \cross          & method declared \verb$private$ \\
 		\hline
 		\verb$invoke-virtual$   & \tick           & standard virtual method call \\
 		\verb$invoke-interface$ & \tick           & method declared in an interface \\
@@ -433,26 +434,35 @@ The five types of method invocation supported by Dalvik are listed in table ~\re
 	\label{table:TaintPropagation_MethodCallTypes}
 \end{table}
 
-
 \subsubsection{Destination Decidability}
 
-% Method calls that do not 
+Deciding the destination of a method call is simplest in the case of a \verb$-direct$ invoke instruction. The method signature, passed as an argument to the instruction, always contains the name of the class the method is implemented in. Therefore, \verb$invoke$ instruction will perform an internal jump if and only if the referenced class is defined internally.
 
-\begin{algorithm}[H]
- \KwData{this text}
- \KwResult{how to write algorithm with \LaTeX2e }
- initialization\;
- \While{not at end of this document}{
-  read current\;
-  \eIf{understand}{
-   go to next section\;
-   current section becomes this one\;
-   }{
-   go back to the beginning of current section\;
-  }
- }
- \caption{How to write algorithms}
-\end{algorithm}
+Only slightly more complicated is the case of a \verb$-static$ call. The reason being that the method might not be implemented directly in the referenced class, but rather inherited from the parent. Checking that the referenced class is internal is thus insufficient. Dexter must check that this class indeed implements a method of given signature and if not, recursively explore the parent of the class. 
+
+All the other calls rely on dynamic dispatch. Since they are very similar, only the standard \verb$-virtual$ case will be discussed here. We will illustrate the decision logic on an example of a class hierarchy depicted in figure ~\ref{fig:TaintPropagation_DestDecision_ClassHierarchy}. Assume the instruction expects an object of type G. From the nature of virtual calls, we know that the invoked method is declared either in the referenced class itself or in one of its parents, and implemented in any of the children of the declaring class. Assume it is declared in B and implemented in B, E, F and H. Table ~\ref{table:TaintPropagation_DestDecision_ClassHierarchy_Destinations} summarizes which implementation will be called for all possible types of the first argument (\verb$this$) passed to the instruction. It is obvious that not all the implementations of the method can be called by this instruction. In general, these are implementations in the referenced class, in any of the children, and in the closest parent, i.e. B and E in this case. If these classes are all internal or all external, the destination of the call is decidable statically. 
+
+\begin{figure}
+	\includegraphics[width=\textwidth]{figs/fig_virtual_call_tree.png}
+	\caption{Example class hierarchy}
+	\label{fig:TaintPropagation_DestDecision_ClassHierarchy}
+\end{figure}
+
+\begin{table}
+	\begin{center}
+	\begin{tabular}{|c|c|}
+		\firsthline
+		\textbf{Type of} \verb$this$ & \textbf{Called implementation} \\
+		\hline
+		G & E \\
+		H & H \\
+		I & E \\
+		\lasthline
+	\end{tabular}
+	\end{center}
+	\caption{Call destinations for different types of \texttt{this} argument.}
+	\label{table:TaintPropagation_DestDecision_ClassHierarchy_Destinations}
+\end{table}
 
 \subsubsection{Internal Method Calls}
 

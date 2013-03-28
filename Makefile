@@ -8,8 +8,16 @@ DISS = diss.tex refs.bib propbody.tex figs/diagram.eps makefile.txt
 
 PROP = proposal.tex propbody.tex
 
-diss.pdf:	diss.ps
-	ps2pdf diss.ps
+# diss.pdf:	diss.ps
+# 	ps2pdf diss.ps
+
+diss.pdf:	$(DISS)
+	pdflatex diss
+	bibtex diss
+	pdflatex diss
+	bibtex diss
+	pdflatex diss
+	bibtex diss
 
 help:
 	@echo
