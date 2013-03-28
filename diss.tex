@@ -67,10 +67,14 @@
 \bibliographystyle{plain}
 
 \lstset{
-	basicstyle=\small\upshape\ttfamily, % \ttfamily\small,
-	frame=single,
+	language=Java,
+	tabsize=2,
+	basicstyle=\ttfamily\scriptsize,
 	escapeinside=\`\`, %{\%*}{*)},
-	captionpos=b
+	captionpos=b,
+	keywordstyle=\color[rgb]{0,0,1},
+    commentstyle=\color[rgb]{0.133,0.545,0.133},
+    stringstyle=\color[rgb]{0.627,0.126,0.941},	
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -463,6 +467,34 @@ All the other calls rely on dynamic dispatch. Since they are very similar, only 
 	\caption{Call destinations for different types of \texttt{this} argument.}
 	\label{table:TaintPropagation_DestDecision_ClassHierarchy_Destinations}
 \end{table}
+
+If the algorithm above cannot decide the destination of a call, code could be further analysed to narrow down the number of callable implementations, e.g. by performing reachability analysis on the type of the instruction's first argument. However, it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code in a way that the decision can be made at runtime. We do this using reflection. Dexter adds a special annotation to every method defined inside the application. Then, at runtime, internal and external implementations can be distinguished by reflectively finding the target method and checking whether it carries the annotation or not. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public method is shown in listing ~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation for public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need to iterate through parents until the implementation is found. It is, nonetheless, obvious that these are both very expensive operations. 
+
+\begin{figure}
+	\lstset{caption={Destination deciding instrumentation for non-public methods},label=listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}
+	\begin{lstlisting}
+	Class c = obj.getClass();
+	Class[] argTypes = new Class[] { arg1.class, ... };
+
+	Method m = null;
+	while (m == null) {
+		try {
+	 		m = c.getDeclaredMethod("methodName", argTypes);
+	 	} catch (NoSuchMethodException e) {
+	 		c = c.getSuperclass();
+	 	}
+	}
+	
+	Annotation a = m.getAnnotation(InternalMethodAnnotation.class);
+	if (a == null) {
+		// external call
+		obj.methodName(...);
+	} else {
+		// internal call
+		obj.methodName(...);
+	}
+	\end{lstlisting}
+\end{figure}
 
 \subsubsection{Internal Method Calls}
 
