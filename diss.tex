@@ -457,8 +457,10 @@ Deciding the destination of a method call is simplest in the case of a \verb$-di
 
 Only slightly more complicated is the case of a \verb$-static$ call. The reason being that the method might not be implemented directly in the referenced class, but rather inherited from the parent. Checking that the referenced class is internal is thus insufficient. Dexter must check that this class indeed implements a method of given signature and if not, recursively explore the parent of the class. 
 
-\begin{figure}[h]
-	\includegraphics[width=\textwidth]{figs/fig_virtual_call_tree.png}
+\begin{figure}
+	\centerline{	
+		\includegraphics[width=0.7\textwidth]{figs/fig_virtual_call_tree.png}
+	}
 	\caption{Example class hierarchy}
 	\label{fig:TaintPropagation_DestDecision_ClassHierarchy}
 \end{figure}
