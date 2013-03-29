@@ -311,7 +311,7 @@ In the following sections, the \verb$taint-get$ and \verb$taint-set$ pseudo-inst
 
 \label{section:TaintStorage_Primitives}
 
-In the case of primitives, Dexter needs to create taint storage space everywhere where a primitive might be stored, i.e. method code registers, and class fields and arrays of primitive types. Primitives can also be stored as method arguments, but this will be covered in section ~\ref{section:TaintPropagation_MethodCalls}.
+In the case of primitives, Dexter needs to create taint storage space everywhere where a primitive might be stored, i.e. method code registers, and class fields and arrays of primitive types. Taint will also be temporarily stored for method arguments during a method call, but this will be discussed in section ~\ref{section:TaintPropagation_MethodCalls_Internal}.
 
 \begin{itemize}
 
@@ -428,8 +428,7 @@ Some of Dalvik instructions can throw exceptions, depending on the values of arg
 % Arrays are treated in a similar way to external class fields. When retrieving an element, it has to inherit the taint of the array, as well as the taint of the value used as index. Putting a value into an array requires passing its taint and the taint of the index to the array object.
 
 
-\subsection{Inter-Procedural Taint Propagation}
-\label{section:TaintPropagation_MethodCalls}
+\subsection{Method Call Destination Decidability}
 
 While the previous examples of propagation rules only dealt with taint propagation within the scope of one instrumented method, following sections will focus on the propagation of taint when method calls are involved. 
 
@@ -482,7 +481,7 @@ All the other calls rely on dynamic dispatch. Since they are very similar, only 
 	\label{table:TaintPropagation_DestDecision_ClassHierarchy_Destinations}
 \end{table}
 
-If the algorithm above cannot decide the destination of a call, code could be further analysed to narrow down the number of callable implementations, e.g. by performing reachability analysis on the type of the instruction's first argument. However, it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code in a way that the decision can be made at runtime using reflection. Dexter adds a special annotation to every method defined inside the application. Consequently, internal and external implementations can be distinguished at runtime by reflectively finding the target method and checking whether it carries the annotation or not. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in listing ~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation for public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need to iterate through parents until an implementation is found. It is, nonetheless, obvious that these are both very expensive operations. 
+If the algorithm above cannot decide the destination of a call, code could be further analysed to narrow down the number of callable implementations, e.g. by performing reachability analysis on the type of the instruction's first argument. However, it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code in a way that the decision can be made at runtime using reflection. Dexter adds a special annotation to every method defined inside the application, which makes internal and external implementations distinguishable at runtime by reflectively finding the target method and checking whether it carries the annotation or not. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in listing ~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation for public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need to iterate through parents until an implementation is found. It is, nonetheless, obvious that these are both very expensive operations. 
 
 \begin{figure}
 	\lstset{
@@ -515,8 +514,15 @@ If the algorithm above cannot decide the destination of a call, code could be fu
 \end{figure}
 
 \subsection{Internal Method Calls}
+\label{section:TaintPropagation_MethodCalls_Internal}
 
+When a method call is identified as an internal one, taint of the arguments ought to be propagated to the invoked method, and taint of its result propagated back tothe method'sr. Since objects carry their taint tag globally, only primitive arguments and results require extra instrumentation. 
 
+As before, propagation of taint for primitives requires extra storage. Unfortunately, passing it in extra parameters is not an option, because the method's prototype could be given by an external interface, for example when overriding an inherited method. Thus, a global integer array is created to hold the taint tags of primitive arguments during the call, and one more global integer variable is created to do the same for a primitive result. To make this thread-safe, each of these stores has a lock that must be acquired before taint is stored, and released once it is not used any more. To get a safer lock-free solution, thread-local storage could be used instead, with the downside of a slightly more complicated instrumentation.
+
+Inside the called method, taint tags of the primitive arguments must be retrieved from the global array and assigned to taint registers associated with the registers holding the actual arguments. But if an internal method is not static or direct, it may also be called from an untrackable, uninstrumented code, in which case the global array would not have been locked or filled and taint of primitive arguments should be initialized to zero. Every virtual method must therefore be able to recognize whether it was called from an internal or external origin, and handle each case separately. Luckily, Java programs can read the stack, so the name of the caller is easily accessible, and the nature of the origin decidable using reflection. It would be possible to check the annotation of the method, but since the name of the class acquired from the stack is the class that implements the method, one reflexive call can be saved by letting Dexter annotate all the internal classes (on top of annotating all the internal methods) and then checking its annotations.
+
+In both cases, instrumentation should also assign the taint of \verb$this$ to all the parameters, including the reference-based ones, provided the method is not static or a constructor. Example!!!
 
 \subsection{External Method Calls}
 
