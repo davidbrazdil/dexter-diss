@@ -431,7 +431,7 @@ Some of Dalvik instructions can throw exceptions, depending on the values of arg
 \subsection{Inter-Procedural Taint Propagation}
 \label{section:TaintPropagation_MethodCalls}
 
-While the previous examples of propagation rules only dealt with taint propagation within the scope of one instrumented method, this section will focus on the propagation of taint when method calls are involved. 
+While the previous examples of propagation rules only dealt with taint propagation within the scope of one instrumented method, following sections will focus on the propagation of taint when method calls are involved. 
 
 The five types of method invocation supported by Dalvik are listed in table ~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each of these will vary in slight details, but for propagation logic it will be more important to know whether a method call jumps to another place inside the executable file or whether it jumps out of it, into untrackable code. These two cases will be handled in an entirely different manner. 
 
@@ -454,21 +454,19 @@ The five types of method invocation supported by Dalvik are listed in table ~\re
 	\label{table:TaintPropagation_MethodCallTypes}
 \end{table}
 
-\subsubsection{Destination Decidability}
-
 Deciding the destination of a method call is simplest in the case of a \verb$-direct$ invoke instruction. The method signature, passed as an argument to the instruction, always contains the name of the class the method is implemented in. Therefore, \verb$invoke$ instruction will perform an internal jump if and only if the referenced class is defined internally.
 
 Only slightly more complicated is the case of a \verb$-static$ call. The reason being that the method might not be implemented directly in the referenced class, but rather inherited from the parent. Checking that the referenced class is internal is thus insufficient. Dexter must check that this class indeed implements a method of given signature and if not, recursively explore the parent of the class. 
 
-All the other calls rely on dynamic dispatch. Since they are very similar, only the standard \verb$-virtual$ case will be discussed here. We will illustrate the decision logic on an example of a class hierarchy depicted in figure ~\ref{fig:TaintPropagation_DestDecision_ClassHierarchy}. Assume the instruction expects an object of type G. From the nature of virtual calls, we know that the invoked method is declared either in the referenced class itself or in one of its parents, and implemented in any of the children of the declaring class. Assume it is declared in B and implemented in B, E, F and H. Table ~\ref{table:TaintPropagation_DestDecision_ClassHierarchy_Destinations} summarizes which implementation will be called for all possible types of the first argument (\verb$this$) passed to the instruction. It is obvious that not all the implementations of the method can be called by this instruction. In general, these are implementations in the referenced class, in any of the children, and in the closest parent, i.e. B and E in this case. If these classes are all internal or all external, the destination of the call is decidable statically. 
-
-\begin{figure}
+\begin{figure}[h]
 	\includegraphics[width=\textwidth]{figs/fig_virtual_call_tree.png}
 	\caption{Example class hierarchy}
 	\label{fig:TaintPropagation_DestDecision_ClassHierarchy}
 \end{figure}
 
-\begin{table}
+All the other calls rely on dynamic dispatch. Since they are very similar, only the standard \verb$-virtual$ case will be discussed here. We will illustrate the decision logic on an example of a class hierarchy depicted in figure ~\ref{fig:TaintPropagation_DestDecision_ClassHierarchy}. Assume the instruction expects an object of type G. From the nature of virtual calls, we know that the invoked method is declared either in the referenced class itself or in one of its parents, and implemented in any of the children of the declaring class. Assume it is declared in B and implemented in B, E, F and H. Table ~\ref{table:TaintPropagation_DestDecision_ClassHierarchy_Destinations} summarizes which implementation will be called for all possible types of the first argument (\verb$this$) passed to the instruction. It is obvious that not all the implementations of the method can be called by this instruction. In general, these are implementations in the referenced class, in any of the children, and in the closest parent, i.e. B and E in this case. If these classes are all internal or all external, the destination of the call is decidable statically. 
+
+\begin{table}[h]
 	\begin{center}
 	\begin{tabular}{|c|c|}
 		\firsthline
