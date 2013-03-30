@@ -491,27 +491,27 @@ If the algorithm above cannot decide the destination of a call, code could be fu
 		label = {listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}
 	}
 	\begin{lstlisting}
-	// original code: obj.methodName(arg1, arg2, ..., argN)
-	Class c = obj.getClass();
-	Class[] argTypes = new Class[] { arg1.class, ..., argN.class };
+		// original code: obj.methodName(arg1, arg2, ..., argN)
+		Class c = obj.getClass();
+		Class[] argTypes = new Class[] { arg1.class, ..., argN.class };
 
-	Method m = null;
-	while (m == null) {
-		try {
-	 		m = c.getDeclaredMethod("methodName", argTypes);
-	 	} catch (NoSuchMethodException e) {
-	 		c = c.getSuperclass();
-	 	}
-	}
+		Method m = null;
+		while (m == null) {
+			try {
+		 		m = c.getDeclaredMethod("methodName", argTypes);
+		 	} catch (NoSuchMethodException e) {
+		 		c = c.getSuperclass();
+		 	}
+		}
 
-	Annotation a = m.getAnnotation(InternalMethodAnnotation.class);
-	if (a == null) {
-		// external call
-		obj.methodName(arg1, ..., argN);
-	} else {
-		// internal call
-		obj.methodName(arg1, ..., argN);
-	}
+		Annotation a = m.getAnnotation(InternalMethodAnnotation.class);
+		if (a == null) {
+			// external call
+			obj.methodName(arg1, ..., argN);
+		} else {
+			// internal call
+			obj.methodName(arg1, ..., argN);
+		}
 	\end{lstlisting}
 \end{figure}
 
@@ -524,7 +524,7 @@ As before, propagation of taint for primitives requires extra storage. Unfortuna
 
 Inside the called method, taint tags of the primitive arguments must be retrieved from the global array and assigned to taint registers associated with the registers holding the actual arguments. But if an internal method is not static or direct, it may also be called from an untrackable, uninstrumented code, in which case the global array would not have been locked or filled and taint of primitive arguments should be initialized to zero. Every virtual method must therefore be able to recognize whether it was called from an internal or external origin, and handle each case separately. Luckily, Java programs can read the stack, so the name of the caller is easily accessible, and the nature of the origin decidable using reflection. It would be possible to check the annotation of the method, but since the name of the class acquired from the stack is the class that implements the method, one reflexive call can be saved by letting Dexter annotate all the internal classes (on top of annotating all the internal methods) and then checking its annotations.
 
-In both cases, instrumentation should also assign the taint of \verb$this$ to all the parameters, including the reference-based ones, provided the method is not static or a constructor. Example!!!
+In both cases, instrumentation should also assign the taint of \verb$this$ to all the parameters, including the reference-based ones, provided the method is not static or a constructor. This is useful especially for propagating taint into callbacks, in situations like GPS updates shown in listing ~\ref{listing:Sink_Location_Listener}. As will be shown shortly, \verb$locationListener$ inherits location taint from \verb$locationManager$ when it is passed to the \verb$requestLocationUpdates$ method. When its own \verb$onLocationChanged$ method is later called by the service, location taint is correctly assigned to the parameter.
 
 \subsection{External Method Calls}
 
@@ -537,6 +537,36 @@ In both cases, instrumentation should also assign the taint of \verb$this$ to al
 \subsection{Sources}
 
 \subsection{Sinks}
+
+\begin{figure}
+	\lstset{
+		caption = {Example of a location-updating callback class},
+		label = {listing:Sink_Location_Listener}
+	}
+	\begin{lstlisting}
+		// acquire a reference to the system Location Manager
+		LocationManager locationManager = 
+		  (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+		// define a listener that responds to location updates
+		LocationListener locationListener = new LocationListener() {
+		    public void onLocationChanged(Location location) {
+		      // called when a new location is found by the network location provider
+		      makeUseOfNewLocation(location);
+		    }
+
+		    public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+		    public void onProviderEnabled(String provider) {}
+
+		    public void onProviderDisabled(String provider) {}
+		  };
+
+		// Register the listener with the Location Manager to receive location updates
+		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 
+		                                       0, 0, locationListener);
+	\end{lstlisting}
+\end{figure}
 
 \section{Requirements Analysis}
 look at AdCache
