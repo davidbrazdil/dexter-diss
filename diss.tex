@@ -396,38 +396,6 @@ Some of Dalvik instructions can throw exceptions, depending on the values of arg
 		}
 	\end{figure}
 
-% \subsubsection{Instructions Operating on External Instance Fields}
-
-% Data stored in instance fields defined in external classes can be accessed by untrackable code. 
-
-% In previous examples, inserted instructions only addressed taint registers. When arguments are reference-based, methods of the hash map are called and these arguments are passed to them. However, they might not be available after the original instruction any more, because they can be overwritten by the instruction's result. 
-
-
-% This problem is illustrated by the following rule, in which 
-
-% This problem is illustrated by the following rule, in which the original instruction retrieves a reference stored in an external instance class field of some object. Since fields defined externally could 
-
-% Since the object might have been assigned taint after the reference was already stored in its field, taint of the object must be propagated to the result. In case \verb$rValue$ and \verb$rObject$ map to the same register, taint of the object must be retrieved before the original instruction. And because the value of the field is not known before, calls to \verb$taint-set$ must be added after the instruction.
-
-% \centerbox{
-% 	\asm{taint-get tObject, rObject} \\
-% 	\asmOrig{iget-obj rValue, rObject, \#fieldID} \\
-% 	\asm{taint-set tObject, rValue}
-% }
-
-% In the opposite direction, the rule differs for fields defined internally and externally. Because externally defined fields could be accessed by untrackable code, taint must be assigned to the object itself, rather than just the field as in the internal case, so that when the object is passed to external code, it is known that it contains sensitive data. Hence the needlessness for storage space for external instance fields mentioned in section ~\ref{section:TaintStorage_Primitives}.
-
-% \centerbox{
-% 	\asm{taint-get tValue, rValue} \\
-% 	\asmOrig{iput-obj rValue, rObject, \#externalFieldID} \\
-% 	\asm{taint-set tValue, rObject}
-% }
-
-% \subsubsection{Instructions Operating on Arrays}
-
-% Arrays are treated in a similar way to external class fields. When retrieving an element, it has to inherit the taint of the array, as well as the taint of the value used as index. Putting a value into an array requires passing its taint and the taint of the index to the array object.
-
-
 \subsection{Method Call Destination Decidability}
 
 While the previous examples of propagation rules only dealt with taint propagation within the scope of one instrumented method, following sections will focus on the propagation of taint when method calls are involved. 
