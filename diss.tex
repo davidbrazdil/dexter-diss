@@ -485,6 +485,8 @@ All the other calls rely on dynamic dispatch. Since they are very similar, only 
 
 If the algorithm above cannot decide the destination of a call, code could be further analysed to narrow down the number of callable implementations, e.g. by performing reachability analysis on the type of the instruction's first argument. However, it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code in a way that the decision can be made at runtime using reflection. Dexter adds a special annotation to every method defined inside the application, which makes internal and external implementations distinguishable at runtime by reflectively finding the target method and checking whether it carries the annotation or not. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in listing ~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation for public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need to iterate through parents until an implementation is found. It is, nonetheless, obvious that these are both very expensive operations. 
 
+One last thing to note is that if an implementation is marked native, it should be considered external regardless of the internality of the containing class. 
+
 \begin{figure}
 	\lstset{
 		caption = {Destination-deciding instrumentation for non-public methods},
@@ -524,17 +526,51 @@ As before, propagation of taint for primitives requires extra storage. Unfortuna
 
 Inside the called method, taint tags of the primitive arguments must be retrieved from the global array and assigned to taint registers associated with the registers holding the actual arguments. But if an internal method is not static or direct, it may also be called from an untrackable, uninstrumented code, in which case the global array would not have been locked or filled and taint of primitive arguments should be initialized to zero. Every virtual method must therefore be able to recognize whether it was called from an internal or external origin, and handle each case separately. Luckily, Java programs can read the stack, so the name of the caller is easily accessible, and the nature of the origin decidable using reflection. It would be possible to check the annotation of the method, but since the name of the class acquired from the stack is the class that implements the method, one reflexive call can be saved by letting Dexter annotate all the internal classes (on top of annotating all the internal methods) and then checking its annotations.
 
-In both cases, instrumentation should also assign the taint of \verb$this$ to all the parameters, including the reference-based ones, provided the method is not static or a constructor. This is useful especially for propagating taint into callbacks, in situations like GPS updates shown in listing ~\ref{listing:Sink_Location_Listener}. As will be shown shortly, \verb$locationListener$ inherits location taint from \verb$locationManager$ when it is passed to the \verb$requestLocationUpdates$ method. When its own \verb$onLocationChanged$ method is later called by the service, location taint is correctly assigned to the parameter.
+In both cases, instrumentation should also assign the taint of \verb$this$ to all the parameters, including the reference-based ones, provided the method is not static or a constructor. This is useful especially for propagating taint into callbacks, in situations like GPS updates shown in listing ~\ref{listing:Sink_Location_Listener}. As will be shown shortly, \verb$locationListener$ inherits location taint from \verb$locationManager$ when it is passed to the \verb$requestLocationUpdates$ external method. When its own \verb$onLocationChanged$ method is later called by the service, location taint is correctly assigned to the parameter.
 
 \subsection{External Method Calls}
 
-\subsection{Propagation Logic for External Fields}
+External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters (including \verb$this$) is combined and assigned to the result and all \emph{mutable} parameters. The assumption made here is that the method call will always use only data passed to it, and that it can move any of these data to any mutable parameter. In case this proved to cause problematic overtainting, Dexter offers a way of defining custom policies.
 
-\subsection{Holes in Propagation Logic}
+Unfortunatelly, the assumptions are generally not safe, and the snippet of code in listing ~\ref{listing:ExternalMethodCalls_LogicHole} shows how tainting could potentially be bypassed. It depends on the external environment containing a class that stores data inside invisible fields and then accesses and leaks these data from untrackable code. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. Some combination of framework calls could, however, lead to unidentified leakage.
+
+\begin{figure}[h]
+	\lstset{
+		caption = {Example of a propagation logic hole},
+		label = {listing:ExternalMethodCalls_LogicHole}
+	}
+	\begin{lstlisting}
+		ClassA objA = new ClassA(); 	// external class
+		ClassB objB = new ClassB(); 	// internal class
+		objA.setX(objB); 				// store B inside A
+		objB.setY(getSensitiveData()); 	// taint B
+		objA.useX(); 					// use B without passing it
+	\end{lstlisting}
+\end{figure}
+
+
+\subsection{Propagation Logic for Instance Fields}
+
+One implication of the external method call tainting policy is that the method has access to fields of objects or elements of arrays, and the taint combination must reflect this. It would be possible to iterate through each field and acquire taint separately, but this would be complicated for private fields and could prove extremely slow. Instead, instructions assigning to instance fields are instrumented to propagate taint to the containing object, so that the combined taint can be created only by acquiring its taint tag. Internal fields also have their own taint storage to store their own taint tag, but external ones do not because their value could be overwritten by untrackable code which would not update it anyway. 
 
 \section{Source/Sink Identification}
 
 \subsection{Sources}
+
+\begin{figure}
+	\lstset{
+		caption = {Example of a contact database query},
+		label = {listing:Source_DatabaseQuery}
+	}
+	\begin{lstlisting}
+		ContentResolver cr = context.getContentResolver();
+		Cursor c = cr.query(ContactsContract.Contacts.CONTENT_URI,
+		                    null, null, null, null);
+		while (c.moveToNext()) {
+		  ...
+		}
+	\end{lstlisting}
+\end{figure}
 
 \subsection{Sinks}
 
