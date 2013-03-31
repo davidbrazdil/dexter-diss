@@ -548,7 +548,6 @@ Unfortunatelly, the assumptions are generally not safe, and the snippet of code 
 	\end{lstlisting}
 \end{figure}
 
-
 \subsection{Propagation Logic for Instance Fields}
 
 One implication of the external method call tainting policy is that the method has access to fields of objects or elements of arrays, and the taint combination must reflect this. It would be possible to iterate through each field and acquire taint separately, but this would be complicated for private fields and could prove extremely slow. Instead, instructions assigning to instance fields are instrumented to propagate taint to the containing object, so that the combined taint can be created only by acquiring its taint tag. Internal fields also have their own taint storage to store their own taint tag, but external ones do not because their value could be overwritten by untrackable code which would not update it anyway. 
