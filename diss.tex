@@ -532,7 +532,7 @@ In both cases, instrumentation should also assign the taint of \verb$this$ to al
 
 External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters (including \verb$this$) is combined and assigned to the result and all \emph{mutable} parameters. The assumption made here is that the method call will always use only data passed to it, and that it can move any of these data to any mutable parameter. In case this proved to cause problematic overtainting, Dexter offers a way of defining custom policies.
 
-Unfortunatelly, the assumptions are generally not safe, and the snippet of code in listing ~\ref{listing:ExternalMethodCalls_LogicHole} shows how tainting could potentially be bypassed. It depends on the external environment containing a class that stores data inside invisible fields and then accesses and leaks these data from untrackable code. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. Some combination of framework calls could, however, lead to unidentified leakage.
+Unfortunatelly, the assumptions are not safe, and the snippet of code in listing ~\ref{listing:ExternalMethodCalls_LogicHole} shows how tainting could potentially be bypassed. It depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. Some combination of framework calls could, however, lead to unidentified leakage.
 
 \begin{figure}[h]
 	\lstset{
@@ -550,7 +550,7 @@ Unfortunatelly, the assumptions are generally not safe, and the snippet of code 
 
 \subsection{Propagation Logic for Instance Fields}
 
-One implication of the external method call tainting policy is that the method has access to fields of objects or elements of arrays, and the taint combination must reflect this. It would be possible to iterate through each field and acquire taint separately, but this would be complicated for private fields and could prove extremely slow. Instead, instructions assigning to instance fields are instrumented to propagate taint to the containing object, so that the combined taint can be created only by acquiring its taint tag. Internal fields also have their own taint storage to store their own taint tag, but external ones do not because their value could be overwritten by untrackable code which would not update it anyway. 
+One implication of the external method call tainting policy is that the method has access to fields of objects or elements of arrays, and the taint combination must reflect this. It would be possible to iterate through each field and acquire taint separately, but this would be complicated for private fields and could prove extremely slow. Instead, instructions assigning to instance fields are instrumented to propagate taint to the containing object, so that the combined taint can be created only by acquiring its taint tag. Internal fields also have their own taint storage to store their own taint tag, but external ones do not because their value could be overwritten by untrackable code which would not update it anyway.
 
 \section{Source/Sink Identification}
 
