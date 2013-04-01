@@ -384,7 +384,7 @@ Taint for 64-bit primitives stored in wide register pairs is only stored in the 
 
 \subsubsection{Instructions Throwing Exceptions}
 
-Some of Dalvik instructions can throw exceptions, depending on the values of arguments passed to them. This is a form of implicit data flow and could potentially leak some sensitive data. For example, integer division will throw \verb$ArithmeticException$ if and only if the divisor is equal to zero, making this information deducible from the fact that the exception was thrown. Dexter deals with this by wrapping every such instruction in a try block, catching the exception, passing the correct taint to it and then throwing it again.
+Some of Dalvik instructions can throw exceptions, depending on the values of arguments. This is a form of implicit data flow which could potentially leak data. For example, integer division will throw \verb$ArithmeticException$ iff the divisor is zero, making this information deducible from the fact that the exception was thrown. Dexter deals with this by wrapping every such instruction in a try block, catching the exception, passing the correct taint to it and then throwing it again.
 
 	\begin{figure}[H]
 		\centerbox{
@@ -403,11 +403,9 @@ Some of Dalvik instructions can throw exceptions, depending on the values of arg
 
 \subsection{Method Call Destination Decidability}
 
-\emph{SHORTEN!!!}
+While the previous examples of propagation rules only dealt with tainting within the scope of one instrumented method, now we will focus on taint propagation when method calls are involved. 
 
-While the previous examples of propagation rules only dealt with taint propagation within the scope of one instrumented method, following sections will focus on the propagation of taint when method calls are involved. 
-
-The five types of method invocation supported by Dalvik are listed in table ~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each of these will vary in slight details, but for propagation logic it will be more important to know whether a method call jumps to another place inside the executable file or whether it jumps out of it, into untrackable code. These two cases will be handled in an entirely different manner. 
+The five types of method invocation supported by Dalvik are listed in table ~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each will vary in slight details, but for tainting it will be more important to know whether a method call's target lies inside the DEX file or whether it jumps into untrackable code. These two cases will be handled in an entirely different manner. 
 
 \begin{table}
 	\begin{center}
@@ -436,27 +434,11 @@ Only slightly more complicated is the case of a \verb$-static$ call. The reason 
 	\centerline{	
 		\includegraphics[width=0.7\textwidth]{figs/fig_virtual_call_tree.png}
 	}
-	\caption{Example class hierarchy}
+	\caption{Example class hierarchy; referenced - $G$, implementing - $B$, $E$, $F$, $H$}
 	\label{fig:TaintPropagation_DestDecision_ClassHierarchy}
 \end{figure}
 
-All the other calls rely on dynamic dispatch. Since they are very similar, only the standard \verb$-virtual$ case will be discussed here. We will illustrate the decision logic on an example of a class hierarchy depicted in figure ~\ref{fig:TaintPropagation_DestDecision_ClassHierarchy}. Assume the instruction expects an object of type G. From the nature of virtual calls, we know that the invoked method is declared either in the referenced class itself or in one of its parents, and implemented in any of the children of the declaring class. Assume it is declared in B and implemented in B, E, F and H. Table ~\ref{table:TaintPropagation_DestDecision_ClassHierarchy_Destinations} summarizes which implementation will be called for all possible types of the first argument (\verb$this$) passed to the instruction. It is obvious that not all the implementations of the method can be called by this instruction. In general, these are implementations in the referenced class, in any of the children, and in the closest parent, i.e. B and E in this case. If these classes are all internal or all external, the destination of the call is decidable statically. 
-
-\begin{table}[h]
-	\begin{center}
-	\begin{tabular}{|c|c|}
-		\firsthline
-		\textbf{Type of} \verb$this$ & \textbf{Called implementation} \\
-		\hline
-		G & E \\
-		H & H \\
-		I & E \\
-		\lasthline
-	\end{tabular}
-	\end{center}
-	\caption{Call destinations for different types of \texttt{this} argument.}
-	\label{table:TaintPropagation_DestDecision_ClassHierarchy_Destinations}
-\end{table}
+All the other calls rely on dynamic dispatch. Since they are very similar, only the standard \verb$-virtual$ case will be discussed here. From the nature of virtual calls, we know that the invoked method is declared either in the referenced class itself or in one of its parents, and implemented in any of the children of the declaring class. But not all the implementations of the method can be called by the instruction. In general, these are only implementations in the referenced class, in any of the children, and in the closest parent (only E and H in the example in figure ~\ref{fig:TaintPropagation_DestDecision_ClassHierarchy}). If these classes are all internal or all external, the destination of the call is decidable statically. 
 
 If the algorithm above cannot decide the destination of a call, code could be further analysed to narrow down the number of callable implementations, e.g. by performing reachability analysis on the type of the instruction's first argument. However, it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code in a way that the decision can be made at runtime using reflection. Dexter adds a special annotation to every method defined inside the application, which makes internal and external implementations distinguishable at runtime by reflectively finding the target method and checking whether it carries the annotation or not. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in listing ~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation for public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need to iterate through parents until an implementation is found. It is, nonetheless, obvious that these are both very expensive operations. 
 
@@ -540,9 +522,9 @@ locationManager.requestLocationUpdates(
 
 \subsection{External Method Calls}
 
-External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters (including \verb$this$) is combined and assigned to the result and all \emph{mutable} parameters. The assumption made here is that the method call will always use only data passed to it, and that it can move any of these data to any mutable parameter. In case this proved to cause problematic overtainting, Dexter offers a way of defining custom policies.
+External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters (including \verb$this$) is combined and assigned to the result and all \emph{mutable} parameters. The assumptions made here are that the method call will always use only data passed to it, and that it can move any of these data to any mutable parameter. In case this proved to cause problematic overtainting, Dexter offers a way of defining custom policies.
 
-Unfortunatelly, the assumptions are not safe, and the snippet of code in listing ~\ref{listing:ExternalMethodCalls_LogicHole} shows how tainting could potentially be bypassed. It depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. Some combination of framework calls could, however, lead to unidentified leakage. A solution to this problem would be to unify taints of interacting objects, so that tainting B would automatically taint A, because they interacted on the previous line. But this could result in uncontrollable overtainting.
+Unfortunatelly, these assumptions are not safe, as shows the taint-bypassing snippet of code in listing ~\ref{listing:ExternalMethodCalls_LogicHole}. It depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. Some combination of framework calls could, however, lead to unidentified leakage. A solution to this problem would be to unify taints of interacting objects, so that tainting B would automatically taint A, because they interacted on the previous line. But this could result in uncontrollable overtainting.
 
 \begin{figure}[h]
 	\centering
