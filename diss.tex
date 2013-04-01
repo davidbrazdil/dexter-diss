@@ -338,7 +338,7 @@ In Dexter's taint propagation logic, primitive arrays are equivalent to external
 \end{itemize}
 
 
-\subsection{Basic Taint Propagation Rules}
+\subsection{Principles of Taint Propagation}
 
 Once taint storage is created, Dexter can insert extra instructions that will propagate taint as data are used. Dalvik supports 217 different opcodes, but these can be divided into groups that share the same propagation logic. General rule of thumb is that for every instruction, taint of all arguments should be acquired from their respective storage spaces, combined and stored to the taint storage of the result. Therefore, only a handful of examples will be presented here to illustrate the principle and to explain some of the subtleties.
 
@@ -397,6 +397,8 @@ Some of Dalvik instructions can throw exceptions, depending on the values of arg
 	\end{figure}
 
 \subsection{Method Call Destination Decidability}
+
+\emph{SHORTEN!!!}
 
 While the previous examples of propagation rules only dealt with taint propagation within the scope of one instrumented method, following sections will focus on the propagation of taint when method calls are involved. 
 
@@ -524,9 +526,9 @@ objA.useX();                    // use B inside
 
 One implication of the external method call tainting policy is that the method has access to fields of objects or elements of arrays, and the taint combination must reflect this. It would be possible to iterate through each field and acquire taint separately, but this would be complicated for private fields and could prove extremely slow. Instead, instructions assigning to instance fields are instrumented to propagate taint to the containing object, so that the combined taint can be created only by acquiring its taint tag. Internal fields also have their own taint storage to store their own taint tag, but external ones do not because their value could be overwritten by untrackable code which would not update it anyway.
 
-\section{Sources}
+\subsection{Sources}
 
-\subsection{Database Queries}
+\subsubsection{Database Queries}
 
 \begin{figure}[h]
 	\centering
@@ -561,7 +563,7 @@ while (c.moveToNext()) {
 	\label{table:Source_DatabaseQuery_URIs}
 \end{table}
 
-\subsection{System Services}
+\subsubsection{System Services}
 
 \begin{figure}[h]
 	\centering
@@ -612,7 +614,7 @@ locationManager.requestLocationUpdates(
 	\end{lstlisting}
 \end{figure}
 
-\subsection{Static API Calls}
+\subsubsection{Static API Calls}
 
 \begin{figure}[h]
 	\centering
@@ -630,9 +632,9 @@ while (c.moveToNext()) {
 	\end{lstlisting}
 \end{figure}
 
-\section{Sinks}
+\subsection{Sinks}
 
-\subsection{API Calls}
+\subsubsection{API Calls}
 
 \begin{figure}[h]
 	\centering
@@ -652,7 +654,7 @@ client.execute(post); // check this
 	\end{lstlisting}
 \end{figure}
 
-\subsection{Writer Interface}
+\subsubsection{Writer Interface}
 
 \begin{figure}[h]
 	\centering
