@@ -502,7 +502,40 @@ As before, propagation of taint for primitives requires extra storage. Unfortuna
 
 Inside the called method, taint tags of the primitive arguments must be retrieved from the global array and assigned to taint registers associated with the registers holding the actual arguments. But if an internal method is not static or direct, it may also be called from an untrackable, uninstrumented code, in which case the global array would not have been locked or filled and taint of primitive arguments should be initialized to zero. Every virtual method must therefore be able to recognize whether it was called from an internal or external origin, and handle each case separately. Luckily, Java programs can read the stack, so the name of the caller is easily accessible, and the nature of the origin decidable using reflection. It would be possible to check the annotation of the method, but since the name of the class acquired from the stack is the class that implements the method, one reflexive call can be saved by letting Dexter annotate all the internal classes (on top of annotating all the internal methods) and then checking its annotations.
 
-In both cases, instrumentation should also assign the taint of \verb$this$ to all the parameters, including the reference-based ones, provided the method is not static or a constructor. This is useful especially for propagating taint into callbacks, in situations like GPS updates shown in listing ~\ref{listing:Source_Location_Listener}. As will be shown shortly, \verb$locationListener$ inherits location taint from \verb$locationManager$ when it is passed to the \verb$requestLocationUpdates$ external method. When its own \verb$onLocationChanged$ method is later called by the service, location taint is correctly assigned to the parameter.
+In both cases, instrumentation should also assign the taint of \verb$this$ to all the parameters, including the reference-based ones, provided the method is not static or a constructor. This is useful especially for propagating taint into callbacks, for example in situations like GPS updates shown in listing ~\ref{listing:Source_Location_Listener}. Skipping ahead, \verb$locationManager$ carries location taint and \verb$locationListener$ inherits it when it is passed to the \verb$requestLocationUpdates$ external method, which will all be shown shortly. But once its own \verb$onLocationChanged$ method is later called by the service, location taint will be correctly assigned to the parameter using this principle. 
+
+\begin{figure}[h]
+	\centering
+	\begin{tabular}{c}
+	\begin{lstlisting}
+LocationManager locationManager = 
+  (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+// define a listener that responds to location updates
+LocationListener locationListener = new LocationListener() {
+  public void onLocationChanged(Location location) {
+    // called when a new location is found 
+    // by the network location provider
+    useNewLocation(location);
+  }
+
+  public void onStatusChanged(
+    String provider, int status, Bundle extras) { }
+
+  public void onProviderEnabled(String provider) { }
+
+  public void onProviderDisabled(String provider) { }
+};
+
+// register the listener with the Location Manager
+locationManager.requestLocationUpdates(
+  LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+	\end{lstlisting}
+	\end{tabular}
+	\begin{lstlisting}[caption={Example of a location-updating callback class},
+	                   label={listing:Source_Location_Listener}]
+	\end{lstlisting}
+\end{figure}
 
 \subsection{External Method Calls}
 
@@ -538,7 +571,7 @@ With the taint-propagating infrastructure ready, we can have a look at how acces
 
 First group of sources uses SQL-like queries to access the contact list, recent calls, text messages and other data made available through the interface. Programs call the \verb$ContentResolver.query$ method, passing it an address (URI) and projection, selection and sorting criteria. The method returns an instance of the \verb$Cursor$ class, which is an iterator through the rows of the query's outcome. 
 
-The type of the source is given entirely by the URI argument, which is just a textual address inside. Dexter therefore only needs to insert a series of \verb$if$ statements that compare the first arguement against a list of recognised URIs (see table ~\ref{table:Source_DatabaseQuery_URIs}), and assign the right taint tag to \verb$Cursor$ if a match is found.
+The type of the source is given entirely by the URI argument, which is just a textual address inside. Dexter therefore only needs to insert a series of \verb$if$ statements that compare the first arguement against a list of recognised URIs, and assign the right taint tag to \verb$Cursor$ if a match is found.
 
 \begin{figure}[h]
 	\centering
@@ -575,70 +608,37 @@ while (c.moveToNext()) {
 	\end{lstlisting}
 \end{figure}
 
-\begin{table}[h]
-	\begin{center}
-	\begin{tabular}{|l|l|}
-		\firsthline
-		\textbf{Source type} & \textbf{Query URI} \\
-		\hline
-		contacts             & \verb$content://com.android.contacts$ \\
-		text messages        & \verb$content://sms$ \\
-		recent calls         & \verb$content://call_log$ \\
-		\lasthline
-	\end{tabular}
-	\end{center}
-	\caption{Content query URIs recognized by Dexter}
-	\label{table:Source_DatabaseQuery_URIs}
-\end{table}
-
 \subsubsection{System Services}
+
+Information about the operating system and access to hardware resources is provided through the \verb$Context.getSystemService$ method call, which takes one argument, the name of the requested service manager which is then used to access the resource. Complete list of available services can be found in the Android documentation\footnote{https://developer.android.com/reference/android/content/Context.html\#getSystemService(java.lang.String)}.
+
+Instrumentation for system services is very similar to that of database queries. We analyze the name of the requested service and taint the returned manager object. Consequently, every piece of data retrieved from the manager will get tainted by the taint propagation logic. 
 
 \begin{figure}[h]
 	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
-LocationManager locationManager = 
-  (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+String serviceName = Context.LOCATION_SERVICE;
 
+`\hl{int managerTaint;}`
+`\hl{if (serviceName.equals("location"))}`
+`\hl{  managerTaint = TAINT\_SOURCE\_LOCATION;}`
+`\hl{else if (serviceName.equals("phone"))}`
+`\hl{  managerTaint = TAINT\_SOURCE\_DEVICE\_ID;}`
+`\hl{else}`
+`\hl{  managerTaint = 0;}`
+
+Object manager = this.getSystemService(serviceName);
+
+`\hl{HashMap.set(managerTaint, manager);}`
+
+LocationManager locationManager = (LocationManager) manager;
 Location location = 
   locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 	\end{lstlisting}
 	\end{tabular}
-	\begin{lstlisting}[caption={Example of a contact database query},
+	\begin{lstlisting}[caption={Example of access to last known GPS location},
 	                   label={listing:Source_Location}]
-	\end{lstlisting}
-\end{figure}
-
-\begin{figure}[h]
-	\centering
-	\begin{tabular}{c}
-	\begin{lstlisting}
-LocationManager locationManager = 
-  (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
-// define a listener that responds to location updates
-LocationListener locationListener = new LocationListener() {
-  public void onLocationChanged(Location location) {
-    // called when a new location is found 
-    // by the network location provider
-    useNewLocation(location);
-  }
-
-  public void onStatusChanged(
-    String provider, int status, Bundle extras) { }
-
-  public void onProviderEnabled(String provider) { }
-
-  public void onProviderDisabled(String provider) { }
-};
-
-// register the listener with the Location Manager
-locationManager.requestLocationUpdates(
-  LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-	\end{lstlisting}
-	\end{tabular}
-	\begin{lstlisting}[caption={Example of a location-updating callback class},
-	                   label={listing:Source_Location_Listener}]
 	\end{lstlisting}
 \end{figure}
 
