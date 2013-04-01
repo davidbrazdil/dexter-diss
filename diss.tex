@@ -18,6 +18,7 @@
 \usepackage{amsfonts}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{soul}
 
 % \usepackage{dejavu}
 % \usepackage{courier}
@@ -61,6 +62,9 @@
 \newcommand{\cross}{$\times$}
 
 \setlength{\intextsep}{10pt}
+
+\definecolor{lightblue}{rgb}{.90,.95,1}
+\sethlcolor{lightblue}
 
 \title{\strTitle}
 \author{\strAuthor}
@@ -528,21 +532,45 @@ One implication of the external method call tainting policy is that the method h
 
 \subsection{Sources}
 
+With the taint-propagating infrastructure ready, we can have a look at how access to sensitive data is identified. The way these are accessed varies between sources, but we identified three major use patterns that require different instrumentation, and used these to implement support for six sources that were listed in table ~\ref{table:TaintTagStorage_BitMeaning}.
+
 \subsubsection{Database Queries}
+
+First group of sources uses SQL-like queries to access the contact list, recent calls, text messages and other data made available through the interface. Programs call the \verb$ContentResolver.query$ method, passing it an address (URI) and projection, selection and sorting criteria. The method returns an instance of the \verb$Cursor$ class, which is an iterator through the rows of the query's outcome. 
+
+The type of the source is given entirely by the URI argument, which is just a textual address. Dexter therefore only needs to insert a series of \verb$if$ statements that compare the first arguement against a list of recognised URIs (see table ~\ref{table:Source_DatabaseQuery_URIs}), and assign the right taint tag to \verb$Cursor$ if a match is found.
 
 \begin{figure}[h]
 	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
 ContentResolver cr = context.getContentResolver();
-Cursor c = cr.query(ContactsContract.Contacts.CONTENT_URI, 
-                    null, null, null, null);
+URI uri = ContactsContract.Contacts.CONTENT_URI;
+
+`\hl{String uriString = uri.toString();}`
+`\hl{int uriTaint;}`
+`\hl{if (uriString.startsWith("content://com.android.contacts"))}`
+`\hl{  uriTaint = TAINT\_SOURCE\_CONTACTS;}`
+`\hl{else if (uriString.startsWith("content://sms"))}`
+`\hl{  uriTaint = TAINT\_SOURCE\_SMS;}`
+`\hl{else if (uriString.startsWith("content://call\_log"))}`
+`\hl{  uriTaint = TAINT\_SOURCE\_CALL\_LOG;}`
+`\hl{else}`
+`\hl{  uriTaint = 0;}`
+
+Cursor cursor = cr.query(uri, null, null, null, null);
+
+`\hl{HashMap.set(uriTaint, cursor);}`
+
+int colName = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+
+List<String> contactList = new List<String>();
 while (c.moveToNext()) {
-  ...
+	contactList.add(cursor.getString(colName));
 }
 	\end{lstlisting}
 	\end{tabular}
-	\begin{lstlisting}[caption={Example of a contact database query},
+	\begin{lstlisting}[caption={Example of contact database query and generated instrumentation},
 	                   label={listing:Source_DatabaseQuery}]
 	\end{lstlisting}
 \end{figure}
