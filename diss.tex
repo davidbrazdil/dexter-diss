@@ -645,9 +645,7 @@ Location location =
 
 \subsubsection{Static API Calls}
 
-Last category of sources had to be created because of the way browser data are accessed in the Android API. Even though they are read from a \verb$Cursor$ object, this object is not returned by \verb$ContentResolver.query$, but rather by static methods inside class \verb$Browser$.
-
-Instrumentation is trivial - when a call to such method is encountered, assign browser taint to the resulting Cursor.
+Last category of sources had to be created because of the way browser data are accessed in the Android API. Even though they are read from a \verb$Cursor$ object, this object is not returned by \verb$ContentResolver.query$, but rather by static methods inside class \verb$Browser$. Instrumentation is trivial - insert browser taint assignment after every such method call.
 
 \begin{figure}[h]
 	\centering
