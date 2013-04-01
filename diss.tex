@@ -594,7 +594,7 @@ URI uri = ContactsContract.Contacts.CONTENT_URI;
 
 Cursor cursor = cr.query(uri, null, null, null, null);
 
-`\hl{HashMap.set(uriTaint, cursor);}`
+`\hl{TaintMap.set(uriTaint, cursor);}`
 
 int colName = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
 
@@ -604,7 +604,7 @@ while (c.moveToNext()) {
 }
 	\end{lstlisting}
 	\end{tabular}
-	\begin{lstlisting}[caption={Example of contact database query and generated instrumentation},
+	\begin{lstlisting}[caption={Contact database query, with source instrumentation},
 	                   label={listing:Source_DatabaseQuery}]
 	\end{lstlisting}
 \end{figure}
@@ -631,32 +631,39 @@ String serviceName = Context.LOCATION_SERVICE;
 
 Object manager = this.getSystemService(serviceName);
 
-`\hl{HashMap.set(managerTaint, manager);}`
+`\hl{TaintMap.set(managerTaint, manager);}`
 
 LocationManager locationManager = (LocationManager) manager;
 Location location = 
   locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 	\end{lstlisting}
 	\end{tabular}
-	\begin{lstlisting}[caption={Example of access to last known GPS location},
+	\begin{lstlisting}[caption={Code accessing last known GPS location, with source instrumentation},
 	                   label={listing:Source_Location}]
 	\end{lstlisting}
 \end{figure}
 
 \subsubsection{Static API Calls}
 
+Last category of sources had to be created because of the way browser data are accessed in the Android API. Even though they are read from a \verb$Cursor$ object, this object is not returned by \verb$ContentResolver.query$, but rather by static methods inside class \verb$Browser$.
+
+Instrumentation is trivial - when a call to such method is encountered, assign browser taint to the resulting Cursor.
+
 \begin{figure}[h]
 	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
 ContentResolver cr = context.getContentResolver();
-Cursor c = Browser.getAllBookmarks(cr);
-while (c.moveToNext()) {
+
+Cursor cursor = Browser.getAllBookmarks(cr);
+`\hl{TaintMap.set(TAINT\_SOURCE\_BROWSER, cursor);}`
+
+while (cursor.moveToNext()) {
   ...
 }
 	\end{lstlisting}
 	\end{tabular}
-	\begin{lstlisting}[caption={Accessing browser bookmarks},
+	\begin{lstlisting}[caption={Code accessing browser bookmarks, with source instrumentation},
 	                   label={listing:Source_Browser}]
 	\end{lstlisting}
 \end{figure}
