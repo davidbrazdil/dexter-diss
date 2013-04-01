@@ -19,6 +19,7 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{soul}
+\usepackage{hyperref}
 
 % \usepackage{dejavu}
 % \usepackage{courier}
@@ -610,7 +611,7 @@ while (c.moveToNext()) {
 
 \subsubsection{System Services}
 
-Information about the operating system and access to hardware resources is provided through the \verb$Context.getSystemService$ method call, which takes one argument, the name of the requested service manager which is then used to access the resource. Complete list of available services can be found in the Android documentation\footnote{https://developer.android.com/reference/android/content/Context.html\#getSystemService(java.lang.String)}.
+Information about the operating system and access to hardware resources is provided through the \verb$Context.getSystemService$ method call, which takes one argument, the name of the requested service manager which is then used to access the resource. Complete list of available services can be found in the Android documentation\footnote{\url{https://developer.android.com/reference/android/content/Context.html\#getSystemService(java.lang.String)}}.
 
 Instrumentation for system services is very similar to that of database queries. We analyze the name of the requested service and taint the returned manager object. Consequently, every piece of data retrieved from the manager will get tainted by the taint propagation logic. 
 
