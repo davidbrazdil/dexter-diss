@@ -13,6 +13,7 @@
 \usepackage{listings}
 \usepackage{parskip}
 \usepackage{color}
+\usepackage[usenames,dvipsnames]{xcolor}
 \usepackage[noline,plain]{algorithm2e}
 \usepackage{minibox}
 \usepackage{amsfonts}
@@ -64,8 +65,8 @@
 
 \setlength{\intextsep}{10pt}
 
-\definecolor{lightblue}{rgb}{.90,.95,1}
-\sethlcolor{lightblue}
+% \sethlcolor{GreenYellow}
+\sethlcolor{SpringGreen}
 
 \title{\strTitle}
 \author{\strAuthor}
@@ -563,20 +564,18 @@ The type of the source is given entirely by the URI argument, which is merely a 
 ContentResolver cr = context.getContentResolver();
 URI uri = ContactsContract.Contacts.CONTENT_URI;
 
-`\hl{String uriString = uri.toString();}`
-`\hl{int uriTaint;}`
+`\hl{String uriString = uri.toString();~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{int uriTaint;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 `\hl{if (uriString.startsWith("content://com.android.contacts"))}`
-`\hl{  uriTaint = TAINT\_SOURCE\_CONTACTS;}`
-`\hl{else if (uriString.startsWith("content://sms"))}`
-`\hl{  uriTaint = TAINT\_SOURCE\_SMS;}`
-`\hl{else if (uriString.startsWith("content://call\_log"))}`
-`\hl{  uriTaint = TAINT\_SOURCE\_CALL\_LOG;}`
-`\hl{else}`
-`\hl{  uriTaint = 0;}`
-
+`\hl{~~uriTaint = TAINT\_SOURCE\_CONTACTS;~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{else if (uriString.startsWith("content://sms"))~~~~~~~~~~~~}`
+`\hl{~~uriTaint = TAINT\_SOURCE\_SMS;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{else if (uriString.startsWith("content://call\_log"))~~~~~~~}`
+`\hl{~~uriTaint = TAINT\_SOURCE\_CALL\_LOG;~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{else~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{~~uriTaint = 0;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 Cursor cursor = cr.query(uri, null, null, null, null);
-
-`\hl{TaintMap.set(uriTaint, cursor);}`
+`\hl{TaintMap.set(uriTaint, cursor);~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 
 int colName = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
 
@@ -603,17 +602,15 @@ Instrumentation for system services is very similar to that of database queries.
 	\begin{lstlisting}
 String serviceName = Context.LOCATION_SERVICE;
 
-`\hl{int managerTaint;}`
-`\hl{if (serviceName.equals("location"))}`
-`\hl{  managerTaint = TAINT\_SOURCE\_LOCATION;}`
-`\hl{else if (serviceName.equals("phone"))}`
-`\hl{  managerTaint = TAINT\_SOURCE\_DEVICE\_ID;}`
-`\hl{else}`
-`\hl{  managerTaint = 0;}`
-
+`\hl{int managerTaint;~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{if (serviceName.equals("location"))~~~~~}`
+`\hl{~~managerTaint = TAINT\_SOURCE\_LOCATION;~}`
+`\hl{else if (serviceName.equals("phone"))~~~}`
+`\hl{~~managerTaint = TAINT\_SOURCE\_DEVICE\_ID;}`
+`\hl{else~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{~~managerTaint = 0;~~~~~~~~~~~~~~~~~~~~~}`
 Object manager = this.getSystemService(serviceName);
-
-`\hl{TaintMap.set(managerTaint, manager);}`
+`\hl{TaintMap.set(managerTaint, manager);~~~~}`
 
 LocationManager locationManager = (LocationManager) manager;
 Location location = 
@@ -688,9 +685,8 @@ post.setEntity(postData);
 DefaultHttpClient client = new DefaultHttpClient();
 
 `\hl{if ((TaintMap.get(post) \& TAINT\_SOURCE) != 0) \{}`
-`\hl{ // warn the user}`
-`\hl{\}}`
-
+`\hl{ // warn the user~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 client.execute(post);
 	\end{lstlisting}
 	\end{tabular}
@@ -710,20 +706,20 @@ We handle this by setting a flag inside the \verb$Socket$ object's taint tag whe
 	\begin{tabular}{c}
 	\begin{lstlisting}
 String data = getSomeData();
-Socket socket = new Socket("hackers.com", 1234);
 
-`\hl{TaintMap.set(TAINT\_SINK\_SOCKET, socket); }`
+Socket socket = new Socket("hackers.com", 1234);
+`\hl{TaintMap.set(TAINT\_SINK\_SOCKET, socket);}`
 
 OutputStream sos = socket.getOutputStream();
 PrintWriter writer = new PrintWriter(sos);
 
-`\hl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0) \{ }`
-`\hl{~~if ((TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{ }`
-`\hl{~~~~// warn the user}`
-`\hl{~~\}}`
-`\hl{\}}`
-
+`\hl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0) \{~~~}`
+`\hl{~~if ((TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{~}`
+`\hl{~~~~// warn the user~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{~~\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 writer.println(data);
+
 writer.close();
 	\end{lstlisting}
 	\end{tabular}
@@ -740,13 +736,13 @@ String data = getSomeData();
 ByteArrayOutputStream baos = new ByteArrayOutputStream();
 PrintWriter writer = new PrintWriter(baos);
 
-`\hl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0) \{ }`
-`\hl{~~if ((TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{ }`
-`\hl{~~~~// warn the user}`
-`\hl{~~\}}`
-`\hl{\}}`
-
+`\hl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0) \{~~~}`
+`\hl{~~if ((TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{~}`
+`\hl{~~~~// warn the user~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{~~\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 writer.println(data);
+
 writer.close();
 byte[] array = baos.toByteArray();
 	\end{lstlisting}
