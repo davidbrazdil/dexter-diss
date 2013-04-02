@@ -264,7 +264,7 @@ All variants of semantically equivalent instructions are parsed as the same inst
 
 Different taint tracking systems choose different ways of representing taint tags. This fundamental choice has large effect on the overall design of the system, its capabilities and limits, as well as performance and memory overhead. The authors of TaintDroid decided to store taint tags as 32-bit integers where each bit represents one source of sensitive data. This is a very efficient and compact format, sufficient for the purposes of TaintDroid, but quickly reaches its limits as the functionality is extended. One of the challenges faced by the CleanOS project, which builds on TaintDroid, was the neccessity to potentially track millions of taint sources. Their solution alters TaintDroid to store taint as a 32-bit pointer into an SQL database, which increases the number of trackable sources, but significantly impedes performance at the same time. 
 
-For the sake of simplicity, Dexter adopts the same tag representation as TaintDroid, with one slight modification. As will be demonstrated later, identification of some sinks relies on distinguishing how certain objects were created. Hence upper bits of the tags are reserved to represent the potential of an object to create a particular type of sink if passed as an argument to some API calls. The meaning of each bit being set is summarized in table ~\ref{table:TaintTagStorage_BitMeaning}.
+For the sake of simplicity, Dexter adopts the same tag representation as TaintDroid, with one slight modification. As will be demonstrated later, identification of some sinks relies on distinguishing how certain objects were created. Hence upper bits of the tags are reserved to represent the potential of an object to create a particular type of sink if passed as an argument to some API calls. The meaning of each bit being set is summarized in table~\ref{table:TaintTagStorage_BitMeaning}.
 
 \begin{table}
 	\begin{center}
@@ -303,7 +303,7 @@ Returns the taint tag of given object. Returns zero when \verb$obj == null$.
 Adds taint to \verb$obj$ by OR-ing its existing entry with the first parameter. Does nothing when \verb$obj == null$.
 \end{description}
 
-In the following sections, the \verb$taint-get$ and \verb$taint-set$ pseudo-instructions (explained in section ~\ref{section:Code_Pseudoinstructions}) will be used as a shorthand for calling the \verb$get$ and \verb$set$ methods of the hash map. Their syntax follows the signatures above:
+In the following sections, the \verb$taint-get$ and \verb$taint-set$ pseudo-instructions (explained in section~\ref{section:Code_Pseudoinstructions}) will be used as a shorthand for calling the \verb$get$ and \verb$set$ methods of the hash map. Their syntax follows the signatures above:
 
 	\begin{figure}[H]
 		\centerbox{
@@ -316,7 +316,7 @@ In the following sections, the \verb$taint-get$ and \verb$taint-set$ pseudo-inst
 
 \label{section:TaintStorage_Primitives}
 
-In the case of primitives, Dexter needs to create taint storage space everywhere where a primitive might be stored, i.e. method code registers, and class fields and arrays of primitive types. Taint will also be temporarily stored for method arguments during a method call, but this will be discussed in section ~\ref{section:TaintPropagation_MethodCalls_Internal}.
+In the case of primitives, Dexter needs to create taint storage space everywhere where a primitive might be stored, i.e. method code registers, and class fields and arrays of primitive types. Taint will also be temporarily stored for method arguments during a method call, but this will be discussed in section~\ref{section:TaintPropagation_MethodCalls_Internal}.
 
 \begin{itemize}
 
@@ -405,7 +405,7 @@ Some of Dalvik instructions can throw exceptions, depending on the values of arg
 
 While the previous examples of propagation rules only dealt with tainting within the scope of one instrumented method, now we will focus on taint propagation when method calls are involved. 
 
-The five types of method invocation supported by Dalvik are listed in table ~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each will vary in slight details, but for tainting it will be more important to know whether a method call's target lies inside the DEX file or whether it jumps into untrackable code. These two cases will be handled in an entirely different manner. 
+The five types of method invocation supported by Dalvik are listed in table~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each will vary in slight details, but for tainting it will be more important to know whether a method call's target lies inside the DEX file or whether it jumps into untrackable code. These two cases will be handled in an entirely different manner. 
 
 \begin{table}
 	\begin{center}
@@ -438,9 +438,9 @@ Only slightly more complicated is the case of a \verb$invoke-static$ call. The r
 	\label{fig:TaintPropagation_DestDecision_ClassHierarchy}
 \end{figure}
 
-All the other calls rely on dynamic dispatch. Since they are very similar, only the standard \verb$invoke-virtual$ case will be discussed here. By the nature of virtual calls, we know that the invoked method is declared either in the referenced class or in one of its parents, and implemented in any of the children of the declaring class. But not all the implementations of the method can be called by the instruction. In general, these are only implementations in the referenced class, in any of its children, and in the closest parent (only E and H in the example in figure ~\ref{fig:TaintPropagation_DestDecision_ClassHierarchy}). If these classes are all internal or all external, the destination of the call is decidable statically. 
+All the other calls rely on dynamic dispatch. Since they are very similar, only the standard \verb$invoke-virtual$ case will be discussed here. By the nature of virtual calls, we know that the invoked method is declared either in the referenced class or in one of its parents, and implemented in any of the children of the declaring class. But not all the implementations of the method can be called by the instruction. In general, these are only implementations in the referenced class, in any of its children, and in the closest parent (only E and H in the example in figure~\ref{fig:TaintPropagation_DestDecision_ClassHierarchy}). If these classes are all internal or all external, the destination of the call is decidable statically. 
 
-Code could be analysed to further narrow down the number of callable implementations, e.g. by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflectively finding the target method and checking whether it carries the annotation or not. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in listing ~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation for public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is, nonetheless, obvious that these are both very expensive operations. 
+Code could be analysed to further narrow down the number of callable implementations, e.g. by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflectively finding the target method and checking whether it carries the annotation or not. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation for public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is, nonetheless, obvious that these are both very expensive operations. 
 
 One last thing to note is that if an implementation is marked native, it should be considered external regardless of the internality of the containing class. 
 
@@ -485,7 +485,7 @@ Like before, primitives need taint storage. Unfortunately, adding extra paramete
 
 Inside the called method, taint tags of primitive arguments must be retrieved from the global array and assigned to taint registers associated with the registers holding the arguments. But if an internal method is not static or direct, it may also be called from an untrackable, uninstrumented code, in which case the global array would not have been locked or filled, and taint of primitive arguments should be initialized to zero. Every virtual method must therefore be able to recognize whether it was called from an internal or external origin, and handle each case correctly. Since Java programs can read the stack, the name of the caller is easily accessible, and the nature of the origin decidable using reflection. It would be possible to check the annotation of the method, but since the class on the stack is the one that implements the method, one reflexive call can be saved by letting Dexter annotate all the internal classes (on top of annotating all the internal methods) and then checking whether this class carries it.
 
-In both cases, instrumentation should also assign the taint of \verb$this$ to all the parameters, including the reference-based ones, provided the method is not static or a constructor. This is useful especially for propagating taint into callbacks, for example in situations like GPS updates, shown in listing ~\ref{listing:Source_Location_Listener}. Skipping ahead, \verb$locationManager$ carries location taint and \verb$locationListener$ inherits it when it is passed to the \verb$requestLocationUpdates$ external method. But once its own \verb$onLocationChanged$ method is later called by the service, location taint will be correctly assigned to the parameter using this principle. 
+In both cases, instrumentation should also assign the taint of \verb$this$ to all the parameters, including the reference-based ones, provided the method is not static or a constructor. This is useful especially for propagating taint into callbacks, for example in situations like GPS updates, shown in listing~\ref{listing:Source_Location_Listener}. Skipping ahead, \verb$locationManager$ carries location taint and \verb$locationListener$ inherits it when it is passed to the \verb$requestLocationUpdates$ external method. But once its own \verb$onLocationChanged$ method is later called by the service, location taint will be correctly assigned to the parameter using this principle. 
 
 \begin{figure}
 	\centering
@@ -524,7 +524,7 @@ locationManager.requestLocationUpdates(
 
 External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters (including \verb$this$) is combined and assigned to the result and all \emph{mutable} parameters. The assumptions made here are that the method call will always use only data passed to it, and that it can move any of these data to any mutable parameter. In case this proved to cause problematic overtainting, Dexter offers a way of defining custom policies.
 
-Unfortunatelly, these assumptions are not safe, as shows the taint-bypassing snippet of code in listing ~\ref{listing:ExternalMethodCalls_LogicHole}. It depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. Some combination of framework calls could, however, lead to unidentified leakage. A solution to this problem would be to unify taints of interacting objects, so that tainting \verb$objB$ would automatically taint \verb$objA$, because they interacted on the previous line. But this could easily result in taint explosion.
+Unfortunatelly, these assumptions are not safe, as shows the taint-bypassing snippet of code in listing~\ref{listing:ExternalMethodCalls_LogicHole}. It depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. Some combination of framework calls could, however, lead to unidentified leakage. A solution to this problem would be to unify taints of interacting objects, so that tainting \verb$objB$ would automatically taint \verb$objA$, because they interacted on the previous line. But this could easily result in taint explosion.
 
 \begin{figure}[h]
 	\centering
@@ -548,7 +548,7 @@ One implication of the external method call tainting policy is that the method h
 
 \subsection{Sources}
 
-With the taint-propagating infrastructure ready, we can have a look at how access to sensitive data is identified. This varies between sources, but we identified three major use patterns that require different instrumentation, and used these to implement support for six sources (see table ~\ref{table:TaintTagStorage_BitMeaning}).
+With the taint-propagating infrastructure ready, we can have a look at how access to sensitive data is identified. This varies between sources, but we identified three major use patterns that require different instrumentation, and used these to implement support for six sources (see table~\ref{table:TaintTagStorage_BitMeaning}).
 
 \subsubsection{Database Queries}
 
