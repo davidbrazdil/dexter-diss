@@ -53,12 +53,13 @@
 
 \newcommand{\centerbox}[1] {
 	\begin{center}
-		\minibox{#1}
+	\begin{tabular}{l}
+		#1
+	\end{tabular}
 	\end{center}
 }
-\newcommand{\asm}[1] {\small{\textsf{#1}}}
-\newcommand{\asmOrig}[1] {\textbf{\asm{#1}}}
-\newcommand{\asmTab} {\hspace{10pt}}
+\newcommand{\asm}[1] {\small{\texttt{#1}}}
+\newcommand{\asmExtra}[1] {\small{\texttt{\hl{#1}}}}
 
 \newcommand{\tick}{$\checkmark$}
 \newcommand{\cross}{$\times$}
@@ -356,8 +357,8 @@ Constants are created without any taint flags set. Zero should therefore be stor
 
 	\begin{figure}[H]
 		\centerbox{
-			\asmOrig{const rTo, \#num} \\
-			\asm{const tTo, \#0}
+			\asm{const rTo, \#num} \\
+			\asmExtra{const tTo, \#0~~}
 		}
 	\end{figure}
 
@@ -367,8 +368,8 @@ Arithmetic instructions are the simplest example of taint tag combination. Tags 
 
 	\begin{figure}[H]
 		\centerbox{
-			\asmOrig{add-int rResult, rOpA, rOpB} \\
-			\asm{or-int tResult, tOpA, tOpB}
+			\asm{add-int rResult, rOpA, rOpB} \\
+			\asmExtra{or-int tResult, tOpA, tOpB}
 		}
 	\end{figure}
 
@@ -378,8 +379,8 @@ Taint for 64-bit primitives stored in wide register pairs is only stored in the 
 
 	\begin{figure}[H]
 		\centerbox{
-			\asmOrig{add-long rResult1 | rResult2, rOpA1 | rOpA2, rOpB1 | rOpB2} \\
-			\asm{or-int tResult1, tOpA1, tOpB1}
+			\asm{add-long rResult1 | rResult2, rOpA1 | rOpA2, rOpB1 | rOpB2} \\
+			\asmExtra{or-int tResult1, tOpA1, tOpB1}
 		}
 	\end{figure}
 
@@ -389,16 +390,16 @@ Some of Dalvik instructions can throw exceptions, depending on the values of arg
 
 	\begin{figure}[H]
 		\centerbox{
-			\asm{TRY (ArithmeticException $\Rightarrow$ CATCH\_ABC) \{} \\
-			\asmTab\asmOrig{div-int rResult, rOpA, rOpB} \\
-			\asmTab\asm{or-int tResult, tOpA, tOpB} \\
-			\asmTab\asm{goto LABEL\_XYZ} \\
-			\asm{\}} \\
-			\asm{CATCH\_ABC:} \\
-			\asm{move-exception pException} \\
-			\asm{taint-set tOpB, pException} \\
-			\asm{throw pException} \\	
-			\asm{LABEL\_XYZ:}
+			\asmExtra{TRY (ArithmeticException $\Rightarrow$ CATCH\_ABC) \{} \\
+			\asm{~~div-int rResult, rOpA, rOpB} \\
+			\asmExtra{~~or-int tResult, tOpA, tOpB~~~~~~~~~~~~} \\
+			\asmExtra{~~goto LABEL\_XYZ~~~~~~~~~~~~~~~~~~~~~~~~} \\
+			\asmExtra{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~} \\
+			\asmExtra{CATCH\_ABC:~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~} \\
+			\asmExtra{move-exception pException~~~~~~~~~~~~~~~} \\
+			\asmExtra{taint-set tOpB, pException~~~~~~~~~~~~~~} \\
+			\asmExtra{throw pException~~~~~~~~~~~~~~~~~~~~~~~~} \\	
+			\asmExtra{LABEL\_XYZ:~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}
 		}
 	\end{figure}
 
