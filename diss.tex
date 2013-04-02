@@ -625,7 +625,7 @@ Location location =
 	\end{lstlisting}
 \end{figure}
 
-\subsubsection{Static API Calls}
+\subsubsection{Browser}
 
 Last category of sources had to be created because of the way browser data are accessed. Even though they are read from a \verb$Cursor$ object, this object is not created by the \verb$ContentResolver.query$ method, but rather by static methods inside class \verb$Browser$. Instrumentation is trivial - insert browser taint assignment after every such method call.
 
