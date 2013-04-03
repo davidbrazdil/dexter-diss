@@ -53,13 +53,15 @@
 
 \newcommand{\centerbox}[1] {
 	\begin{center}
+	\begin{footnotesize}
 	\begin{tabular}{l}
 		#1
 	\end{tabular}
+	\end{footnotesize}
 	\end{center}
 }
-\newcommand{\asm}[1] {\small{\texttt{#1}}}
-\newcommand{\asmExtra}[1] {\small{\texttt{\hl{#1}}}}
+\newcommand{\asm}[1] {\texttt{#1}}
+\newcommand{\asmExtra}[1] {\texttt{\hl{#1}}}
 
 \newcommand{\tick}{$\checkmark$}
 \newcommand{\cross}{$\times$}
@@ -411,7 +413,7 @@ While the previous examples of propagation rules only dealt with tainting within
 
 The five types of method invocation supported by Dalvik are listed in table~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each will vary in slight details, but for tainting it will be more important to know whether a method call's target lies inside the DEX file or whether it jumps into untrackable code. These two cases will be handled in an entirely different manner. 
 
-\begin{table}
+\begin{table}[h]
 	\begin{center}
 	\begin{tabular}{|l|c|l|}
 		\firsthline
@@ -438,7 +440,7 @@ Only slightly more complicated is the case of a \verb$invoke-static$ call. The r
 	\centerline{	
 		\includegraphics[width=0.7\textwidth]{figs/fig_virtual_call_tree.png}
 	}
-	\caption{Example class hierarchy; referenced - $G$, implementing - $B$, $E$, $F$, $H$}
+	\caption{Example class hierarchy; invoked class: $G$, classes implementing the invoked method: $B$, $E$, $F$, $H$}
 	\label{fig:TaintPropagation_DestDecision_ClassHierarchy}
 \end{figure}
 
