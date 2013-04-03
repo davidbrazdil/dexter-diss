@@ -210,13 +210,13 @@ appreciated.
 
 Dalvik is an open-source virtual machine and an essential component of the Android operating system. It was developed specifically for use on mobile devices such as smartphones and tablets, and its design was optimised for running on battery-powered systems with low-performance processor and limited memory. 
 
-Built around the Apache Harmony project, Dalvik runs programs that are compatible with a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file using tools in the Android SDK. Thanks to Dalvik's JIT compiler, applications for Android run almost natively while staying independent of the underlying architecture.
+Built around the Apache Harmony project, Dalvik runs programs that are compatible with a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file using tools in the Android SDK. With release 2.2, Dalvik introduced Just-In-Time compilation which significantly increased its performance and efficiency\footnote{\url{http://android-developers.blogspot.com/2010/05/dalvik-jit.html}}.
 
 \subsection{Application Package Files}
 
 Applications for Android are distributed in Application Package files (APK). These are ZIP files signed by the publisher, which contain:
 \begin{itemize}
-\item the executable \textbf{classes.dex} file
+\item the executable \emph{classes.dex} file
 \item application resources (images, UI layouts, ...)
 \item native code binaries
 \item manifest
