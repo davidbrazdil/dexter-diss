@@ -158,7 +158,7 @@ All that has been completed appears in this dissertation.
 
 \section*{Special Difficulties}
 
-Learning how to incorporate encapulated postscript into a \LaTeX\
+Learning how to incorporate encapsulated postscript into a \LaTeX\
 document on both CUS and Thor.
  
 \newpage
@@ -184,7 +184,7 @@ extent for a comparable purpose.
 \listoffigures
 
 \newpage
-\section*{Acknowledgements}
+\section*{Acknowledgments}
 
 This document owes much to an earlier version written by Simon Moore
 \cite{moore95}.  His help, encouragement and advice was greatly 
@@ -208,7 +208,7 @@ appreciated.
 
 \section{Dalvik Virtual Machine}
 
-Dalvik is an open-source virtual machine and an essential component of the Android operating system. It was developed specifically for use on mobile devices such as smartphones and tablets, and its design was optimised for running on battery-powered systems with low-performance processor and limited memory. 
+Dalvik is an open-source virtual machine and an essential component of the Android operating system. It was developed specifically for use on mobile devices such as smartphones and tablets, and its design was optimized for running on battery-powered systems with low-performance processor and limited memory. 
 
 Built around the Apache Harmony project, Dalvik runs programs that are compatible with a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file using tools in the Android SDK. With release 2.2, Dalvik introduced Just-In-Time compilation which significantly increased its performance and efficiency\footnote{\url{http://android-developers.blogspot.com/2010/05/dalvik-jit.html}}.
 
@@ -230,7 +230,7 @@ Dalvik bytecode is very similar to that of the Java Virtual Machine in the sense
 
 \subsubsection{Registers}
 
-Unlike the stack-based JVM, Dalvik uses a register-based programming model with 32-bit register width and variable-length instructions. 64-bit values are stored in two adjecent registers.
+Unlike the stack-based JVM, Dalvik uses a register-based programming model with 32-bit register width and variable-length instructions. 64-bit values are stored in two adjacent registers.
 
 Each method can use up to 65,536 virtual registers. Actual mapping to hardware registers depends on the machine architecture. On a typical Android device, the first 16 virtual registers would map to the 16 registers available in the ARM instruction set, and rest would be stored in memory. Depending on their length, instructions can address either the first 16, first 256, or all 65k virtual registers. If an instruction needs to address a register out of the available range, the register contents are expected to get moved to a lower register first.
 
@@ -262,13 +262,13 @@ Register pairs forming a wide argument will be separated by a bar.
 
 To achieve higher code density, some Dalvik instructions come in several variants. They are semantically equivalent but they differ in size. A good example of this is the \verb$const$ instruction. Its variant \verb$const/16$ stores a 16-bit constant into a register addressed by an 8-bit number, fitting into 4 bytes. On the other hand, \verb$const/4$ fits into 2 bytes, but can only address registers in the 4-bit range and carry a 4-bit constant.
 
-All variants of semantically equivalent instructions are parsed as the same instruction type in Dexter, and thus will be referred to  by the same name. During the reassembly phase, Dexter automatically outputs the most optimised variant of the instruction possible.
+All variants of semantically equivalent instructions are parsed as the same instruction type in Dexter, and thus will be referred to  by the same name. During the reassembly phase, Dexter automatically outputs the most optimized variant of the instruction possible.
 
 \section{Data Flow Analysis}
 
 \subsection{Taint Tags}
 
-Different taint tracking systems choose different ways of representing taint tags. This fundamental choice has large effect on the overall design of the system, its capabilities and limits, as well as performance and memory overhead. The authors of TaintDroid decided to store taint tags as 32-bit integers where each bit represents one source of sensitive data. This is a very efficient and compact format, sufficient for the purposes of TaintDroid, but quickly reaches its limits as the functionality is extended. One of the challenges faced by the CleanOS project, which builds on TaintDroid, was the neccessity to potentially track millions of taint sources. Their solution alters TaintDroid to store taint as a 32-bit pointer into an SQL database, which increases the number of trackable sources, but significantly impedes performance at the same time. 
+Different taint tracking systems choose different ways of representing taint tags. This fundamental choice has large effect on the overall design of the system, its capabilities and limits, as well as performance and memory overhead. The authors of TaintDroid decided to store taint tags as 32-bit integers where each bit represents one source of sensitive data. This is a very efficient and compact format, sufficient for the purposes of TaintDroid, but quickly reaches its limits as the functionality is extended. One of the challenges faced by the CleanOS project, which builds on TaintDroid, was the necessity to potentially track millions of taint sources. Their solution alters TaintDroid to store taint as a 32-bit pointer into an SQL database, which increases the number of trackable sources, but significantly impedes performance at the same time. 
 
 For the sake of simplicity, Dexter adopts the same tag representation as TaintDroid, with one slight modification. As will be demonstrated later, identification of some sinks relies on distinguishing how certain objects were created. Hence upper bits of the tags are reserved to represent the potential of an object to create a particular type of sink if passed as an argument to some API calls. The meaning of each bit being set is summarized in table~\ref{table:TaintTagStorage_BitMeaning}.
 
@@ -297,7 +297,7 @@ For the sake of simplicity, Dexter adopts the same tag representation as TaintDr
 
 \subsection{Tag Storage}
 
-To store and propagate taint tags, Dexter must build an attribute system inside the modified application, so that every piece of data accessible by the executable code can carry a tag if necessary. The way these are stored differs for objects and for primitives. The crutial difference between these is that when a primitive is copied, operations on one of the copies do not effect the other ones. When a reference to an object is copied, operations on one of the copies is visible by dereferencing any of them.
+To store and propagate taint tags, Dexter must build an attribute system inside the modified application, so that every piece of data accessible by the executable code can carry a tag if necessary. The way these are stored differs for objects and for primitives. The crucial difference between these is that when a primitive is copied, operations on one of the copies do not effect the other ones. When a reference to an object is copied, operations on one of the copies is visible by dereferencing any of them.
 
 \subsubsection{Objects}
 
@@ -446,7 +446,7 @@ Only slightly more complicated is the case of a \verb$invoke-static$ call. The r
 
 All the other calls rely on dynamic dispatch. Since they are very similar, only the standard \verb$invoke-virtual$ case will be discussed here. By the nature of virtual calls, we know that the invoked method is declared either in the referenced class or in one of its parents, and implemented in any of the children of the declaring class. But not all the implementations of the method can be called by the instruction. In general, these are only implementations in the referenced class, in any of its children, and in the closest parent (only E and H in the example in figure~\ref{fig:TaintPropagation_DestDecision_ClassHierarchy}). If these classes are all internal or all external, the destination of the call is decidable statically. 
 
-Code could be analysed to further narrow down the number of callable implementations, e.g. by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflectively finding the target method and checking whether it carries the annotation or not. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation for public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is, nonetheless, obvious that these are both very expensive operations. 
+Code could be analyzed to further narrow down the number of callable implementations, e.g. by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflectively finding the target method and checking whether it carries the annotation or not. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation for public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is, nonetheless, obvious that these are both very expensive operations. 
 
 One last thing to note is that if an implementation is marked native, it should be considered external regardless of the internality of the containing class. 
 
@@ -528,9 +528,9 @@ locationManager.requestLocationUpdates(
 
 \subsection{External Method Calls}
 
-External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters (including \verb$this$) is combined and assigned to the result and all \emph{mutable} parameters. The assumptions made here are that the method call will always use only data passed to it, and that it can move any of these data to any mutable parameter. In case this proved to cause problematic overtainting, Dexter offers a way of defining custom policies.
+External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters (including \verb$this$) is combined and assigned to the result and all \emph{mutable} parameters. The assumptions made here are that the method call will always use only data passed to it, and that it can move any of these data to any mutable parameter. In case this proved to cause problematic over-tainting, Dexter offers a way of defining custom policies.
 
-Unfortunatelly, these assumptions are not safe, as shows the taint-bypassing snippet of code in listing~\ref{listing:ExternalMethodCalls_LogicHole}. It depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. Some combination of framework calls could, however, lead to unidentified leakage. A solution to this problem would be to unify taints of interacting objects, so that tainting \verb$objB$ would automatically taint \verb$objA$, because they interacted on the previous line. But this could easily result in taint explosion.
+Unfortunately, these assumptions are not safe, as shows the taint-bypassing snippet of code in listing~\ref{listing:ExternalMethodCalls_LogicHole}. It depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. Some combination of framework calls could, however, lead to unidentified leakage. A solution to this problem would be to unify taints of interacting objects, so that tainting \verb$objB$ would automatically taint \verb$objA$, because they interacted on the previous line. But this could easily result in taint explosion.
 
 \begin{figure}[h]
 	\centering
@@ -560,7 +560,7 @@ With the taint-propagating infrastructure ready, we can have a look at how acces
 
 First group of sources uses SQL-like queries to access the contact list, recent calls, text messages and other data made available through the interface. Programs call the \verb$ContentResolver.query$ method, passing it a resource identifier (URI) and projection, selection and sorting criteria. The method returns an instance of the \verb$Cursor$ class, which is an iterator through the rows of the query's outcome. 
 
-The type of the source is given entirely by the URI argument, which is merely a textual address. Hence, Dexter only needs to insert a series of \verb$if$ statements that compare the first argument against a list of recognised URIs, and assign the right taint tag to \verb$Cursor$ if a match is found.
+The type of the source is given entirely by the URI argument, which is merely a textual address. Hence, Dexter only needs to insert a series of \verb$if$ statements that compare the first argument against a list of recognized URIs, and assign the right taint tag to \verb$Cursor$ if a match is found.
 
 \begin{figure}[h]
 	\centering
