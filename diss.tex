@@ -297,7 +297,7 @@ For the sake of simplicity, Dexter adopts the same tag representation as TaintDr
 
 \subsection{Tag Storage}
 
-To store and propagate taint tags, Dexter must build an attribute system inside the modified application, so that every piece of data accessible by the executable code can carry one if necessary. The way tags are stored differs for objects and for primitives. The crutial difference between these is that when a primitive is copied, operations on one of the copies do not effect the other ones. When a reference to an object is copied, operations on one of the copies is visible by dereferencing any of them.
+To store and propagate taint tags, Dexter must build an attribute system inside the modified application, so that every piece of data accessible by the executable code can carry a tag if necessary. The way these are stored differs for objects and for primitives. The crutial difference between these is that when a primitive is copied, operations on one of the copies do not effect the other ones. When a reference to an object is copied, operations on one of the copies is visible by dereferencing any of them.
 
 \subsubsection{Objects}
 
