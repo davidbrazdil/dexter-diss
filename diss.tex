@@ -297,11 +297,11 @@ For the sake of simplicity, Dexter adopts the same tag representation as TaintDr
 
 \subsection{Tag Storage}
 
-To store and propagate taint tags, Dexter must build an attribute system inside the modified application, so that every piece of data accessible by the executable code can carry a tag if necessary. The way these are stored differs for objects and for primitives. The crucial difference between these is that when a primitive is copied, operations on one of the copies do not effect the other ones. When a reference to an object is copied, operations on one of the copies is visible by dereferencing any of them.
+To store and propagate taint tags, Dexter must build an attribute system inside the modified application, so that every piece of data accessible by the executable code can carry a tag if necessary. The way these are stored differs for objects and for primitives. The crucial difference between these is that when a primitive is copied, operations on one of the copies do not effect the other ones, which means that there needs to be a tag storage for every copy. On the other hand, when a reference to an object is copied, operations on one of the copies are visible by dereferencing any of them, and so there should be only one taint tag per object, not per every copy of its reference. 
 
 \subsubsection{Objects}
 
-Objects are uniquely defined by the pointer to their place in memory. Dexter therefore allows to store one taint tag per object reference by adding a globally accessible hash map. The only two supported operation are:
+Dexter allows to store one taint tag per object by adding a globally accessible hash map from object references to integers. The only two supported operation are:
 \begin{description} 
 \item \verb$int get(Object obj)$ \\
 Returns the taint tag of given object. Returns zero when \verb$obj == null$.
@@ -330,7 +330,7 @@ In the case of primitives, Dexter needs to create taint storage space everywhere
 For every register that appears in the original method code, Dexter creates a new one that can be used for storing taint. This effectively doubles the number of used registers, which is why Dexter needs to perform constraint-solving register colouring during the assembly phase. Otherwise some instructions might not be able to address these new registers.
 
 \item \textbf{internal class fields} \\
-Classes defined inside the application's DEX file can be fully modified by Dexter. Hence, for every field of primitive type, new field of type \verb$int$ is created, with a name that will not clash with any of the existing fields.
+Classes defined inside the application's DEX file can be fully modified by Dexter. Hence, for every field of primitive type, a new field of type \verb$int$ is created, with a name that will not clash with any of the existing fields.
 
 \item \textbf{external class fields} \\
 Extra fields cannot be inserted into class defined outside the scope of the instrumented application, and therefore a different approach must be adopted. 
@@ -869,9 +869,7 @@ Phasellus neque magna, elementum at vulputate sit amet, egestas nec augue. Aliqu
 
 \subsection{Object Taint Map}
 
-Vestibulum vitae turpis velit, et elementum diam. Curabitur vel ipsum turpis. Curabitur sagittis sagittis lectus, ac scelerisque purus dictum vitae. Donec eleifend tincidunt odio, et dignissim lacus consectetur ac. Praesent ullamcorper ante vitae turpis adipiscing convallis. Cras laoreet, libero sit amet tristique elementum, est est aliquet mauris, non convallis urna mauris quis arcu. Aenean vel diam metus, at bibendum enim.
-
-Cras sem nibh, accumsan mattis porta vitae, convallis eu felis. Curabitur vehicula molestie sodales. Duis sollicitudin, odio sed condimentum ullamcorper, magna nisi venenatis metus, sit amet vehicula ipsum erat vitae quam. Maecenas ac purus nisi. Integer vitae est eget purus feugiat luctus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Suspendisse est leo, euismod non placerat viverra, aliquet sed massa. Fusce gravida, lectus eu malesuada tincidunt, risus orci varius nisl, sed vestibulum magna diam vel neque.
+Implemented as public static methods to be globally accessible, Weak references
 
 \section{User Interface}
 
