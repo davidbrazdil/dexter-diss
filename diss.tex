@@ -224,6 +224,8 @@ The compulsory manifest file contains essential information about the applicatio
 
 \subsection{Bytecode}
 
+Dalvik bytecode is very similar to that of the Java Virtual Machine in the sense that it has a large set of rather high-level instructions, making the assembly nearly identical to the original source code unless obfuscation tools like ProGuard\footnote{\url{https://developer.android.com/tools/help/proguard.html}} are used. This makes analysis and reverse-engineering of applications a significantly easier task, and is also the reason why we will use both assembly and Java code examples freely.
+
 \subsubsection{Registers}
 
 Unlike the stack-based JVM, Dalvik uses a register-based programming model with 32-bit register width and variable-length instructions. 64-bit values are stored in two adjecent registers.
@@ -231,7 +233,7 @@ Unlike the stack-based JVM, Dalvik uses a register-based programming model with 
 Each method can use up to 65,536 virtual registers. Actual mapping to hardware registers depends on the machine architecture. On a typical Android device, the first 16 virtual registers would map to the 16 registers available in the ARM instruction set, and rest would be stored in memory. Depending on their length, instructions can address either the first 16, first 256, or all 65k virtual registers. If an instruction needs to address a register out of the available range, the register contents are expected to get moved to a lower register first.
 
 \subsubsection{Syntax of Assembly}
-Assembly syntax used in the code examples and instrumentation rules of this dissertation is mostly based on the official Dalvik assembly. It follows the \emph{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g. the instruction
+Assembly syntax used in this dissertation is mostly based on the official Dalvik assembly. It follows the \emph{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g. the instruction
 		\centerbox{
 			\asm{add-int/lit16 v2, v8, \#1234}
 		}
@@ -256,7 +258,7 @@ Register pairs forming a wide argument will be separated by a bar.
 
 \subsubsection{Instruction Variants}
 
-To achieve better code density, some Dalvik instructions come in several variants. They are semantically equivalent but they differ in size. A good example of this is the \verb$const$ instruction. Its variant \verb$const/16$ stores a 16-bit constant into a register addressed by an 8-bit number, fitting into 4 bytes. On the other hand, \verb$const/4$ fits into 2 bytes, but can only address registers in the 4-bit range and carry a 4-bit constant.
+To achieve higher code density, some Dalvik instructions come in several variants. They are semantically equivalent but they differ in size. A good example of this is the \verb$const$ instruction. Its variant \verb$const/16$ stores a 16-bit constant into a register addressed by an 8-bit number, fitting into 4 bytes. On the other hand, \verb$const/4$ fits into 2 bytes, but can only address registers in the 4-bit range and carry a 4-bit constant.
 
 All variants of semantically equivalent instructions are parsed as the same instruction type in Dexter, and thus will be referred to  by the same name. During the reassembly phase, Dexter automatically outputs the most optimised variant of the instruction possible.
 
@@ -349,7 +351,7 @@ In Dexter's taint propagation logic, primitive arrays are equivalent to external
 
 Once taint storage is created, Dexter can insert extra instructions that will propagate taint as data are used. Dalvik supports 217 different opcodes, but these can be divided into groups that share the same propagation logic. General rule of thumb is that for every instruction, taint of all arguments should be acquired from their respective storage spaces, combined and stored to the taint storage of the result. Therefore, only a handful of examples will be presented here to illustrate the principle and to explain some of the subtleties.
 
-The following snippets of Dalvik assembly will always show the original instruction in bold typeface and the inserted instructions in regular font. 
+The following sections will contain examples of instrumentation, first in Dalvik assembly and later in Java for better readability. Instrumentation will always be highlighted in green. 
 
 \subsubsection{Constants}
 
