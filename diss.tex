@@ -411,7 +411,7 @@ Some of Dalvik instructions can throw exceptions, depending on the values of arg
 
 While the previous examples of propagation rules only dealt with tainting within the scope of one instrumented method, now we will focus on taint propagation when method calls are involved. 
 
-The five types of method invocation supported by Dalvik are listed in table~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each will vary in slight details, but for tainting it will be more important to know whether a method call's target lies inside the DEX file or whether it jumps into untrackable code. These two cases will be handled in an entirely different manner. 
+The five types of method invocation supported by Dalvik are listed in table~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each will vary in slight details, but for tainting it will be more important to know whether a method call's target lies inside the DEX file, in which case taint should be propagated into the invoked method, or whether it jumps into untrackable and uninstrumentable code, and the invocation instrumentation should therefore assign taint conservatively, assuming the worst, i.e. that the method will spread taint everywhere it can.
 
 \begin{table}[h]
 	\begin{center}
@@ -448,8 +448,8 @@ All the other calls rely on dynamic dispatch. Since they are very similar, only 
 
 Code could be analyzed to further narrow down the number of callable implementations, e.g. by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflectively finding the target method and checking whether it carries the annotation or not. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation for public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is, nonetheless, obvious that these are both very expensive operations. 
 
-One last thing to note is that if an implementation is marked native, it should be considered external regardless of the internality of the containing class.
-
+One last thing to note is that if an implementation is marked native, it should be considered external regardless of the internality of the containing class
+.
 \begin{figure}[h]
 	\centering
 	\begin{tabular}{c}
