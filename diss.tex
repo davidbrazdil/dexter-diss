@@ -224,6 +224,8 @@ Applications for Android are distributed in Application Package files (APK). The
 
 The compulsory manifest file contains essential information about the application to the operating system. Among other things, this includes its unique package name, list of permissions requested by the application, and a list of all its entry points.
 
+These files are stored on the device when applications are downloaded from the market or installed manually. System applications can be found in the \verb$/system/app$ folder, most applications installed by the user in \verb$/data/app$. Applications can also be moved to an SD card, in which case they are encrypted and accessed through virtual file-system. Either way, they can be retrieved from the device only with root access. The instrumented APK can be installed on any device, regardless of it being rooted or not. 
+
 \subsection{Bytecode}
 
 Dalvik bytecode is very similar to that of the Java Virtual Machine in the sense that it has a large set of rather high-level instructions, making the assembly nearly identical to the original source code unless obfuscation tools like ProGuard\footnote{\url{https://developer.android.com/tools/help/proguard.html}} are used. This makes analysis and reverse-engineering of applications a significantly easier task, and is also the reason why we will use both assembly and Java code examples freely.
@@ -781,11 +783,15 @@ look at AdCache
 \cleardoublepage
 \chapter{Implementation}
 
+Figure~\ref{fig:Implementation_Overview} shows a schematic diagram of all the stages an APK file goes through when given to Dexter to be instrumented. Because of the purpose of some of the stages and the overall pipeline-like linearity of the process, Dexter's architecture resembles one of a compiler. 
+
+The input of the program is the APK file of the application to be instrumented. 
+
 \begin{figure}
 	\centerline{	
 		\includegraphics[width=0.9\textwidth]{figs/fig_implementation_overview.png}
 	}
-	\caption{Operation Diagram of Dexter}
+	\caption{Schematic diagram of APK instrumentation by Dexter}
 	\label{fig:Implementation_Overview}
 \end{figure}
 
@@ -793,6 +799,8 @@ Apk, DexClass, ... \\
 parsing, instrumenting, saving, signing
 
 The architecture of Dexter resembles one of a compiler. 
+
+\section{Runtime Class Hierarchy}
 
 \section{Bytecode Representation}
 
@@ -810,8 +818,6 @@ The architecture of Dexter resembles one of a compiler.
 \subsubsection{START Marker}
 
 \subsection{Parameter-Register Mapping}
-
-\section{Runtime Class Hierarchy}
 
 \section{Parsing Phase}
 
