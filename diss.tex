@@ -783,10 +783,6 @@ look at AdCache
 \cleardoublepage
 \chapter{Implementation}
 
-Figure~\ref{fig:Implementation_Overview} shows a schematic diagram of all the stages an APK file goes through when given to Dexter to be instrumented. Because of the purpose of some of the stages and the overall pipeline-like linearity of the process, Dexter's architecture resembles one of a compiler. 
-
-The input of the program is the APK file of the application to be instrumented. 
-
 \begin{figure}
 	\centerline{	
 		\includegraphics[width=0.9\textwidth]{figs/fig_implementation_overview.png}
@@ -795,10 +791,13 @@ The input of the program is the APK file of the application to be instrumented.
 	\label{fig:Implementation_Overview}
 \end{figure}
 
-Apk, DexClass, ... \\
-parsing, instrumenting, saving, signing
+Figure~\ref{fig:Implementation_Overview} shows a schematic diagram of all the stages an APK file goes through when given to Dexter to be instrumented. Because of the purpose of some of the stages and the overall pipeline-like linearity of the process, Dexter's architecture resembles one of a compiler. 
 
-The architecture of Dexter resembles one of a compiler. 
+The input of the program is the APK file of the application to be instrumented, together with a set of files that form the Android framework, both of which were previously acquired from the user's device. The content of all of these files is parsed to create the complete class hierarchy available to the application at runtime, which will later be of crucial importance for static analysis. The path of the APK file is then evident. The executable \emph{classes.dex} is extracted from the package, parsed and turned into intermediate code, Dexter's internal representation more suitable for analysis and modification. This code is then instrumented according to the rules set out in the previous chapter, reassembled and new executable file generated. By making a copy of the original APK file and replacing the \emph{classes.dex} inside, the final output is created. Since all APKs must be signed, Dexter generates a new signature for the file, using a random key.
+
+In the following sections, each part of this process will be thoroughly explained. 
+
+Apk, DexClass, ...
 
 \section{Runtime Class Hierarchy}
 
