@@ -702,9 +702,9 @@ client.execute(post);
 	\end{lstlisting}
 \end{figure}
 
-\subsubsection{Writer Interface}
+\subsubsection{I/O Writers}
 
-Unfortunately, situation is more complicated for some of the sinks we want to support, namely I/O build around the \verb$Writer$ interface. Listing~\ref{listing:Sink_Socket} shows typical usage of the interface for network communication. The tracked method is \verb$PrintWriter.println$, but checking only the taint of the argument is insufficient. In listing~\ref{listing:Sink_ByteArray}, \verb$Writer$ is created with a \verb$ByteArrayOutputStream$, does not form a sink, and we merely want the taint to propagate into \verb$array$. 
+Unfortunately, situation is more complicated for some of the sinks we want to support, namely I/O build around the \verb$Writer$ abstract class. Listing~\ref{listing:Sink_Socket} shows its typical usage for network communication. The tracked method is \verb$PrintWriter.println$, but checking only the taint of the argument is insufficient. In listing~\ref{listing:Sink_ByteArray}, \verb$Writer$ is created with a \verb$ByteArrayOutputStream$, does not form a sink, and we merely want the taint to propagate into \verb$array$. 
 
 We handle this by setting a flag inside the \verb$Socket$ object's taint tag when it is initialized, i.e. making the \verb$Socket.<init>$ method a source of \verb$TAINT_SINK_SOCKET$ data. This taint propagates into the output stream and eventually into the \verb$Writer$ object. Code inserted for the \verb$println$ method then checks whether the object it is called on carries a sink taint, and only proceeds to checking the taint of the argument if it does.
 
