@@ -793,11 +793,41 @@ look at AdCache
 
 Figure~\ref{fig:Implementation_Overview} shows a schematic diagram of all the stages an APK file goes through when given to Dexter to be instrumented. Because of the purpose of some of the stages and the overall pipeline-like linearity of the process, Dexter's architecture resembles one of a compiler. 
 
-The input of the program is the APK file of the application to be instrumented, together with a set of files that form the Android framework, both of which were previously acquired from the user's device. The content of all of these files is parsed to create the complete class hierarchy available to the application at runtime, which will later be of crucial importance for static analysis. The path of the APK file is then evident. The executable \emph{classes.dex} is extracted from the package, parsed and turned into intermediate code, Dexter's internal representation more suitable for analysis and modification. This code is then instrumented according to the rules set out in the previous chapter, reassembled and new executable file generated. By making a copy of the original APK file and replacing the \emph{classes.dex} inside, the final output is created. Since all APKs must be signed, Dexter generates a new signature for the file, using a random key.
+The input of the program is the APK file of the application to be instrumented, together with a set of files that form the Android framework, both of which were previously acquired from the user's device. The content of all of these files is parsed to create the complete class hierarchy available to the application at runtime, which will later be of crucial importance for static analysis. The path of the APK file is then evident. The executable \emph{classes.dex} is extracted from the package, parsed and turned into intermediate code, Dexter's internal representation more suitable for analysis and modification than plain assembly. This code is then instrumented according to the rules set out in the previous chapter, reassembled and new executable file generated. By making a copy of the original APK file and replacing the \emph{classes.dex} inside, the final output is created. Since all APKs must be signed, Dexter generates a new signature for the file, using a random key.
 
 In the following sections, each part of this process will be thoroughly explained. 
 
 \section{Runtime Class Hierarchy}
+
+The purpose of creating a complete picture of the runtime class hierarchy available to the application is being able to reason about the nature of method call destinations, necessary for choosing the correct type of their instrumentation. But class hierarchy is useful in other situations as well, e.g. sources and sinks use class hierarchy to recognize their tracked methods even if the invoking instruction does not reference the expected class but one of its children. To show a concrete example, code in listing~\ref{listing:Sink_ApacheHTTPClient_CanBeApplied} was taken from a method that returns \verb$true$ if and only if given method call should be instrumented as an Apache HTTP Client sink. The tracked \verb$execute$ method is defined in the \verb$HttpClient$ interface, and therefore it can be invoked either using the \verb$invoke-interface$ instruction, referencing the interface directly, or using the standard \verb$invoke-virtual$ instruction, referencing a class that implements it, a piece of information that can be provided by the class hierarchy.
+
+\begin{figure}[h]
+	\centering
+	\begin{tabular}{c}
+	\begin{lstlisting}
+val callType = insnInvoke.getCallType();
+val invokedClass = insnInvoke.getClassType();
+val invokedMethodName = insnInvoke.getMethodName();
+val typeHttpClient = DexClassType.parse("Lorg/apache/http/client/HttpClient;", 
+                                        parsingCache);
+
+return invokedMethodName.equals("execute") &&
+       (
+         (
+           callType == Opcode_Invoke.Interface && 
+           invokedClass.equals(typeHttpClient)
+         ) || (
+           callType == Opcode_Invoke.Virtual && 
+           classHierarchy.implementsInterface(invokedClass, typeHttpClient)
+         )
+       );       		
+	\end{lstlisting}
+	\end{tabular}
+	\begin{lstlisting}[caption={Code that decideds whether a method call given by instruction in \texttt{insnInvoke} should be instrumented as an Apache HTTP Client sink.},
+	                   label={listing:Sink_ApacheHTTPClient_CanBeApplied}]
+	\end{lstlisting}
+\end{figure}
+
 
 \section{APK Utilities}
 
