@@ -833,11 +833,15 @@ Dexter builds the hierarchy by scanning the application's executable, plus a set
 
 The class hierarchy is a simple tree structure, with each node except the root having exactly one parent, and is implemented as such. Each node contains:
 \begin{inparaenum}[(i)]
-\item set of all interfaces implemented by the class,
-\item set of all defined methods,
-\item set of all defined fields,
-\item access flags and annotations of the class and all its methods and fields.
+\item name of superclass,
+\item set of children
+\item set of implemented interfaces,
+\item set of defined methods,
+\item set of defined fields,
+\item access flags and annotations of the class and its methods and fields.
 \end{inparaenum}
+
+Most of the methods offered by the class hierarchy class are trivial and there is no point in describing any of their details, because they only perform a simple tree traversal and collect information. Is it worth mentioning at all?
 
 \section{APK Utilities}
 
