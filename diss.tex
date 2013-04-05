@@ -21,6 +21,7 @@
 \usepackage{float}
 \usepackage{soul}
 \usepackage{hyperref}
+\usepackage{paralist}
 
 % \usepackage{dejavu}
 % \usepackage{courier}
@@ -215,12 +216,12 @@ Built around the Apache Harmony project, Dalvik runs programs that are compatibl
 \subsection{Application Package Files}
 
 Applications for Android are distributed in Application Package files (APK). These are ZIP files signed by the publisher, which contain:
-\begin{itemize}
-\item the executable \emph{classes.dex} file
-\item application resources (images, UI layouts, ...)
-\item native code binaries
-\item manifest
-\end{itemize}
+\begin{inparaenum}[(i)]
+\item the executable \emph{classes.dex} file,
+\item application resources (images, UI layouts, ...),
+\item native code binaries,
+\item manifest.
+\end{inparaenum}
 
 The compulsory manifest file contains essential information about the application to the operating system. Among other things, this includes its unique package name, list of permissions requested by the application, and a list of all its entry points.
 
@@ -799,7 +800,7 @@ In the following sections, each part of this process will be thoroughly explaine
 
 \section{Runtime Class Hierarchy}
 
-The purpose of creating a complete picture of the runtime class hierarchy available to the application is being able to reason about the nature of method call destinations, necessary for choosing the correct type of their instrumentation. But class hierarchy is useful in other situations as well, e.g. sources and sinks use class hierarchy to recognize their tracked methods even if the invoking instruction does not reference the expected class but one of its children. To show a concrete example, code in listing~\ref{listing:Sink_ApacheHTTPClient_CanBeApplied} was taken from a method that returns \verb$true$ if and only if given method call should be instrumented as an Apache HTTP Client sink. The tracked \verb$execute$ method is defined in the \verb$HttpClient$ interface, and therefore it can be invoked either using the \verb$invoke-interface$ instruction, referencing the interface directly, or using the standard \verb$invoke-virtual$ instruction, referencing a class that implements it, a piece of information that can be provided by the class hierarchy.
+The purpose of creating a complete picture of the runtime class hierarchy available to the application is being able to reason about the nature of method call destinations, necessary for choosing the correct type of their instrumentation. But class hierarchy is useful in other situations as well, e.g. sources and sinks use class hierarchy to recognize their tracked methods even if the invoking instruction does not reference the expected class but one of its children. To show a concrete example, code in listing~\ref{listing:Sink_ApacheHTTPClient_CanBeApplied} was taken from a method that returns \verb$true$ if and only if given method call should be instrumented as an Apache HTTP Client sink. The tracked \verb$execute$ method is defined in the \verb$HttpClient$ interface, and therefore it can be invoked either using the \verb$invoke-interface$ instruction, referencing the interface as the object type, or using the other two virtual calls, \verb$invoke-virtual$ and \verb$invoke-static$, referencing some class that implements the interface, which is a piece of information that can be provided by the class hierarchy. 
 
 \begin{figure}[h]
 	\centering
@@ -817,10 +818,10 @@ return invokedMethodName.equals("execute") &&
            callType == Opcode_Invoke.Interface && 
            invokedClass.equals(typeHttpClient)
          ) || (
-           callType == Opcode_Invoke.Virtual && 
-           classHierarchy.implementsInterface(invokedClass, typeHttpClient)
+           (callType == Opcode_Invoke.Virtual || callType == Opcode_Invoke.Super) && 
+           `\hl{classHierarchy.implementsInterface(invokedClass, typeHttpClient)}`
          )
-       );       		
+       );
 	\end{lstlisting}
 	\end{tabular}
 	\begin{lstlisting}[caption={Code that decideds whether a method call given by instruction in \texttt{insnInvoke} should be instrumented as an Apache HTTP Client sink.},
@@ -828,6 +829,15 @@ return invokedMethodName.equals("execute") &&
 	\end{lstlisting}
 \end{figure}
 
+Dexter builds the hierarchy by scanning the application's executable, plus a set of provided framework files. These are all DEX files obtained from the device's \verb$/system/framework$ folder, which contain the classes available at runtime. The framework changes with every new release of Android, and therefore a version compatible with the application must be used, which is the reason why Dexter offers the user to provide their own framework rather than shipping with one particular version. Currently, Dexter also supports scanning JAR files with BCEL to allow SDK packages to be included in the framework, for example for instrumentation of applications dependent on Google Maps API. But since these SDK packages sometimes do not contain the full class hierarchy, this feature might be dropped and the structure obtained from the respective Android application.
+
+The class hierarchy is a simple tree structure, with each node except the root having exactly one parent, and is implemented as such. Each node contains:
+\begin{inparaenum}[(i)]
+\item set of all interfaces implemented by the class,
+\item set of all defined methods,
+\item set of all defined fields,
+\item access flags and annotations of the class and all its methods and fields.
+\end{inparaenum}
 
 \section{APK Utilities}
 
