@@ -851,10 +851,6 @@ and creates links between nodes for efficient traversal. At this point, there ca
 
 Class hierarchy provides methods that return pieces of information stored directly in its nodes, or methods that perform simple tree traversal, like returning the set of all ancestors of a class. The destination-deciding algorithm for method calls, which was already discussed in section~\ref{section:TaintPropagation_DestDecision}, is the only non-trivial method inside this class, and hence, there is no point in describing these in greater detail. The only subtlety worth mentioning is that method calls can be performed not only on class types but also on arrays. Since their superclass is always \verb$Object$, i.e. they offer methods like \verb$equals$ and \verb$hashCode$, and they are not allowed to define any new methods, Dexter simply treats them as classes of type \verb$Object$. 
 
-\section{APK Utilities}
-
-Apk class
-
 \section{Bytecode Representation}
 
 \subsection{Code Elements}
@@ -883,6 +879,10 @@ Apk class
 \subsection{Register Allocation}
 
 \subsection{DexLib Structure Generation}
+
+\section{APK Utilities}
+
+Apk class
 
 \section{Code Linked Into Application}
 
