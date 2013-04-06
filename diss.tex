@@ -411,6 +411,7 @@ Some of Dalvik instructions can throw exceptions, depending on the values of arg
 	\end{figure}
 
 \subsection{Method Call Destination Decidability}
+\label{section:TaintPropagation_DestDecision}
 
 While the previous examples of propagation rules only dealt with tainting within the scope of one instrumented method, now we will focus on taint propagation when method calls are involved. 
 
@@ -794,9 +795,7 @@ look at AdCache
 
 Figure~\ref{fig:Implementation_Overview} shows a schematic diagram of all the stages an APK file goes through when given to Dexter to be instrumented. Because of the purpose of some of the stages and the overall pipeline-like linearity of the process, Dexter's architecture resembles one of a compiler. 
 
-The input of the program is the APK file of the application to be instrumented, together with a set of files that form the Android framework, both of which were previously acquired from the user's device. The content of all of these files is parsed to create the complete class hierarchy available to the application at runtime, which will later be of crucial importance for static analysis. The path of the APK file is then evident. The executable \emph{classes.dex} is extracted from the package, parsed and turned into intermediate code, Dexter's internal representation more suitable for analysis and modification than plain assembly. This code is then instrumented according to the rules set out in the previous chapter, reassembled and new executable file generated. By making a copy of the original APK file and replacing the \emph{classes.dex} inside, the final output is created. Since all APKs must be signed, Dexter generates a new signature for the file, using a random key.
-
-In the following sections, each part of this process will be thoroughly explained. 
+The input of the program is the APK file of the application to be instrumented, together with a set of files that form the Android framework, both of which were previously acquired from the user's device. The content of all of these files is parsed to create the complete class hierarchy available to the application at runtime, which will later be of crucial importance for static analysis. The path of the APK file is then evident. The executable \emph{classes.dex} is extracted from the package, parsed and turned into intermediate code, Dexter's internal representation more suitable for analysis and modification than plain assembly. This code is then instrumented according to the rules set out in the previous chapter, reassembled and new executable file generated. By making a copy of the original APK file and replacing the \emph{classes.dex} inside, the final output is created. Since all APKs must be signed, Dexter generates a new signature for the file, using a random key. Each part of this process will be thoroughly explained in the following sections.
 
 \section{Runtime Class Hierarchy}
 
@@ -829,9 +828,9 @@ return invokedMethodName.equals("execute") &&
 	\end{lstlisting}
 \end{figure}
 
-Dexter builds the hierarchy by scanning the application's executable, plus a set of provided framework files. These are all DEX files obtained from the device's \verb$/system/framework$ folder, which contain the classes available at runtime. The framework changes with every new release of Android, and therefore a version compatible with the application must be used, which is the reason why Dexter offers the user to provide their own framework rather than shipping with one particular version. Currently, Dexter also supports scanning JAR files with BCEL to allow SDK packages to be included in the framework, for example for instrumentation of applications dependent on Google Maps API. But since these SDK packages sometimes do not contain the full class hierarchy, this feature might be dropped and the structure obtained from the respective Android application.
+Dexter builds the hierarchy by scanning the application's executable, plus a set of provided framework files. These are all DEX files obtained from the device's \verb$/system/framework$ folder, which contain the classes available at runtime. The framework changes with every new release of Android, and therefore a version compatible with the application must be used, which is the reason why Dexter offers the user to provide their own framework rather than shipping with one particular version. Currently, Dexter also supports scanning JAR files to allow SDK packages to be included in the framework, for example for instrumentation of applications dependent on Google Maps API. But since these SDK packages sometimes do not contain the full class hierarchy, this feature might be dropped and the structure obtained from the respective Android application.
 
-The class hierarchy is a simple tree structure, with each node except the root having exactly one parent, and is implemented as such. Each node contains:
+The class hierarchy is a regular tree structure, with each node except the root having exactly one parent, and is implemented as such. Each node contains:
 \begin{inparaenum}[(i)]
 \item name of superclass,
 \item set of children
@@ -841,7 +840,16 @@ The class hierarchy is a simple tree structure, with each node except the root h
 \item access flags and annotations of the class and its methods and fields.
 \end{inparaenum}
 
-Most of the methods offered by the class hierarchy class are trivial and there is no point in describing any of their details, because they only perform a simple tree traversal and collect information. Is it worth mentioning at all?
+All DEX files are parsed by DexLib, its data structures then traversed and all relevant pieces of information passed to the class hierarchy. Same is done for JAR files, only these are parsed by the BCEL library. Once all of the files have been scanned, \verb$DexClassHierarchy.checkConsistency$ method is called, which makes sure that:
+\begin{inparaenum}[(i)]
+\item parent of every class is present,
+\item interfaces classes implement are present,
+\item interfaces extend \verb$Object$,
+\item classes do not implement other classes,
+\end{inparaenum}
+and creates links between nodes for efficient traversal. At this point, there cannot be any loops in the hierarchy, because every loop-introducing node is rejected during the file-scanning phase.
+
+Class hierarchy provides methods that return pieces of information stored directly in its nodes, or methods that perform simple tree traversal, like returning the set of all ancestors of a class. The destination-deciding algorithm for method calls, which was already discussed in section~\ref{section:TaintPropagation_DestDecision}, is the only non-trivial method inside this class, and hence, there is no point in describing these in greater detail. The only subtlety worth mentioning is that method calls can be performed not only on class types but also on arrays. Since their superclass is always \verb$Object$, i.e. they offer methods like \verb$equals$ and \verb$hashCode$, and they are not allowed to define any new methods, Dexter simply treats them as classes of type \verb$Object$. 
 
 \section{APK Utilities}
 
