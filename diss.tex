@@ -818,7 +818,8 @@ return invokedMethodName.equals("execute") &&
            callType == Opcode_Invoke.Interface && 
            invokedClass.equals(typeHttpClient)
          ) || (
-           (callType == Opcode_Invoke.Virtual || callType == Opcode_Invoke.Super) && 
+           (callType == Opcode_Invoke.Virtual || 
+           	callType == Opcode_Invoke.Super) && 
            `\hl{classHierarchy.implementsInterface(invokedClass, typeHttpClient)}`
          )
        );
