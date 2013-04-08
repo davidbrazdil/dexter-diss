@@ -867,7 +867,7 @@ Based on the nature of the instrumentation rules introduced earlier, it would be
 \item register identifiers did not fit the addressing limits of instructions,
 \item try blocks overlapped.
 \end{inparaenum}
-Instrumentation will also neccessarily introduce new constants, classes, methods, fields and annotations into the structure of the resulting DEX file, so Dexter needs to create a representation for the whole executable and must be able to convert it back to DexLib's low-level data structures. These are the equivalents of the parsing and assembling stages of a compiler.
+Instrumentation will also neccessarily introduce new constants, classes, methods, fields and annotations into the structure of the resulting DEX file, so Dexter needs to create a representation for the whole executable and must be able to convert it back to DexLib's low-level data structures.
 
 \subsection{File Structure}
 
@@ -875,22 +875,18 @@ Classes that represent an executable can be found in the \verb$uk.ac.cam.db538.d
 
 Each of these classes can be created either manually or by passing an instance of the respective DexLib class, which gets recursively parsed. Similarly, each class offers an assembling method that calls itself on all its children in the structure, combines the results and outputs DexLib's representation.
 
-The only part of the file that cannot currently be modified are the values of annotations, simply because this feature was not needed. Values of existing annotations are preserved, but only annotations without values can be added. 
+The only part of the file that cannot currently be modified are the values of annotations, simply because this feature was not needed. Values of existing annotations are copied over, but only annotations without values can be added. 
 
 \subsection{Executable Code}
 
-Blah
+Bytecode of non-abstract and non-native methods is held in instances of the \verb$DexCode$ class. To provide support for the modifications above, the executable code is represented as a list of code elements. These are mostly Dalvik instructions, but they can be interleaved with special markers that represent points in the bytecode originally pointed to by address offsets. Inserting extra instructions between the marker and its addresser therefore automatically moves the marker, whose relative offset can be determined later in the assembly stage. Consequently, replacing an instruction with a different-sized variant does not break the link.
 
 \subsubsection{Instructions}
 
-\subsubsection{Labels}
-
-\subsubsection{Try Blocks}
+\subsubsection{Markers}
 
 \subsubsection{Pseudoinstructions}
 \label{section:Code_Pseudoinstructions}
-
-\subsubsection{START Marker}
 
 \subsection{Parameter-Register Mapping}
 
