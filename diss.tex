@@ -871,7 +871,11 @@ Instrumentation will also neccessarily introduce new constants, classes, methods
 
 \subsection{File Structure}
 
+Classes that represent an executable can be found in the \verb$uk.ac.cam.db538.dexter.dex$ package. Every file is represented by an instance of class \verb$Dex$, which contains a list of \verb$DexClass$ objects that in turn contain lists of \verb$DexMethod$ and \verb$DexField$ objects, etc. Compared to the DexLib classes, these were only designed in a more object-oriented way and thus allow for much easier modification of the file's structure. 
 
+Each of these classes can be created either manually or by passing an instance of the respective DexLib class, which gets recursively parsed. Similarly, each class offers an assembling method that calls itself on all its children in the structure, combines the results and outputs DexLib's representation.
+
+The only part of the file that cannot currently be modified are the values of annotations, simply because this feature was not needed. Values of existing annotations are preserved, but only annotations without values can be added. 
 
 \subsection{Executable Code}
 
