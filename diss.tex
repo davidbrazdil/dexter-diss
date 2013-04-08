@@ -881,7 +881,7 @@ The only part of the file that cannot currently be modified are the values of an
 
 \subsection{Executable Code}
 
-Bytecode of non-abstract and non-native methods is held in instances of the \verb$DexCode$ class. To provide support for the modifications above, the executable code is represented as a list of code elements. These are mostly Dalvik instructions, but they can be interleaved with special markers that represent points in the bytecode originally pointed to by address offsets. Inserting extra instructions between the marker and its addresser therefore automatically moves the marker, whose relative offset can be determined later in the assembly stage. 
+Bytecode of non-abstract and non-native methods is held in instances of the \verb$DexCode$ class. To provide support for the modifications above, the executable code is represented as a list of code elements. These are mostly Dalvik instructions, but they can be interleaved with special markers that represent points in the bytecode originally pointed to by absolute or relative addresses.
 
 \subsubsection{Instructions}
 
@@ -898,7 +898,18 @@ Instructions also support replacement of their registers based on provided regis
 
 \subsubsection{Markers}
 
-Blah
+Markers specify points inside the executable code that are referred to by instructions or other structures that effect the flow of computation. The supported markers are:
+\begin{itemize}
+\item \textbf{labels} \\
+Labels mark the targets of all branching and \verb$goto$ instructions. They do not carry any special information.
+\item \textbf{try/catch blocks} \\
+In DEX, try blocks are stored separately from the bytecode. Each block is defined by the absolute addresses of its starting and ending points inside the code. These are replaced by \verb$DexTryBlockStart$ and \verb$DexTryBlockEnd$ markers. Each block can then either supply a list of pairs of exception types and respective instructions to jump to when thrown, or a single address to be jumped to regardless of the type of the thrown exception. \verb$DexCatch$ and \verb$DexCatchAll$ markers are inserted instead of these, and the list of targets is stored in the block's starting marker. 
+\item \textbf{method beginning} \\
+\verb$DexCodeStart$ is a special marker that is inserted at the beginning of each method after it is parsed. It is used to insert the code that handles entering a method at the correct position, since parameter moving instructions are inserted at the very beginning at an earlier stage (see sections~\ref{section:Code_ParamRegMapping} and~\ref{section:Code_MethodEntering}).
+
+\end{itemize}
+
+By using markers inside of the code, absolute addresses or relative offsets of these points can be determined at the assembly stage, and inserting extra instructions into the code or using different-sized variants of instructions does not break any links.
 
 \subsubsection{Pseudoinstructions}
 \label{section:Code_Pseudoinstructions}
@@ -906,10 +917,15 @@ Blah
 Blah
 
 \subsection{Parameter-Register Mapping}
+\label{section:Code_ParamRegMapping}
 
 \section{Parsing Phase}
 
 \section{Instrumenting Phase}
+
+try block splitting
+
+\label{section:Code_MethodEntering}
 
 \section{Assembling Phase}
 
