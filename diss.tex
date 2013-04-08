@@ -238,6 +238,8 @@ Unlike the stack-based JVM, Dalvik uses a register-based programming model with 
 
 Each method can use up to 65,536 virtual registers. Actual mapping to hardware registers depends on the machine architecture. On a typical Android device, the first 16 virtual registers would map to the 16 registers available in the ARM instruction set, and rest would be stored in memory. Depending on their length, instructions can address either the first 16, first 256, or all 65k virtual registers. If an instruction needs to address a register out of the available range, the register contents are expected to get moved to a lower register first.
 
+Dalvik also has a very powerful preload class verifier. It infers types of values stored in registers at every single point of computation, and uses this information to identify unpermitted access to resources, pointer arithmetic and other illegal operations. A class containing such instructions is rejected and the application terminated.
+
 \subsubsection{Syntax of Assembly}
 Assembly syntax used in this dissertation is mostly based on the official Dalvik assembly. It follows the \emph{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g. the instruction
 		\centerbox{
