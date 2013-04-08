@@ -889,19 +889,21 @@ Intermediate instructions used by Dexter group together all semantically equival
 
 Each instruction must also implement methods that provide pieces of information necessary for algorithms that work with executable code. Some of these include:
 \begin{inparaenum}[(i)]
-\item lists of referenced and defined registers,
+\item lists of referenced and defined register arguments,
 \item register types before and after the instruction is executed,
 \item register identifier range constraints of the least optimized variant,
-\item list of instructions possibly executed next.
+\item places in the code the interpreter might jump to afterwards.
 \end{inparaenum}
-Instructions also support replacement of their registers based on provided register-register mapping, which can also be applied only on referenced, defined or both sets of registers.
+Instructions also support replacement of their registers based on provided register-register mapping, which can also be applied only on referenced, defined or both sets of arguments.
 
 \subsubsection{Markers}
 
-
+Blah
 
 \subsubsection{Pseudoinstructions}
 \label{section:Code_Pseudoinstructions}
+
+Blah
 
 \subsection{Parameter-Register Mapping}
 
