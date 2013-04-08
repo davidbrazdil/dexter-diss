@@ -849,11 +849,11 @@ All DEX files are parsed by DexLib, its data structures then read and all releva
 \item interfaces extend \verb$Object$,
 \item classes do not implement other classes,
 \end{inparaenum}
-and creates links between nodes for efficient traversal. There also cannot be any loops in the hierarchy, because every loop-introducing node is rejected during the file-scanning phase.
+and creates links between nodes. Every loop-introducing node is rejected during the file-scanning phase.
 
 Class hierarchy provides methods that return pieces of information stored directly in its nodes, or methods that perform simple tree traversal, like returning the set of all ancestors of a class, and hence, there is no point in describing these in greater detail. The only non-trivial method inside this class is the destination-deciding algorithm for method calls, which was already discussed in section~\ref{section:TaintPropagation_DestDecision}. 
 
-One subtlety worth mentioning is that method calls can be performed not only on class types but also on arrays. Since their superclass is always \verb$Object$, i.e. they offer methods like \verb$equals$ and \verb$hashCode$, and they are not allowed to define any new methods or override the inherited ones, Dexter simply treats them as classes of type \verb$Object$. 
+It is worth mentioning that method calls can be performed not only on class types but also on arrays. Since their superclass is always \verb$Object$, i.e. they offer methods like \verb$equals$ and \verb$hashCode$, and they are not allowed to override or define methods, Dexter simply treats them as classes of type \verb$Object$. 
 
 \section{Intermediate Code Representation}
 
@@ -871,7 +871,7 @@ Instrumentation will also neccessarily introduce new constants, classes, methods
 
 \subsection{File Structure}
 
-Blah
+
 
 \subsection{Executable Code}
 
