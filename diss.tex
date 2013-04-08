@@ -863,10 +863,10 @@ Dexter accesses the content of DEX files through the low-level API of DexLib. Bu
 
 Based on the nature of the instrumentation rules introduced earlier, it would be convenient to represent bytecode of individual methods in a way that constraints would not get broken if:
 \begin{inparaenum}[(i)]
-\item different variant of an instruction was used,
 \item new instructions were inserted,
 \item extra registers were needed,
 \item register identifiers did not fit the addressing limits of instructions,
+\item different variant of an instruction was used,
 \item try blocks overlapped.
 \end{inparaenum}
 Instrumentation will also neccessarily introduce new constants, classes, methods, fields and annotations into the structure of the resulting DEX file, so Dexter needs to create a representation for the whole executable and must be able to convert it back to DexLib's low-level data structures.
@@ -881,11 +881,24 @@ The only part of the file that cannot currently be modified are the values of an
 
 \subsection{Executable Code}
 
-Bytecode of non-abstract and non-native methods is held in instances of the \verb$DexCode$ class. To provide support for the modifications above, the executable code is represented as a list of code elements. These are mostly Dalvik instructions, but they can be interleaved with special markers that represent points in the bytecode originally pointed to by address offsets. Inserting extra instructions between the marker and its addresser therefore automatically moves the marker, whose relative offset can be determined later in the assembly stage. Consequently, replacing an instruction with a different-sized variant does not break the link.
+Bytecode of non-abstract and non-native methods is held in instances of the \verb$DexCode$ class. To provide support for the modifications above, the executable code is represented as a list of code elements. These are mostly Dalvik instructions, but they can be interleaved with special markers that represent points in the bytecode originally pointed to by address offsets. Inserting extra instructions between the marker and its addresser therefore automatically moves the marker, whose relative offset can be determined later in the assembly stage. 
 
 \subsubsection{Instructions}
 
+Intermediate instructions used by Dexter group together all semantically equivalent variants of instructions supported by Dalvik. Since they use register objects instead of numerical identifiers, and instead of relative offsets in the code, they store references to the respective markers, they have no addressing limits like their ordinal counterparts. Same applies to pointers into other sections of the executable file, which are replaced with references to objects representing types or various constants. 
+
+Each instruction must also implement methods that provide pieces of information necessary for algorithms that work with executable code. Some of these include:
+\begin{inparaenum}[(i)]
+\item lists of referenced and defined registers,
+\item register types before and after the instruction is executed,
+\item register identifier range constraints of the least optimized variant,
+\item list of instructions possibly executed next.
+\end{inparaenum}
+Instructions also support replacement of their registers based on provided register-register mapping, which can also be applied only on referenced, defined or both sets of registers.
+
 \subsubsection{Markers}
+
+
 
 \subsubsection{Pseudoinstructions}
 \label{section:Code_Pseudoinstructions}
