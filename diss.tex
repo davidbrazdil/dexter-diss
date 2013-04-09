@@ -917,14 +917,14 @@ By using markers inside of the code, absolute addresses or relative offsets of t
 
 Pseudoinstructions are a form of grouping several standard instructions. They were introduced because method calls in Dalvik consist of two separate instructions: an invoke instruction that jumps into the called method, and an optional \verb$move-result$ instruction that stores the returned value into a given register. But since the second instruction does not contain information about the called method, they cannot be instrumented separately. For this reason, intermediate code is scanned before the instrumentation and all these instruction pairs replaced with these pseudoinstructions. After instrumentation, they are expanded back. Same approach is necessary for the \verb$filled-new-array$ instruction.
 
-At the same time, pseudoinstructions can simplify some of the instrumentation rules, because they can be used as small inline functions. A simple example of this is the \verb$taint-get$ pseudoinstruction which was already introduced in section~\ref{section:TaintTagStorage_Objects}. It expands to:
+At the same time, pseudoinstructions can simplify the implementation of some of the instrumentation rules, because they can be used as small inline functions. A simple example of this is the \verb$taint-get$ pseudoinstruction which was already introduced in section~\ref{section:TaintTagStorage_Objects}. It is inserted into the code by the instrumentation rules and afterwards expanded to:
 	\begin{figure}[H]
 		\centerbox{
 			\asm{invoke-static TaintMap.get(vObject)} \\
 			\asm{move-result vResult}
 		}
 	\end{figure}
-Similar expanding instructions were created for commonly used operations like printing debug information into the system log.
+Similar expanding instructions were created for commonly used operations like printing debug information into the system log or checking methods and classes for the presence of the internality-marking annotations.
 
 \subsection{Parameter-Register Mapping}
 \label{section:Code_ParamRegMapping}
