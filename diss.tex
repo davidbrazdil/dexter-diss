@@ -928,7 +928,9 @@ Similar expanding instructions were created for commonly used operations like pr
 
 \section{DEX Parsing}
 
+The generation of the intermediate code representation is simple. The input APK file is pushed through DexLib that extracts the executable file and parses it. The data structure it produces is then passed to the constructor of Dexter's own \verb$Dex$ class which begins the whole process of conversion to the intermediate format by passing the definitions of individual classes to the constructor of \verb$DexClass$, waiting for it to recursively convert the lower layers of the file structure and then storing the resulting object to a class list. All the layers of the parsed file are converted in a similarly straightforward manner, storing relevant information inside the node and delegating the structures representing the lower layers further. 
 
+During the conversion of Dalvik instructions into intermediate instructions, the offset of every original instruction is stored with its new counterpart, and all newly introduced marker objects are stored in a separate list together with the address of the point they should be inserted to. Once all the instructions have been converted, markers are inserted into their respective positions.
 
 \section{Instrumentation}
 
@@ -937,6 +939,11 @@ try block splitting
 \label{section:Code_MethodEntering}
 
 \section{Assembling Phase}
+
+\subsection{Parameter Registers}
+\label{section:Code_ParamRegMapping}
+
+Every Dalvik method specifies the total number of virtual register it needs for execution. When a method is called, enough space for these is reserved in the stack frame, but the registers remain uninitialized, except an appropriate number of registers with highest identifiers that are assigned the values of actual parameters. So if a method uses seven registers and needs three registers to hold the parameters, these will be accessible through registers \verb$v4$, \verb$v5$ and \verb$v6$.
 
 \subsection{Static Single-Assignment Form}
 
