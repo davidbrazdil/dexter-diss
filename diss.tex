@@ -306,6 +306,7 @@ For the sake of simplicity, Dexter adopts the same tag representation as TaintDr
 To store and propagate taint tags, Dexter must build an attribute system inside the modified application, so that every piece of data accessible by the executable code can carry a tag if necessary. The way these are stored differs for objects and for primitives. The crucial difference between these is that when a primitive is copied, operations on one of the copies do not effect the other ones, which means that there needs to be a tag storage for every copy. On the other hand, when a reference to an object is copied, operations on one of the copies are visible by dereferencing any of them, and so there should be only one taint tag per object, not per every copy of its reference. 
 
 \subsubsection{Objects}
+\label{section:TaintTagStorage_Objects}
 
 Dexter allows to store one taint tag per object by adding a globally accessible hash map from object references to integers. The only two supported operation are:
 \begin{description} 
@@ -909,12 +910,21 @@ In DEX, try blocks are stored separately from the bytecode. Each block is define
 
 \end{itemize}
 
-By using markers inside of the code, absolute addresses or relative offsets of these points can be determined at the assembly stage, and inserting extra instructions into the code or using different-sized variants of instructions does not break any links.
+By using markers inside of the code, absolute addresses or relative offsets of these points can be determined at the assembly stage, and inserting extra instructions into the code or replacing existing instructions with their different-sized variants does not break any links.
 
 \subsubsection{Pseudoinstructions}
 \label{section:Code_Pseudoinstructions}
 
-Blah
+Pseudoinstructions are a form of grouping several standard instructions. They were introduced because method calls in Dalvik consist of two separate instructions: an invoke instruction that jumps into the called method, and an optional \verb$move-result$ instruction that stores the returned value into a given register. But since the second instruction does not contain information about the called method, they cannot be instrumented separately. For this reason, intermediate code is scanned before the instrumentation and all these instruction pairs replaced with these pseudoinstructions. After instrumentation, they are expanded back. Same approach is necessary for the \verb$filled-new-array$ instruction.
+
+At the same time, pseudoinstructions can simplify some of the instrumentation rules, because they can be used as small inline functions. A simple example of this is the \verb$taint-get$ pseudoinstruction which was already introduced in section~\ref{section:TaintTagStorage_Objects}. It expands to:
+	\begin{figure}[H]
+		\centerbox{
+			\asm{invoke-static TaintMap.get(vObject)} \\
+			\asm{move-result vResult}
+		}
+	\end{figure}
+Similar expanding instructions were created for commonly used operations like printing debug information into the system log.
 
 \subsection{Parameter-Register Mapping}
 \label{section:Code_ParamRegMapping}
