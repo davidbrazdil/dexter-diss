@@ -937,7 +937,7 @@ During the conversion of Dalvik instructions to the intermediate ones, the addre
 \subsection{Parameter Registers}
 \label{section:Code_ParamRegMapping}
 
-It is worth pointing out that a modification that is introduced in the parsing stage, which later simplifies the process of register allocation by removing one of the constraints the algorithm needs to satisfy. It is the fact that every Dalvik method with parameters accesses them through a set of virtual registers with identifiers at the end of the register spectrum it allocates, e.g. a method with seven registers and three parameters accesses them through registers \verb$v4$, \verb$v5$ and \verb$v6$ until it overwrites their values. 
+It is worth pointing out that a code modification is applied in this stage, which later simplifies the process of register allocation by removing one of the constraints the algorithm needs to satisfy. It is the fact that every Dalvik method with parameters accesses them through a set of virtual registers with identifiers at the end of the register spectrum it allocates, e.g. a method with seven registers and three parameters accesses them through registers \verb$v4$, \verb$v5$ and \verb$v6$ until it overwrites their values. 
 
 Dexter deals with this by creating a set of registers only for the actual parameters, inserting \verb$move$ instructions at the beginning of the method to copy the values into the correct registers used by the bytecode, and later explicitly allocating these at the end of the spectrum. This way, register allocation can assign identifiers to the regular registers regardless of this requirement. 
 
