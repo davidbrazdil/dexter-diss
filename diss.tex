@@ -906,7 +906,7 @@ Labels mark the targets of all branching and \verb$goto$ instructions. They do n
 \item \textbf{try/catch blocks} \\
 In DEX, try blocks are stored separately from the bytecode. Each block is defined by the absolute addresses of its starting and ending points inside the code. These are replaced by \verb$DexTryBlockStart$ and \verb$DexTryBlockEnd$ markers. Each block can then either supply a list of pairs of exception types and respective instructions to jump to when thrown, or a single address to be jumped to regardless of the type of the thrown exception. \verb$DexCatch$ and \verb$DexCatchAll$ markers are inserted instead of these, and the list of targets is stored in the block's starting marker. 
 \item \textbf{method beginning} \\
-\verb$DexCodeStart$ is a special marker that is inserted at the beginning of each method after it is parsed. It is used to insert the code that handles entering a method at the correct position, since parameter moving instructions are inserted at the very beginning at an earlier stage (see sections~\ref{section:Code_ParamRegMapping} and~\ref{section:Code_MethodEntering}).
+\verb$DexCodeStart$ is a special marker that is inserted at the beginning of each method after it is parsed. It is used to insert the code that handles entering a method at the correct position, since parameter-moving instructions are inserted at the very beginning at an earlier stage (see sections~\ref{section:Code_ParamRegMapping} and~\ref{section:Code_MethodEntering}).
 
 \end{itemize}
 
@@ -928,11 +928,18 @@ Similar expanding instructions were created for commonly used operations like pr
 
 \section{DEX Parsing}
 
-The generation of the intermediate code representation is mostly trivial, but the vast number of elements inside DEX that had to be modifiable by Dexter made it a tedious task. 
+The generation of the intermediate code representation is mostly trivial, but the vast number of elements of DEX that need to be modifiable by Dexter makes it a tedious task. 
 
 The input APK file is pushed through DexLib that extracts the executable file and parses it. The data structure it produces is passed to the constructor of Dexter's own \verb$Dex$ class which begins the whole process of conversion to the intermediate format by passing the definitions of individual classes to the constructor of \verb$DexClass$, waiting for it to recursively convert the lower layers of the file structure and then storing the resulting object to a class list. Conversion of all the other layers is similarly straightforward. Relevant information is stored inside the node and structures representing the lower layers are delegated further. 
 
 During the conversion of Dalvik instructions to the intermediate ones, the address of every original instruction is stored with its new counterpart, and all newly introduced marker objects are stored in a separate list together with the address of the instruction they should be inserted in front of. Once the complete instruction list has been created, markers are inserted into their respective positions.
+
+\subsection{Parameter Registers}
+\label{section:Code_ParamRegMapping}
+
+It is worth pointing out that a modification that is introduced in the parsing stage, which later simplifies the process of register allocation by removing one of the constraints the algorithm needs to satisfy. It is the fact that every Dalvik method with parameters accesses them through a set of virtual registers with identifiers at the end of the register spectrum it allocates, e.g. a method with seven registers and three parameters accesses them through registers \verb$v4$, \verb$v5$ and \verb$v6$ until it overwrites their values. 
+
+Dexter deals with this by creating a set of registers only for the actual parameters, inserting \verb$move$ instructions at the beginning of the method to copy the values into the correct registers used by the bytecode, and later explicitly allocating these at the end of the spectrum. This way, register allocation can assign identifiers to the regular registers regardless of this requirement. 
 
 \section{Instrumentation}
 
@@ -941,11 +948,6 @@ try block splitting
 \label{section:Code_MethodEntering}
 
 \section{Assembling Phase}
-
-\subsection{Parameter Registers}
-\label{section:Code_ParamRegMapping}
-
-Every Dalvik method specifies the total number of virtual register it needs for execution. When a method is called, enough space for these is reserved in the stack frame, but the registers remain uninitialized, except an appropriate number of registers with highest identifiers that are assigned the values of actual parameters. So if a method uses seven registers and needs three registers to hold the parameters, these will be accessible through registers \verb$v4$, \verb$v5$ and \verb$v6$.
 
 \subsection{Static Single-Assignment Form}
 
