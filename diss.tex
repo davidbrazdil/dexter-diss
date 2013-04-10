@@ -928,9 +928,11 @@ Similar expanding instructions were created for commonly used operations like pr
 
 \section{DEX Parsing}
 
-The generation of the intermediate code representation is simple. The input APK file is pushed through DexLib that extracts the executable file and parses it. The data structure it produces is then passed to the constructor of Dexter's own \verb$Dex$ class which begins the whole process of conversion to the intermediate format by passing the definitions of individual classes to the constructor of \verb$DexClass$, waiting for it to recursively convert the lower layers of the file structure and then storing the resulting object to a class list. Conversion of all the layers is very straightforward. Relevant information is stored inside the node and structures representing the lower layers are delegated further. 
+The generation of the intermediate code representation is mostly trivial, but the vast number of elements inside DEX that had to be modifiable by Dexter made it a tedious task. 
 
-During the conversion of Dalvik instructions to the intermediate ones, the address of every original instruction is stored with its new counterpart, and all newly introduced marker objects are stored in a separate list together with the address of the instruction they should be inserted in front. Once the complete instruction list has been created, markers are inserted into their respective positions.
+The input APK file is pushed through DexLib that extracts the executable file and parses it. The data structure it produces is passed to the constructor of Dexter's own \verb$Dex$ class which begins the whole process of conversion to the intermediate format by passing the definitions of individual classes to the constructor of \verb$DexClass$, waiting for it to recursively convert the lower layers of the file structure and then storing the resulting object to a class list. Conversion of all the other layers is similarly straightforward. Relevant information is stored inside the node and structures representing the lower layers are delegated further. 
+
+During the conversion of Dalvik instructions to the intermediate ones, the address of every original instruction is stored with its new counterpart, and all newly introduced marker objects are stored in a separate list together with the address of the instruction they should be inserted in front of. Once the complete instruction list has been created, markers are inserted into their respective positions.
 
 \section{Instrumentation}
 
