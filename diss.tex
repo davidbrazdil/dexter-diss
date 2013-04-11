@@ -951,6 +951,23 @@ The process of instrumentation starts by calling the \verb$instrument$ method of
 
 \subsection{Auxiliary Classes}
 
+While a majority of the newly introduced code is generated based on the content of the file, some auxiliary classes are inserted every time. This common code includes:
+\begin{inparaenum}[(i)]
+\item the object taint map,
+\item the global array and variable for internal method call taint propagation,
+\item internality-marking annotations,
+\item taint flag constants,
+\item methods analyzing arguments of sources.
+\end{inparaenum}
+
+\subsubsection{Linking}
+
+These classes could be generated the same way as the rest of the instrumentation, directly as intermediate code. However, for better clarity, they were implemented in regular Java. Their source files are compiled and converted into a single DEX file that is distributed with Dexter. During instrumentation, this file is converted into intermediate code as well and the two data structures are merged, effectively statically linking the two files. Again, it is made sure that the names of the linked classes are not in conflict with the pre-existing ones. The root \verb$Dex$ object provides their names for the instrumentation rules to reference.
+
+\subsubsection{Object Taint Map}
+
+Implemented as public static methods to be globally accessible, Weak references
+
 
 \subsection{Bytecode Instrumentation}
 try block splitting
@@ -968,12 +985,6 @@ try block splitting
 \section{APK Utilities}
 
 Apk class
-
-\section{Code Linked Into Application}
-
-\subsection{Object Taint Map}
-
-Implemented as public static methods to be globally accessible, Weak references
 
 \section{User Interface}
 
