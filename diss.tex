@@ -937,12 +937,22 @@ During the conversion of Dalvik instructions to the intermediate ones, the addre
 \subsection{Parameter Registers}
 \label{section:Code_ParamRegMapping}
 
-It is worth pointing out that a code modification is applied in this stage, which later simplifies the process of register allocation by removing one of the constraints the algorithm needs to satisfy. It is the fact that every Dalvik method with parameters accesses them through a set of virtual registers with identifiers at the end of the register spectrum it allocates, e.g. a method with seven registers and three parameters accesses them through registers \verb$v4$, \verb$v5$ and \verb$v6$ until it overwrites their values. 
+It is worth pointing out that a first code modification is applied in this stage, which later simplifies the process of register allocation by removing one of the constraints the algorithm needs to satisfy. It is the fact that every Dalvik method with parameters accesses them through a set of virtual registers with identifiers at the end of the register spectrum it allocates, e.g. a method with seven registers and three parameters accesses them through registers \verb$v4$, \verb$v5$ and \verb$v6$ until it overwrites their values. 
 
 Dexter deals with this by creating a set of registers only for the actual parameters, inserting \verb$move$ instructions at the beginning of the method to copy the values into the correct registers used by the bytecode, and later explicitly allocating these at the end of the spectrum. This way, register allocation can assign identifiers to the regular registers regardless of this requirement. 
 
-\section{Instrumentation}
+\section{Instrumentation Phase}
 
+Once the executable is parsed and converted, all the modifications laid out in the preparation chapter can be applied to it. This is when all the effort put into converting the whole DEX to an intermediate data structure pays off, because the code for application of the instrumentation rules becomes simple and elegant. 
+
+Instrumentation of individual elements is carried out by their respective data structures, e.g. an instance of class \verb$DexField$ that represents an internal field of primitive type creates a new field of type \verb$int$ inside the same class to hold its taint tag, making sure that its name will not conflict with a name of an existing field. 
+
+The process of instrumentation starts by calling the \verb$instrument$ method of the root \verb$Dex$ object, which sets up the environement and delegates the work to its \verb$DexClass$ children. The children pass around an instance of \verb$DexInstrumentationCache$ through which they share common information, like the names of the introduced taint fields.
+
+\subsection{Auxiliary Classes}
+
+
+\subsection{Bytecode Instrumentation}
 try block splitting
 
 \label{section:Code_MethodEntering}
