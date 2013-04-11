@@ -962,9 +962,11 @@ While a majority of the newly introduced code is generated based on the content 
 
 \subsubsection{Linking}
 
-These classes could be generated the same way as the rest of the instrumentation, directly as intermediate code. However, for better clarity, they were implemented in regular Java. Their source files are compiled and converted into a single DEX file that is distributed with Dexter. During instrumentation, this file is converted into intermediate code as well and the two data structures are merged, effectively statically linking the two files. Again, it is made sure that the names of the linked classes are not in conflict with the pre-existing ones. The root \verb$Dex$ object provides their names for the instrumentation rules to reference.
+These classes could be generated the same way as the rest of the instrumentation, directly as intermediate code, but for better code clarity, they were implemented in regular Java. Their source files are compiled and converted into a single DEX file that is distributed with Dexter. During instrumentation, this file is converted into intermediate code as well and the two data structures are merged, effectively statically linking the two files. Again, it is made sure that the names of the linked classes are not in conflict with the pre-existing ones, and they are stored in the root \verb$Dex$ object where they can be referenced by the code-generating methods.
 
 \subsubsection{Object Taint Map}
+
+
 
 Implemented as public static methods to be globally accessible, Weak references
 
