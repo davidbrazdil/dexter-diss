@@ -238,7 +238,7 @@ Unlike the stack-based JVM, Dalvik uses a register-based programming model with 
 
 Each method can use up to 65,536 virtual registers. Actual mapping to hardware registers depends on the machine architecture. On a typical Android device, the first 16 virtual registers would map to the 16 registers available in the ARM instruction set, and rest would be stored in memory. Depending on their length, instructions can address either the first 16, first 256, or all 65k virtual registers. If an instruction needs to address a register out of the available range, the register contents are expected to get moved to a lower register first.
 
-Dalvik also has a very powerful preload class verifier. It infers types of values stored in registers at every single point of computation, and uses this information to identify unpermitted access to resources, pointer arithmetic and other illegal operations. A class containing such instructions is rejected and the application terminated.
+Dalvik also has a very powerful preload class verifier. It infers types of values stored in registers at every single point of computation, and uses this information to identify illegal access to resources, pointer arithmetic and other illegal operations. A class containing such instructions is rejected and the application terminated.
 
 \subsubsection{Syntax of Assembly}
 Assembly syntax used in this dissertation is mostly based on the official Dalvik assembly. It follows the \emph{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g. the instruction
@@ -877,7 +877,7 @@ Based on the nature of the instrumentation rules introduced earlier, it would be
 \item different variant of an instruction was used,
 \item try blocks overlapped.
 \end{inparaenum}
-Instrumentation will also neccessarily introduce new constants, classes, methods, fields and annotations into the structure of the resulting DEX file, so Dexter needs to create a representation for the whole executable and must be able to convert it back to DexLib's low-level data structures.
+Instrumentation will also necessarily introduce new constants, classes, methods, fields and annotations into the structure of the resulting DEX file, so Dexter needs to create a representation for the whole executable and must be able to convert it back to DexLib's low-level data structures.
 
 \subsection{File Structure}
 
@@ -954,7 +954,7 @@ Once the executable is parsed and converted, all the modifications laid out in t
 
 Instrumentation of individual elements is carried out by their respective data structures, e.g. an instance of class \verb$DexField$ that represents an internal field of primitive type creates a new field of type \verb$int$ inside the same class to hold its taint tag, making sure that its name will not conflict with a name of an existing field. 
 
-The process of instrumentation starts by calling the \verb$instrument$ method of the root \verb$Dex$ object, which sets up the environement and delegates the work to its \verb$DexClass$ children. The children pass around an instance of \verb$DexInstrumentationCache$ through which they share common information, like the names of the introduced taint fields.
+The process of instrumentation starts by calling the \verb$instrument$ method of the root \verb$Dex$ object, which sets up the environment and delegates the work to its \verb$DexClass$ children. The children pass around an instance of \verb$DexInstrumentationCache$ through which they share common information, like the names of the introduced taint fields.
 
 \subsection{Auxiliary Classes}
 
@@ -967,7 +967,7 @@ While a majority of the newly introduced code is generated based on the content 
 \item methods analyzing arguments of sources.
 \end{inparaenum}
 
-These classes could be generated the same way as the rest of the instrumentation, directly as intermediate code, but for better code clarity, they were implemented in regular Java. Their source files are compiled and converted into a single DEX file that is distributed with Dexter. During instrumentation, this file is converted into intermediate code as well and the two data structures are merged, effectively statically linking the two files. Again, it is made sure that the names of the linked classes are not in conflict with the pre-existing ones, and they are stored in the root \verb$Dex$ object where they can be referenced by the code-generating methods.
+These classes could be generated the same way as the rest of the instrumentation, directly as intermediate code, but for better code clarity, they were implemented in regular Java. Their source files are compiled and converted into a single DEX file that is distributed with Dexter. During instrumentation, this file is converted into intermediate code as well and the two data structures are merged, effectively statically linking the two files. Again, it is made sure that the names of the linked classes are not in conflict with the preexisting ones, and they are stored in the root \verb$Dex$ object where they can be referenced by the code-generating methods.
 
 \subsection{Bytecode Instrumentation}
 
@@ -1017,7 +1017,7 @@ The Java framework does provide an implementation of such hash table in the \ver
 
 Removing the call to the \verb$equals$ method is trivial - reference equality operator \verb$==$ is used instead. The \verb$obj.hashCode()$ call was replaced by \verb$obj.getClass().hashCode()$. The \verb$getClass$ method cannot be overridden as it is declared \verb$final$, making the call safe. It returns an object of type \verb$Class$, which represents the type of \verb$obj$. These are automatically generated by the virtual machine when classes are loaded, and so the method cannot be overridden and always uses the original implementation which returns the address of the \verb$Class$ object in the memory. Unfortunately, this means that all instances of one class type will generate the same hash code and will be stored in the same slot. If this ever proved to be a performance bottleneck, native code could be used to return the address of individual objects, but that would reduce the portability of the solution. 
 
-In its current implementation, the hash table is initalized with 1024 slots and does not support dynamic resizing. It exploits temporal locality by moving entries to the beginning of their respective linked lists whenever they are accessed, and deletes garbage collected entries as it encounteres them. Methods are declared \verb$public static$ so that they can be invoked from any place in the application. Data are stored in \verb$private static$ fields.
+In its current implementation, the hash table is initialized with 1024 slots and does not support dynamic resizing. It exploits temporal locality by moving entries to the beginning of their respective linked lists whenever they are accessed, and deletes garbage collected entries as it encounters them. Methods are declared \verb$public static$ so that they can be invoked from any place in the application. Data are stored in \verb$private static$ fields.
 
 \section{Assembling Phase}
 
