@@ -496,6 +496,8 @@ if (a == null) {
 \subsection{Internal Method Calls}
 \label{section:TaintPropagation_MethodCalls_Internal}
 
+TODO: example?
+
 Method calls identified as internal ought to propagate taint of their arguments into the invoked methods, and taint of their results back to the callers. Since objects carry taint tags globally, only primitive arguments and results require instrumentation. 
 
 Like before, primitives need taint storage. Unfortunately, adding extra parameters is not an option, as the method's prototype could be given by an external interface. Thus, a global integer array is created to hold the taint tags of primitive arguments during a call, and one more global integer variable is created to do the same for a primitive result. To make this thread-safe, each of these stores has a lock that must be acquired before taint is stored, and released once it is not used any more. To get a safer lock-free solution, thread-local storage could be used instead, with the downside of a slightly more complicated instrumentation.
@@ -538,6 +540,8 @@ locationManager.requestLocationUpdates(
 \end{figure}
 
 \subsection{External Method Calls}
+
+TODO: example?
 
 External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters (including \verb$this$) is combined and assigned to the result and all \emph{mutable} parameters. The assumptions made here are that the method call will always use only data passed to it, and that it can move any of these data to any mutable parameter. In case this proved to cause problematic over-tainting, Dexter offers a way of defining custom policies.
 
