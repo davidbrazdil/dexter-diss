@@ -1019,7 +1019,13 @@ Removing the call to the \verb$equals$ method is trivial - reference equality op
 
 In its current implementation, the hash table is initialized with 1024 slots and does not support dynamic resizing. It exploits temporal locality by moving entries to the beginning of their respective linked lists whenever they are accessed, and deletes garbage collected entries as it encounters them. Methods are declared \verb$public static$ so that they can be invoked from any place in the application. Data are stored in \verb$private static$ fields.
 
-\section{Assembling Phase}
+\section{Assembling}
+
+The algorithms used in parsing and instrumentation are rather elementary and the only difficulty arises from the number of instructions or file structure elements that need to be dealt with individually. This is not the case for the assembling phase, when the intermediate code is converted back to DexLib's data structures. DexLib will automatically generate constant sections of the file and will replace references to their elements by addresses within the file, but it is up to Dexter to generate bytecode that satisfies all the constraints imposed by Dalvik on it. 
+
+The conversion process mostly comes down to allocating register identifiers in such way that each intermediate instruction will be able to generate a valid Dalvik equivalent. Unfortunately, this is a rather complicated task since instrumentation essentially doubles the number of registers used in the computation and the most frequently used Dalvik instructions only allow 4-bit register identifiers and do not have any less optimized variants. Occasionaly, the insertion of extra instructions will also result in instructions performing a jump not being able to address their target because its offset will simply be too large. In these situations, Dexter must be ready to resolve these issues.
+
+
 
 \subsection{Static Single-Assignment Form}
 
