@@ -271,6 +271,7 @@ To achieve higher code density, some Dalvik instructions come in several variant
 All variants of semantically equivalent instructions are parsed as the same instruction type in Dexter, and thus will be referred to  by the same name. During the reassembly phase, Dexter automatically outputs the most optimized variant of the instruction possible.
 
 \section{Data Flow Analysis}
+\label{section:DataFlowAnalysis}
 
 \subsection{Taint Tags}
 
@@ -412,6 +413,8 @@ Some of Dalvik instructions can throw exceptions, depending on the values of arg
 			\asmExtra{throw pException~~~~~~~~~~~~~~~~~~~~~~~~} \\	
 			\asmExtra{LABEL\_XYZ:~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}
 		}
+		\caption{Example instrumentation of the division instruction}
+		\label{figure:TaintPropagation_ThrowingInstructions}
 	\end{figure}
 
 \subsection{Method Call Destination Decidability}
@@ -963,7 +966,42 @@ While a majority of the newly introduced code is generated based on the content 
 These classes could be generated the same way as the rest of the instrumentation, directly as intermediate code, but for better code clarity, they were implemented in regular Java. Their source files are compiled and converted into a single DEX file that is distributed with Dexter. During instrumentation, this file is converted into intermediate code as well and the two data structures are merged, effectively statically linking the two files. Again, it is made sure that the names of the linked classes are not in conflict with the pre-existing ones, and they are stored in the root \verb$Dex$ object where they can be referenced by the code-generating methods.
 
 \subsection{Bytecode Instrumentation}
-try block splitting
+
+The method code level is where the most notable instrumentation work is done. The \verb$DexCode.instrument$ method begins by replacing all instructions that need to be grouped as they cannot be instrumented independently (\verb$invoke$ or \verb$filled-new-array$ + \verb$move-result$) with their respective pseudoinstructions. 
+
+With the code prepared, each (pseudo)instruction is asked to generate its instrumentation and place the extra instructions into the code. Implementation of these generators exactly follows the rules of taint propagation logic laid out in section~\ref{section:DataFlowAnalysis}, and therefore will not be discussed any further. Once these are instrumented, the taint register initializing code (see section~\ref{section:TaintPropagation_MethodCalls_Internal}) is inserted in front of the \verb$START$ marker.
+
+\begin{figure}
+	\centering
+	\begin{minipage}{0.165\textwidth}
+		\asm{TRY\_START\_1} \\
+		\asm{...} \\
+		\asm{TRY\_START\_2} \\
+		\asm{...} \\
+		\asm{TRY\_END\_2} \\
+		\asm{...} \\
+		\asm{TRY\_END\_1}
+	\end{minipage}
+	\begin{minipage}{0.09\textwidth}
+	\centering
+	$\Rightarrow$
+	\end{minipage}
+	\begin{minipage}{0.18\textwidth}
+		\asm{TRY\_START\_1A} \\
+		\asm{...} \\
+		\asm{TRY\_END\_1A} \\
+		\asm{TRY\_START\_2} \\
+		\asm{...} \\
+		\asm{TRY\_END\_2} \\
+		\asm{TRY\_START\_1B} \\
+		\asm{...} \\
+		\asm{TRY\_END\_1B}
+	\end{minipage}
+	\caption{Removing nested try blocks by splitting the outer block.}
+	\label{figure:Instrumentation_TryBlockSplitting}
+\end{figure}
+
+This fully instrumented code, however, might not be valid. Pseudoinstructions are expanded first, but instructions that throw exceptions would also have wrapped themselves in a try block. Had such instruction already been inside one, the code would now contain two nested try blocks, an illegal construct in Dalvik. The solution adopted by Dexter is shown in figure~\ref{figure:Instrumentation_TryBlockSplitting}. The outer try block is split into two smaller blocks that cover the code not covered by the inner block. Comparing this against the example instrumentation of the division instruction in figure~\ref{figure:TaintPropagation_ThrowingInstructions}, we see that the \verb$CATCH_ABC$ marker and the instructions following it end up inside the second part of the split outer block. Thus, if the original instructions throws an exception, it is tainted, rethrown and caught by the try block the instruction was original in, preserving the behaviour of the application. On the other hand, the inner try block must handle \emph{all exceptions} the instruction might throw, otherwise they would not get caught despite the outer block defining a matching handler. Catch-all handlers should therefore be used by default.
 
 \label{section:Code_MethodEntering}
 
