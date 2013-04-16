@@ -1025,12 +1025,36 @@ The algorithms used in parsing and instrumentation are rather elementary and the
 
 The conversion process mostly comes down to allocating register identifiers in such way that each intermediate instruction will be able to generate a valid Dalvik equivalent. Unfortunately, this is a rather complicated task since instrumentation essentially doubles the number of registers used in the computation and the most frequently used Dalvik instructions only allow 4-bit register identifiers and do not have any less optimized variants. Occasionaly, the insertion of extra instructions will also result in instructions performing a jump not being able to address their target because its offset will simply be too large. In these situations, Dexter must be ready to resolve these issues.
 
-Not foreseeing the complexity of this problem unfortunately led to the necessity to build a nearly full-fledged compiler, which in itself is a very challenging task difficult to achieve within the given time frame of the project. The convertor therefore aims to find any valid solution, regardless of its time efficiency or the performance of the generated code. 
-
-The algorithms used here are mostly taken from the \emph{Modern Compiler Implementation in Java} textbook, and hence their implementation details will be ommited, except their Dalvik-specific modifications.
+Not foreseeing the complexity of this problem unfortunately led to the necessity to build a nearly full-fledged compiler, which in itself is a very challenging task difficult to achieve within the given time frame of the project.  The algorithms used here are mostly taken from the \emph{Modern Compiler Implementation in Java} textbook, and hence their implementation details will be ommited, except their Dalvik-specific modifications. Since the goal of the project was not to build an efficient Dalvik compiler, basic algorithms with simple heuristics were selected, regardless of the performance of the generated code. 
 
 \subsection{Register Allocation}
 
+Register allocation is an optimization problem of assigning a large number of source code variables to a small number of CPU registers. Same register can be used to hold the value of multiple variables, as long as the variables are not \emph{live} at the same time, i.e. the intervals between storing a value and the last point of reading it back do not overlap. If a solution cannot be found, storage in memory is created for some of the variables and load/store instructions that move the value to/from a designated temporary register are inserted in the program, in order to reduce the number of values that need to be held in CPU registers at the same time. This is called \emph{register spilling}.
+
+\subsubsection{Allocation by Graph Colouring}
+
+Typical compiler reduces register allocation to graph colouring, an NP-complete problem, and solves it using some heuristic, balancing the time complexity of the algorithm with the quality of the generated code. 
+
+The graph in question is called \emph{Clash Graph}. Its nodes represent variables, and two nodes are connected by an edge iff the two respective variables cannot be allocated to the same register. If this graph can be coloured with number of colours less than or equal to the number of available CPU registers, a solution to the isomorphic register allocation has been found and can be easily generated, otherwise some registers need to be spilled. 
+
+A commonly used graph-colouring algorithm, which Dexter adopts with slight modifications that will be explained later, uses a simple heuristic to choose a sensible order in which nodes should be coloured. How it works is described by the flow chart in figure~\ref{figure:Allocation_FlowChart}. Even though it runs in linear time, it usually yields satisfactory results. The algorithm fails if the number of used colours exceeds the number of available registers, in which case a set of variables to be spilled must be selected, but an algorithm for this is not presented as Dexter simply chooses a random one and runs the algorithm again. Compilers use more sophisticated analyses to select an optimal set of variables to spill, usually ones that are least used.
+
+\subsubsection{Building a Clash Graph}
+
+% Register allocation for Dalvik has its specifics. The most notable difference is that it does not provide the notion of external memory. Instead, methods are allowed to use up to 65,536 registers, and the VM automatically maps those with smallest identifiers to CPU registers and the rest to RAM. Most instructions are capable of addressing only the first 16 or the first 256 registers, and only the \verb$move$ instructions and the \verb$/range$ variants of \verb$invoke$ and \verb$filled-new-array$ allow to address the rest. 
+
+% The goal of register allocation is therefore finding an assignment of numerical identifiers to the unconstrained intermediate register objects, which can be thought of as equivalents of programming language variables, such that each instruction can generate one of the semantically equivalent Dalvik instructions. 
+
+% The number of variables used in the source code is typically larger than the number of available CPU registers. Register allocation therefore becomes an optimization problem 
+
+
+% The algorithm is allowed to assign the same identifier to multiple intermediate registers, provided the intervals between storing values and reading them back do not overlap. Compilers perform a so-called Live Variable Analysis of the source code, building a Clash Graph, to acquire this information. 
+
+% \subsubsection{Dalvik Constraints}
+
+% In order to do this, the assignment needs to satisfy two types of constraints. Depending on the number of bits available for the identifiers inside the representation of the least optimized Dalvik variant, each instruction can specify the numerical range its registers should be allocated to. Some instructions will also need some of their registers to have sequential identifiers. Most commonly, this is required by instructions that operate on adjoining register pairs storing 64-bit values. There are also the \verb$/range$ variant of the \verb$invoke$ instructions, used to call methods with more than five arguments, which addresses consecutive registers by specifying only the first one and their total count. Third constraint of parameter registers being allocated to the highest used identifiers was removed inserting extra move instructions and allocating them manually, as explained in section~\ref{section:Code_ParamRegMapping}. 
+
+\subsubsection{Constraint Satisfaction}
 
 
 \subsection{Static Single-Assignment Form}
