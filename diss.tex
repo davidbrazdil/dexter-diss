@@ -1037,11 +1037,30 @@ Typical compiler reduces register allocation to graph colouring, an NP-complete 
 
 The graph in question is called \emph{Clash Graph}. Its nodes represent variables, and two nodes are connected by an edge iff the two respective variables cannot be allocated to the same register. If this graph can be coloured with number of colours less than or equal to the number of available CPU registers, a solution to the isomorphic register allocation has been found and can be easily generated, otherwise some registers need to be spilled. 
 
-A commonly used graph-colouring algorithm, which Dexter adopts with slight modifications that will be explained later, uses a simple heuristic to choose a sensible order in which nodes should be coloured. How it works is described by the flow chart in figure~\ref{figure:Allocation_FlowChart}. Even though it runs in linear time, it usually yields satisfactory results. The algorithm fails if the number of used colours exceeds the number of available registers, in which case a set of variables to be spilled must be selected. An algorithm for this selection is not presented as Dexter simply chooses a random variable and runs the algorithm again. Compilers use more sophisticated analyses to select an optimal set of variables to spill, usually ones that are least used, and do not require the coulouring algorithm to run multiple times.
+A commonly used greedy graph-colouring algorithm, which Dexter adopts with slight modifications that will be explained later, uses a simple heuristic to choose a sensible order in which nodes should be coloured. How it works is described by the flow chart in figure~\ref{fig:Implementation_GraphColouring}. Even though it runs in linear time, it usually yields satisfactory results. The algorithm fails if the number of used colours exceeds the number of available registers, in which case a set of variables to be spilled must be selected. An algorithm for this selection is not presented as Dexter simply chooses a random variable and runs the algorithm again. Compilers use more sophisticated analyses to select an optimal set of variables to spill, usually ones that are least used, and do not require the coulouring algorithm to run multiple times.
+
+\begin{figure}
+	\centerline{	
+		\includegraphics[width=0.9\textwidth]{figs/fig_implementation_gc.png}
+	}
+	\caption{Flow chart of commonly used greedy graph-colouring algorithm.}
+	\label{fig:Implementation_GraphColouring}
+\end{figure}
 
 \subsubsection{Building a Clash Graph}
 
+Building a Clash Graph requires comparing the liveness intervals for each variable. This information can be acquired by performing a so-called \emph{Live Variable Analysis} of the program, which requires it to be represented in the form of a \emph{Control Flow Graph}. We will now briefly explain how the CFG of a method is generated and how it is be analyzed.
 
+In CFG, each standard node represents a maximal sequence of instructions, called basic blocks, such that:
+\begin{inparaenum}[(i)]
+\item each instruction, except possibly the first one, has exactly one predecessor,
+\item each instruction, except possibly the last one, has exactly one successor.
+\end{inparaenum}
+Execution of instructions within a basic block can therefore never unexpectedly leave the block. Nodes $A$ and $B$ are connected by a directed edge iff the execution of last instruction in $A$ can be followed by the execution of first instruction in $B$. For example, an \verb$if$ instruction would always end a basic block and this would be have two successors, since the instruction can either proceed or jump to a label marker. There are also two special nodes, \verb$START$ and \verb$EXIT$, that represent the entry and exit points of the method and are connected to other nodes accordingly.
+
+Building a CFG is not complicated. Each element of the executable code, i.e. both instructions and markers, can specify whether it starts or ends a basic block, whether it can exit the method, as well as the complete list of its successors. If it has more than two, it is assumed it ends a block. Code is scanned linearly, instructions put in the current basic block, and new block is created whenever an instruction starting or ending a block is encountered. Blocks are then connected according to the lists of successors of their last instruction. 
+
+Completeness of the CFG is crutial in order to produce correct liveness intervals of variables and not miss any clashes between variables. A lot of effort therefore had to be invested into reading the (often incomplete) Dalvik documentation to make sure each instruction provided a complete list of its successors, reflecting all aspects of its execution semantics, even including the catch blocks program can jump to if it throws an exception. Similarly, instructions throwing exceptions not caught by the surrounding try block must return \verb$true$ when asked whether they can exit the method.
 
 % Register allocation for Dalvik has its specifics. The most notable difference is that it does not provide the notion of external memory. Instead, methods are allowed to use up to 65,536 registers, and the VM automatically maps those with smallest identifiers to CPU registers and the rest to RAM. Most instructions are capable of addressing only the first 16 or the first 256 registers, and only the \verb$move$ instructions and the \verb$/range$ variants of \verb$invoke$ and \verb$filled-new-array$ allow to address the rest. 
 
