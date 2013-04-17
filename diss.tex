@@ -1062,6 +1062,10 @@ Building a CFG is not complicated in principle. Each element of the executable c
 
 Completeness of the CFG is crutial in order to produce correct liveness intervals of variables and not miss any clashes between variables. A lot of effort therefore had to be invested into reading the (often incomplete) Dalvik documentation to make sure \emph{every} instruction provided a complete list of its successors, reflecting all aspects of the execution semantics, even including the catch blocks the program can jump to if exceptions of various types are thrown. Similarly, instructions throwing exceptions not caught by the surrounding try block must return \verb$true$ when asked whether they can exit the method.
 
+The general idea behind Live Variable Analysis is the propagation of information whether a variable could be read from later in the code to the predecessors. This way liveness analysis produces a list of variables whose values might be needed in the future, for every instruction in the program. The analysis starts by assigning an empty list of variables to every instruction in every node. A loop then iterates through the nodes, always combining the lists of first instructions of all its successors and backwards-propagating the full list through its instructions. A variable is removed from the list if the instruction writes to it, and added if it is referenced. The loop carries on until no more changes are made.
+
+With the variable lists provided by LVA, generation of the Clash Graph becomes trivial. The algorithm simply iterates through the code and adds an edge for every pair of variables simultaneusly present in the live-variable list of the inspected instruction, as both their values might be required in the future and thus cannot be allocated to the same physical register.
+
 % Register allocation for Dalvik has its specifics. The most notable difference is that it does not provide the notion of external memory. Instead, methods are allowed to use up to 65,536 registers, and the VM automatically maps those with smallest identifiers to CPU registers and the rest to RAM. Most instructions are capable of addressing only the first 16 or the first 256 registers, and only the \verb$move$ instructions and the \verb$/range$ variants of \verb$invoke$ and \verb$filled-new-array$ allow to address the rest. 
 
 % The goal of register allocation is therefore finding an assignment of numerical identifiers to the unconstrained intermediate register objects, which can be thought of as equivalents of programming language variables, such that each instruction can generate one of the semantically equivalent Dalvik instructions. 
@@ -1074,9 +1078,6 @@ Completeness of the CFG is crutial in order to produce correct liveness interval
 % \subsubsection{Dalvik Constraints}
 
 % In order to do this, the assignment needs to satisfy two types of constraints. Depending on the number of bits available for the identifiers inside the representation of the least optimized Dalvik variant, each instruction can specify the numerical range its registers should be allocated to. Some instructions will also need some of their registers to have sequential identifiers. Most commonly, this is required by instructions that operate on adjoining register pairs storing 64-bit values. There are also the \verb$/range$ variant of the \verb$invoke$ instructions, used to call methods with more than five arguments, which addresses consecutive registers by specifying only the first one and their total count. Third constraint of parameter registers being allocated to the highest used identifiers was removed inserting extra move instructions and allocating them manually, as explained in section~\ref{section:Code_ParamRegMapping}. 
-
-\subsubsection{Constraint Satisfaction}
-
 
 \subsection{Static Single-Assignment Form}
 
