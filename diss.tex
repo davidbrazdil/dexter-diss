@@ -1064,7 +1064,15 @@ Completeness of the CFG is crutial in order to produce correct liveness interval
 
 The general idea behind Live Variable Analysis is the propagation of information whether a variable could be read from later in the code to the predecessors. This way liveness analysis produces a list of variables whose values might be needed in the future, for every instruction in the program. The analysis starts by assigning an empty list of variables to every instruction in every node. A loop then iterates through the nodes, always combining the lists of first instructions of all its successors and backwards-propagating the full list through its instructions. A variable is removed from the list if the instruction writes to it, and added if it is referenced. The loop carries on until no more changes are made.
 
-With the variable lists provided by LVA, generation of the Clash Graph becomes trivial. The algorithm simply iterates through the code and adds an edge for every pair of variables simultaneusly present in the live-variable list of the inspected instruction, as both their values might be required in the future and thus cannot be allocated to the same physical register. Again, this requires instructions to provide lists of variables referenced and defined by them.
+\begin{figure}
+	\centerline{	
+		\includegraphics[width=0.8\textwidth]{figs/fig_implementation_lva.png}
+	}
+	\caption{Example of Live Variable Analysis performed on a simple program represented as a Control Flow Graph.}
+	\label{fig:Implementation_LVA}
+\end{figure}
+
+With the variable lists provided by LVA, generation of the Clash Graph becomes trivial. The algorithm simply iterates through the code and adds an edge for every pair of variables simultaneusly present in the live-variable list of the inspected instruction, as both their values might be required in the future and thus cannot be allocated to the same physical register. Again, this requires instructions to provide lists of variables they reference and define.
 
 % Register allocation for Dalvik has its specifics. The most notable difference is that it does not provide the notion of external memory. Instead, methods are allowed to use up to 65,536 registers, and the VM automatically maps those with smallest identifiers to CPU registers and the rest to RAM. Most instructions are capable of addressing only the first 16 or the first 256 registers, and only the \verb$move$ instructions and the \verb$/range$ variants of \verb$invoke$ and \verb$filled-new-array$ allow to address the rest. 
 
