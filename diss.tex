@@ -1096,7 +1096,39 @@ Intermediate instructions reference all register objects explicitly and provide 
 
 \subsubsection{Register Spilling}
 
+As was mentioned previously, register spilling is the process of creating a stack storage for a variable and inserting load/store instructions that move that value to/from CPU registers, in order to reduce the number of values that need to be in registers simultaneously. Since Dalvik programs do not have access to the memory, the equivalent of register spilling is inserting \verb$move$ instructions that transfer data between the designated register and new temporary ones before and after every instructions that uses it, in order to remove some of the constraints imposed on the original intermediate register. Note that because of the consecutive-identifier constraints other nodes in the respective node run needs to be spilled as well.
 
+\begin{figure}
+	\centering
+	\begin{minipage}{0.325\textwidth}
+	\begin{footnotesize}
+		\asm{int-to-long rA1 | rA2, rB} \\
+		\asm{...} \\
+		\asm{int-to-long rA2 | rA3, rC}
+	\end{footnotesize}
+	\end{minipage}
+	\begin{minipage}{0.09\textwidth}
+	\centering
+	$\Rightarrow$
+	\end{minipage}
+	\begin{minipage}{0.465\textwidth}
+	\begin{footnotesize}
+		\asm{move-wide pTemp1 | pTemp2, rA1 | rA2} \\
+		\asm{int-to-long pTemp1 | pTemp2, rB} \\
+		\asm{move-wide rA1 | rA2, pTemp1 | pTemp2} \\
+		\asm{...} \\
+		\asm{move-wide pTemp3 | pTemp4, rA2 | rA3} \\
+		\asm{int-to-long pTemp3 | pTemp4, rC} \\
+		\asm{move-wide rA2 | rA3, pTemp3 | pTemp4}
+	\end{footnotesize}
+	\end{minipage}
+	\caption{Removing nested try blocks by splitting the outer block.}
+	\label{figure:Reassembling_RegisterSpilling}
+\end{figure}
+
+An example is shown in figure~\ref{figure:Reassembling_RegisterSpilling}. The first instruction requires \verb$rA1$ to be allocated to range 0-15 and \verb$rA2$ to be in the next register, and the second requires the same for \verb$rA2$ and \verb$rA3$. This results in a three-element node run with first two elements confined to the 4-bit range. If register allocation fails, temporaries can be created and \verb$move$ instructions inserted, which results in three two-element node runs. The original run \verb$[rA1, rA2, rA3]$ can now be stored in the full 16-bit range. The added \verb$[pTemp1, pTemp2]$ and \verb$[pTemp3, pTemp4]$ runs of small liveness interval are short with only first elements restricted to the 4-bit range.
+
+When colouring fails, Dexter needs to pick a node run to spill. For the sake of simplicity, it chooses a random one in the range that filled up and caused the colouring to fail. MOVE INSTRUCTIONS!!!
 
 \subsection{Static Single-Assignment Form}
 
