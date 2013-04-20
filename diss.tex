@@ -1027,7 +1027,7 @@ The conversion process mostly comes down to allocating register identifiers in s
 
 Not foreseeing the complexity of this problem unfortunately led to the necessity to build a nearly full-fledged compiler, which in itself is a very challenging task difficult to achieve within the given time frame of the project.  The algorithms used here are mostly taken from the \emph{Modern Compiler Implementation in Java} textbook, and hence their implementation details will be ommited, except their Dalvik-specific modifications. Since the goal of the project was not to build an efficient Dalvik compiler, basic algorithms with simple heuristics were selected, regardless of the performance of the generated code. 
 
-\subsection{Register Allocation}
+\subsection{Generic Register Allocation}
 
 Register allocation is an optimization problem of assigning a large number of source code variables to a small number of CPU registers. Same register can be used to hold the value of multiple variables, as long as the variables are not \emph{live} at the same time, i.e. the intervals between storing a value and the last point of reading it back do not overlap. If a solution cannot be found, storage in memory is created for some of the variables and load/store instructions that move the value to/from a designated temporary register are inserted in the program, in order to reduce the number of values that need to be held in CPU registers at the same time. This is called \emph{register spilling}.
 
@@ -1072,9 +1072,21 @@ The general idea behind Live Variable Analysis is the propagation of information
 	\label{fig:Implementation_LVA}
 \end{figure}
 
-With the variable lists provided by LVA, generation of the Clash Graph becomes trivial. The algorithm simply iterates through the code and adds an edge for every pair of variables simultaneusly present in the live-variable list of the inspected instruction, as both their values might be required in the future and thus cannot be allocated to the same physical register. Again, this requires instructions to provide lists of variables they reference and define.
+With the variable lists provided by LVA, generation of the Clash Graph becomes trivial. The algorithm simply iterates through the code and adds an edge for every pair of variables simultaneusly present in the live-variable list of the inspected instruction, as both their values might be required in the future and thus cannot be allocated to the same register. Again, this requires instructions to provide lists of variables they reference and define.
 
-% Register allocation for Dalvik has its specifics. The most notable difference is that it does not provide the notion of external memory. Instead, methods are allowed to use up to 65,536 registers, and the VM automatically maps those with smallest identifiers to CPU registers and the rest to RAM. Most instructions are capable of addressing only the first 16 or the first 256 registers, and only the \verb$move$ instructions and the \verb$/range$ variants of \verb$invoke$ and \verb$filled-new-array$ allow to address the rest. 
+\subsection{Dalvik Register Allocation Specifics}
+
+It is easy to see how the generic register-allocating procedure solves the reassembling problem in Dexter. Register objects inside intermediate code can be thought of as variables used in source code, and these need to be mapped to Dalvik's virtual registers. But due to some constraints imposed on the identifiers, the graph-colouring algorithm requires small alterations, which will be explained in this section.
+
+\subsubsection{Register-Addressing Limits}
+
+The most notable difference is that Dalvik does not differentiate between CPU registers and external memory. Instead, methods are allowed to use up to 65,536 virtual registers, which can be thought of as an equivalent of stack memory, with some of the registers being mapped to the physical registers for efficiency. As we have already seen, most instructions are only capable of addressing the first 16 or 256 registers, and only a limited subset, like the \verb$move$ instructions, can address the rest. 
+
+Instead of checking the degree of the node to identify uncolourable graphs, the graph-colouring algorithm always creates an ordering of nodes and tries to find a non-conflicting colour for each one based on the range-limits specified by the intermediate instructions that use the corresponding register object. As not to pollute smaller ranges, colours are first assigned from the higher parts of the spectrum, so for example for node restricted to the 0-255 range a colour in 16-255 will be assigned, and the full 0-255 range will be used only if the former fails. If a solution is found, the mapping is compacted by decreasing register identifiers to remove spaces between used colours.
+
+
+
+% Register allocation for Dalvik has its specifics. The most notable one is that it does not differentiate between CPU registers and external memory. Instead, methods are allowed to use up to 65,536 registers, and the VM automatically maps those with smallest identifiers to CPU registers and the rest to RAM. Most instructions are capable of addressing only the first 16 or the first 256 registers, and only the \verb$move$ instructions and the \verb$/range$ variants of \verb$invoke$ and \verb$filled-new-array$ allow to address the rest. 
 
 % The goal of register allocation is therefore finding an assignment of numerical identifiers to the unconstrained intermediate register objects, which can be thought of as equivalents of programming language variables, such that each instruction can generate one of the semantically equivalent Dalvik instructions. 
 
