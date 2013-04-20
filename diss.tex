@@ -977,7 +977,8 @@ With the code prepared, each (pseudo)instruction is asked to generate its instru
 
 \begin{figure}
 	\centering
-	\begin{minipage}{0.165\textwidth}
+	\begin{minipage}{0.140\textwidth}
+	\begin{footnotesize}
 		\asm{TRY\_START\_1} \\
 		\asm{...} \\
 		\asm{TRY\_START\_2} \\
@@ -985,12 +986,14 @@ With the code prepared, each (pseudo)instruction is asked to generate its instru
 		\asm{TRY\_END\_2} \\
 		\asm{...} \\
 		\asm{TRY\_END\_1}
+	\end{footnotesize}
 	\end{minipage}
 	\begin{minipage}{0.09\textwidth}
 	\centering
 	$\Rightarrow$
 	\end{minipage}
-	\begin{minipage}{0.18\textwidth}
+	\begin{minipage}{0.150\textwidth}
+	\begin{footnotesize}
 		\asm{TRY\_START\_1A} \\
 		\asm{...} \\
 		\asm{TRY\_END\_1A} \\
@@ -1000,6 +1003,7 @@ With the code prepared, each (pseudo)instruction is asked to generate its instru
 		\asm{TRY\_START\_1B} \\
 		\asm{...} \\
 		\asm{TRY\_END\_1B}
+	\end{footnotesize}
 	\end{minipage}
 	\caption{Removing nested try blocks by splitting the outer block.}
 	\label{figure:Instrumentation_TryBlockSplitting}
