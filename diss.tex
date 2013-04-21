@@ -1137,8 +1137,8 @@ Even though the register allocating algorithm laid out above easily deals with m
 
 The idea behind SSA is renaming variables so that each one is written to only once. Looking again at the example of register spilling in figure~\ref{figure:Reassembling_RegisterSpilling}, the \verb$[rA1, rA2, rA3]$ node run was created because both instructions used \verb$rA2$. Without any change in behaviour, renaming the variables would result in two runs \verb$[rA1_1, rA2_1]$ and \verb$[rA2_2, rA3_1]$ that would be easier to allocate. The reason why SSA is complicated is shown in figure~\ref{figure:Implementation_SSA}. Variable \verb$rY$ is defined in both branches of the \verb$if$ statement, so renaming these to $rY_1$ and $rY_2$ also requires combining their values into $rY_3$ before they are referenced outside their block. This is done in four steps: 
 \begin{inparaenum}[(i)]
-\item the point in CFG where the two variables meet is identified,
-\item a $\Phi$ function, which combines the values, is inserted,
+\item the points in CFG where two variables meet are identified,
+\item $\Phi$ functions, which combine the values, are inserted,
 \item $\Phi$ functions are converted to \texttt{move} instructions inside the predecessor blocks,
 \item unnecessary \texttt{move}s are removed.
 \end{inparaenum}
