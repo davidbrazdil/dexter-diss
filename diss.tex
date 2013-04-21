@@ -1080,13 +1080,13 @@ With the variable lists provided by LVA, generation of the Clash Graph becomes t
 
 \subsection{Dalvik Register Allocation Specifics}
 
-It is easy to see how the generic register-allocating procedure solves the reassembling problem in Dexter. Register objects inside intermediate code can be thought of as variables used in source code, and these need to be mapped to Dalvik's virtual registers. But due to some constraints imposed on the identifiers, the graph-colouring heuristic requires small alterations, which will be explained in this section.
+It is easy to see how the generic register allocation fits into the reassembling procedure of Dexter. Register objects inside intermediate code can be thought of as variables used in source code, and these need to be mapped to Dalvik's virtual registers. But due to some constraints imposed on the identifiers, the graph-colouring heuristic requires small alterations, which will be explained in this section.
 
 \subsubsection{Register-Addressing Limits}
 
-The most notable difference is that Dalvik does not differentiate between CPU registers and external memory. Instead, methods are allowed to use up to 65,536 virtual registers, which can be thought of as an equivalent of stack memory, with some of the registers being mapped to the physical registers for efficiency. As we have already seen, most instructions are only capable of addressing the first 16 or 256 registers, and only a limited subset, like the \verb$move$ instructions, can address the rest. 
+The most notable difference is that Dalvik does not distinguish between CPU registers and external memory. Methods are allowed to use up to 65,536 virtual registers, which can be thought of as an equivalent of stack memory. The VM maps some of the registers to the physical registers for efficiency. As we have already seen, most instructions are only capable of addressing the first 16 or 256 registers, and only a limited subset, like the \verb$move$ instructions, can address the rest. Graph colouring is therefore not limited to a fixed number of colours, but each node has its own upper identifier limit.
 
-Instead of checking the degree of the node to identify uncolourable graphs, the graph-colouring algorithm always creates an ordering of nodes and tries to find a non-conflicting colour for each one based on range-limits specified by the intermediate instructions which use the corresponding register object. As not to pollute smaller ranges, colours are first assigned from the higher parts of the spectrum, so for example for node restricted to the 0-255 range a colour in 16-255, not conflicting with the already coloured clashing registers, will be seeked first, and the full 0-255 range will be used only if the former fails. If a valid mapping is found, the identifier spectrum is compacted and mapping returned.
+Instead of checking the degree of the node to identify uncolourable graphs, the graph-colouring algorithm was changed to always create an ordering of nodes and to try to find a non-conflicting colour for each one based on range-limits specified by the intermediate instructions which use the corresponding register object. As not to pollute smaller ranges, colours are first assigned from the higher parts of the spectrum, so for example for node restricted to the 0-255 range a colour in 16-255 will be seeked first, and the full 0-255 range will be used only if the former fails. If a valid mapping is found, the identifier spectrum is compacted and mapping returned.
 
 \subsubsection{Consecutive-Identifier Constraints}
 
@@ -1132,7 +1132,7 @@ When colouring fails, Dexter needs to pick a node run to spill. For the sake of 
 
 \subsection{Static Single-Assignment Form}
 
-
+Even though the register allocating algorithm laid out above easily deals with most programs, it is not uncommon for an application to contain one or two methods that cannot be assembled this way. These usually work with wide values and often define a node run of more than 20 or even 30 registers, with most of the first 16 required to be in range 0-15, long liveness intervals, and some registers used in an \emph{if equals} instruction, all of which means that there is no room for extra taint registers. Static Single-Assignment Form is a transformation of the intermediate code that can break node runs into smallest pieces possible. g
 
 \subsection{DexLib Structure Generation}
 
