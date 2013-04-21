@@ -1170,9 +1170,9 @@ Actual implemetation of SSA is not complicated, but requires a lot of platform-s
 
 With register identifiers assigned, intermediate representation is almost ready to be converted into DexLib's data structures. Most parts of the process are completely straightforward, simply passing the data to the respective constructors. 
 
-Only part of the file structure that requires more work are the methods and their bytecode. Each instruction is asked to produce the most optimized Dalvik variant it can, being given the register allocation and offsets of other code elements. The size of the generated Dalvik instruction is used to update the offset list. Since changing the offsets might result in some instructions having to produce a different variant, these steps are repeated until no more changes are made. Resulting offsets are then used to generate a list of try blocks and the addresses of catch markers. 
+Only parts of the file structure that require more work are methods and their bytecode. Each instruction is asked to produce the most optimized Dalvik variant it can given the register allocation and offsets of other code elements. The offsets list gets updated using the size of the newly generated Dalvik instruction and this is repeated until no more changes are made,  since change of offsets might result in some instructions having to produce a different variant. These offsets are then used to generate a list of try blocks and the addresses of catch markers.
 
-Just like with register identifiers, the space for offsets inside instructions is limited, and thus inserting tainting instructions between these and their targets might result in them not being able to store the offsets. Each such instructions therefore needs to implement a \verb$fixLongJump$ method, in which it generates instrumentation that deals with this. An example is shown in figure~\ref{figure:Reassembling_FixLongJump}. Since \verb$goto$ can store up to 32-bit long offsets, it can reach any point in the bytecode. 
+Just like with register identifiers, the space for offsets inside instructions is limited, and thus inserting tainting instructions between these and their targets might render some of them not being able to store these offsets. Each such instruction therefore needs to implement a \verb$fixLongJump$ method, in which it generates instrumentation that deals with this. An example is shown in figure~\ref{figure:Reassembling_FixLongJump}. An \verb$if$ instruction uses \verb$goto$ to do the jump for it, as it can store up to 32-bit long offsets and hence reach any point in the bytecode. 
 
 \begin{figure}
 	\centering
@@ -1206,10 +1206,9 @@ Just like with register identifiers, the space for offsets inside instructions i
 
 \section{APK Repackaging}
 
+
+
 Apk class
-
-\section{User Interface}
-
 
 
 \cleardoublepage
