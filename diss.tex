@@ -1168,6 +1168,42 @@ Actual implemetation of SSA is not complicated, but requires a lot of platform-s
 
 \subsection{DexLib Structure Generation}
 
+With register identifiers assigned, intermediate representation is almost ready to be converted into DexLib's data structures. Most parts of the process are completely straightforward, simply passing the data to the respective constructors. 
+
+Only part of the file structure that requires more work are the methods and their bytecode. Each instruction is asked to produce the most optimized Dalvik variant it can, being given the register allocation and offsets of other code elements. The size of the generated Dalvik instruction is used to update the offset list. Since changing the offsets might result in some instructions having to produce a different variant, these steps are repeated until no more changes are made. Resulting offsets are then used to generate a list of try blocks and the addresses of catch markers. 
+
+Just like with register identifiers, the space for offsets inside instructions is limited, and thus inserting tainting instructions between these and their targets might result in them not being able to store the offsets. Each such instructions therefore needs to implement a \verb$fixLongJump$ method, in which it generates instrumentation that deals with this. An example is shown in figure~\ref{figure:Reassembling_FixLongJump}. Since \verb$goto$ can store up to 32-bit long offsets, it can reach any point of the bytecode. 
+
+\begin{figure}
+	\centering
+	\begin{minipage}{0.28\textwidth}
+	\begin{footnotesize}
+		\asm{if-eq rA, rB, LTarget} \\
+		\asm{...} \\
+		\asm{LTarget:} \\
+		\asm{...}
+	\end{footnotesize}
+	\end{minipage}
+	\begin{minipage}{0.09\textwidth}
+	\centering
+	$\Rightarrow$
+	\end{minipage}
+	\begin{minipage}{0.25\textwidth}
+	\begin{footnotesize}
+		\asm{if-eq rA, rB, LJump} \\
+		\asm{goto LSuccessor} \\
+		\asm{LJump:} \\
+		\asm{goto LTarget} \\
+		\asm{LSuccessor:} \\
+		\asm{...} \\
+		\asm{LTarget:} \\
+		\asm{...}
+	\end{footnotesize}
+	\end{minipage}
+	\caption{Example of an \texttt{if} instruction fixing unreachable target.}
+	\label{figure:Reassembling_FixLongJump}
+\end{figure}
+
 \section{APK Utilities}
 
 Apk class
