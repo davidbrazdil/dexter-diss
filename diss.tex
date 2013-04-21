@@ -22,6 +22,7 @@
 \usepackage{soul}
 \usepackage{hyperref}
 \usepackage{paralist}
+\usepackage{subfigure}
 
 % \usepackage{dejavu}
 % \usepackage{courier}
@@ -1132,7 +1133,38 @@ When colouring fails, Dexter needs to pick a node run to spill. For the sake of 
 
 \subsection{Static Single-Assignment Form}
 
-Even though the register allocating algorithm laid out above easily deals with most programs, it is not uncommon for an application to contain one or two methods that cannot be assembled this way. These usually work with wide values and often define a node run of more than 20 or even 30 registers, with most of the first 16 required to be in range 0-15, long liveness intervals, and some registers used in an \emph{if equals} instruction, all of which means that there is no room for extra taint registers. Static Single-Assignment Form is a transformation of the intermediate code that can break node runs into smallest pieces possible. g
+Even though the register allocating algorithm laid out above easily deals with most programs, it is not uncommon for an application to contain one or two methods that cannot be assembled this way. These usually work with wide values and often define a node run of more than 20 or even 30 registers, with most of the first 16 required to be in range 0-15, long liveness intervals, and some registers used in an \emph{if equals} instruction. This makes it impossible to allocate the necessary taint registers. Static Single-Assignment Form is a transformation of the intermediate code that can break node runs into the smallest pieces possible. 
+
+The idea behind SSA is renaming variables so that each one is written to only once. Looking again at the example of register spilling in figure~\ref{figure:Reassembling_RegisterSpilling}, the \verb$[rA1, rA2, rA3]$ node run was created because both instructions used \verb$rA2$. Without any change in behaviour, renaming the variables would result in two runs \verb$[rA1_1, rA2_1]$ and \verb$[rA2_2, rA3_1]$ that would be easier to allocate. The reason why SSA is complicated is shown in figure~\ref{figure:Implementation_SSA}. Variable \verb$rY$ is defined in both branches of the \verb$if$ statement, so renaming these to $rY_1$ and $rY_2$ also requires combining their values into $rY_3$ before they are referenced outside their block. This is done in four steps: 
+\begin{inparaenum}[(i)]
+\item the point in CFG where the two variables meet is identified,
+\item a $\Phi$ function, which combines the values, is inserted,
+\item $\Phi$ functions are converted to \texttt{move} instructions inside the predecessor blocks,
+\item unnecessary \texttt{move}s are removed.
+\end{inparaenum}
+
+\begin{figure}[htp]
+  \centering
+  \subfigure[Original code]{
+  	\includegraphics[width=16pc]{figs/fig_implementation_ssa1.png}
+  }
+  \label{figure:Implementation_SSA1}
+  \subfigure[$\Phi$ function inserted]{
+  	\includegraphics[width=16pc]{figs/fig_implementation_ssa2.png}
+  }
+  \label{figure:Implementation_SSA2}
+  \subfigure[$\Phi$ function converted to \texttt{move} instructions]{
+  	\includegraphics[width=16pc]{figs/fig_implementation_ssa3.png}
+  }
+  \label{figure:Implementation_SSA3}
+
+  \caption{Example of SSA transformation}
+  \label{figure:Implementation_SSA}
+\end{figure}
+
+Since this is another textbook algorithm, details will be ommitted. We will only mention that finding the insertion points of $\Phi$ functions relies on performing a \emph{Dominance Frontier} analysis on the intermediate code. It starts by building a \emph{Dominator Tree} of the nodes in CFG. In this tree, node $d$ is a parent of node $n$ iff every path through $n$ in CFG must necessarily go through $d$ as well. Looking at the SSA example, only the top block is a dominator of all the other blocks. For each node $d$, Dominance Frontier analysis identifies a set of nodes that $d$ does not dominate but it dominates one if their immediate predecessors. Such nodes are then the points where two branches of computation first meet, in our example the bottom block is the frontier for both the branch blocks, which is where the $\Phi$ function is inserted.
+
+Actual implemetation of SSA is not complicated, but requires a lot of platform-specific extensions. For example, we already saw that \texttt{move} instructions are typed, and thus a full type-inference algorithm is required to insert the correct ones. A complete SSA transformation was implemented in Dexter and was shown to work on small programs that would not be possible to assemble without it. However, it would require more time to make it production-ready, as it still has some bugs that produce invalid code on more complicated inputs. Applications shown in Evaluation were therefore instrumented without it. 
 
 \subsection{DexLib Structure Generation}
 
