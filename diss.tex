@@ -1205,7 +1205,7 @@ Just like with register identifiers, the space for offsets inside instructions i
 
 \section{APK Repackaging}
 
-Last step Dexter has to make is replacing the executable file in the original APK. Since APKs are mere ZIP files, \emph{zip4j} library is used to do this. The file is first copied to a temporary file, executable is replaced and the \verb$META-INF$ folder removed. This folder contains the digital signiture of the publisher, which becomes invalid when the executable is replaced and needs to be regenerated. Any key could be used to do this, but Dexter currently calls the \verb$keytool$ from the JDK to create a random key, and passes it to the \verb$jarsigner$ command that signs the APK. Temporary file is renamed to the given output filename and that ends the lengthy process of instrumentation.
+Last step Dexter has to make is replacing the executable file in the original APK. Since APKs are mere ZIP files, \emph{zip4j} library is used to do this. The file is first copied to a temporary file, executable is replaced and the \verb$META-INF$ folder removed. This folder contains the digital signiture of the publisher, which becomes invalid when the executable is replaced and needs to be regenerated. Any key could be used to do this, but Dexter currently calls the \verb$keytool$ from the JDK to create a random key, and passes it to the \verb$jarsigner$ command that signs the APK. Temporary file is renamed to the given output filename and that concludes the lengthy process of instrumentation.
 
 \cleardoublepage
 \chapter{Evaluation}
