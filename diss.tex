@@ -805,9 +805,9 @@ look at AdCache
 	\label{fig:Implementation_Overview}
 \end{figure}
 
-Figure~\ref{fig:Implementation_Overview} shows a schematic diagram of all the stages an APK file goes through when given to Dexter to be instrumented. Because of the purpose of some of the stages and the overall pipeline-like linearity of the process, Dexter's architecture resembles one of a compiler. 
+Figure~\ref{fig:Implementation_Overview} shows a schematic diagram of all stages an APK file goes through when processed by Dexter. Because of the purpose of some of the stages and the overall pipeline-like linearity of the process, Dexter's architecture resembles one of a compiler.
 
-The input of the program is the APK file of the application to be instrumented, together with a set of files that form the Android framework, both of which were previously acquired from the user's device. The content of all of these files is parsed to create the complete class hierarchy available to the application at runtime, which will later be of crucial importance for static analysis. The path of the APK file is then evident. The executable \emph{classes.dex} is extracted from the package, parsed and turned into intermediate code, Dexter's internal representation more suitable for analysis and modification than plain assembly. This code is then instrumented according to the rules set out in the previous chapter, reassembled and new executable file generated. By making a copy of the original APK file and replacing the \emph{classes.dex} inside, the final output is created. Since all APKs must be signed, Dexter generates a new signature for the file, using a random key. Each part of this process will be thoroughly explained in the following sections.
+The input of the program is the APK file of the application to be instrumented, together with a set of files that form the Android framework, both of which had previously been acquired from the user's device. The content of all of these files is parsed to create a complete picture of the classes available to the application at runtime, a crucial source of information used later. The path of the actual APK file starts by extracting the executable \emph{classes.dex} from the package, parsing and turning it into intermediate code, Dexter's internal representation more suitable for analysis and modification than plain assembly. This code is then instrumented according to the rules laid out in the previous chapter, reassembled and new executable file generated. By making a copy of the original APK file and replacing the \emph{classes.dex} inside, the final output is created. Each part of this process will be thoroughly explained in the following sections.
 
 \section{Runtime Class Hierarchy}
 
@@ -1206,10 +1206,7 @@ Just like with register identifiers, the space for offsets inside instructions i
 
 \section{APK Repackaging}
 
-
-
-Apk class
-
+Last step Dexter has to make is replacing the executable file in the original APK. Since APKs are mere ZIP files, \emph{zip4j} library is used to do this. The file is first copied to a temporary file, executable is replaced and the \verb$META-INF$ folder removed. This folder contains the digital signiture of the publisher, which becomes invalid when the executable is replaced and needs to be regenerated. Any key could be used to do this, but Dexter currently calls the \verb$keytool$ from the JDK to create a random key, and passes it to the \verb$jarsigner$ command that signs the APK. Temporary file is renamed to the given output filename and that ends the lengthy process of instrumentation.
 
 \cleardoublepage
 \chapter{Evaluation}
