@@ -805,15 +805,15 @@ look at AdCache
 	\label{fig:Implementation_Overview}
 \end{figure}
 
-Figure~\ref{fig:Implementation_Overview} shows a schematic diagram of all stages an APK file goes through when processed by Dexter. Because of the purpose of some of the stages and the overall pipeline-like linearity of the process, Dexter's architecture resembles one of a compiler.
+Figure~\ref{fig:Implementation_Overview} shows a schematic diagram of all stages an APK file goes through when processed by Dexter. Because of the purpose of some of the stages and the overall feed-forward structure of the process, Dexter's architecture resembles one of a compiler.
 
-The input of the program is the APK file of the application to be instrumented, together with a set of files that form the Android framework, both of which had previously been acquired from the user's device. The content of all of these files is parsed to create a complete picture of the classes available to the application at runtime, a crucial source of information used later. The path of the actual APK file starts by extracting the executable \emph{classes.dex} from the package, parsing and turning it into intermediate code, Dexter's internal representation more suitable for analysis and modification than plain assembly. This code is then instrumented according to the rules laid out in the previous chapter, reassembled and new executable file generated. By making a copy of the original APK file and replacing the \emph{classes.dex} inside, the final output is created. Each part of this process will be thoroughly explained in the following sections.
+The input of the program is the APK file of the application to be instrumented together with a set of files that form the Android framework, both of which had previously been acquired from the user's device. The content of all of these files is parsed to create a complete picture of the classes available to the application at runtime, a crucial source of information used later. The path of the actual APK file starts by extracting the executable from the package, parsing and turning it into intermediate code, Dexter's internal representation more suitable for analysis and modification than plain assembly. This code is then instrumented according to the rules laid out in the previous chapter, reassembled and new file generated. By making a copy of the original APK file and replacing the executable in it, the final output is created. Each part of this process will be thoroughly explained in the following sections.
 
 \section{Runtime Class Hierarchy}
 
-The purpose of creating a complete picture of the runtime class hierarchy available to the application is being able to reason about the nature of method call destinations, necessary for choosing the correct type of their instrumentation. But class hierarchy is useful in other situations as well, e.g. sources and sinks use class hierarchy to recognize their tracked methods even if the invoking instruction does not reference the expected class but one of its children. To show a concrete example, code in listing~\ref{listing:Sink_ApacheHTTPClient_CanBeApplied} was taken from a method that returns \verb$true$ if and only if given method call should be instrumented as an Apache HTTP Client sink. The tracked \verb$execute$ method is defined in the \verb$HttpClient$ interface, and therefore it can be invoked either using the \verb$invoke-interface$ instruction, referencing the interface as the object type, or using the other two virtual calls, \verb$invoke-virtual$ and \verb$invoke-static$, referencing some class that implements the interface, which is a piece of information that can be provided by the class hierarchy. 
+The motivation for constructing the complete runtime class hierarchy was being able to reason about the nature of method call destinations, necessary for choosing the correct type of their instrumentation. But class hierarchy is useful in other situations as well, e.g. sources and sinks use it to identify their tracked methods even if the invoking instruction does not reference the expected class but one of its children. Code shown in listing~\ref{listing:Sink_ApacheHTTPClient_CanBeApplied} was taken from a method that returns \verb$true$ iff given method call should be instrumented as an Apache HTTP Client sink. The tracked \verb$execute$ method is defined in the \verb$HttpClient$ interface, and therefore it can be invoked either using the \verb$invoke-interface$ instruction, referencing the interface as the object type, or using the other two virtual calls, \verb$invoke-virtual$ and \verb$invoke-super$, referencing some class that implements the interface. Information about these relations is provided by the class hierarchy. 
 
-\begin{figure}[h]
+\begin{figure}
 	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
@@ -841,30 +841,30 @@ return invokedMethodName.equals("execute") &&
 	\end{lstlisting}
 \end{figure}
 
-Dexter builds the hierarchy by scanning the application's executable, plus a set of provided framework files. These are all DEX files obtained from the device's \verb$/system/framework$ folder, which contain the classes available at runtime. The framework changes with every new release of Android, and therefore a version compatible with the application must be used, which is the reason why Dexter offers the user to provide their own framework rather than shipping with one particular version. Currently, Dexter also supports scanning JAR files to allow SDK packages to be included in the framework, for example for instrumentation of applications dependent on Google Maps API. But since these SDK packages sometimes do not contain the full class hierarchy, this feature might be dropped and the structure obtained from the respective Android application.
+Dexter builds the hierarchy by scanning the application's executable, plus a set of provided framework files. These are all DEX files obtained from the device's \verb$/system/framework$ folder, which form the runtime environment. The framework changes with every new release of Android, and therefore a version compatible with the application must be used. This is why Dexter does not ship with a fixed version of the framework, but rather lets the user provide their own. Currently, Dexter also supports scanning JAR files to allow SDK packages to be included in the framework, for example for instrumentation of applications dependent on Google Maps API. 
 
-The class hierarchy is a regular tree structure, with each node except the root having exactly one parent, and is implemented as such. Each node contains:
+The class hierarchy is a standard rooted tree and is implemented as such. Each node contains:
 \begin{inparaenum}[(i)]
 \item name of superclass,
 \item set of children
 \item set of implemented interfaces,
 \item set of defined methods,
 \item set of defined fields,
-\item access flags and annotations of the class and its methods and fields.
+\item access flags and annotations.
 \end{inparaenum}
 
-All DEX files are parsed by DexLib, its data structures then read and all relevant pieces of information passed to the class hierarchy object. Same is done for JAR files, only these are parsed by the BCEL library. Once all of the files have been scanned, \verb$DexClassHierarchy.checkConsistency$ method is called, which makes sure that:
+All DEX files are parsed by DexLib, its data structures then read and relevant pieces of information passed to the class hierarchy object. Same is done for JAR files, only these are parsed by the BCEL library. Once all of the files have been scanned, \verb$DexClassHierarchy.checkConsistency$ method is called, which makes sure that:
 \begin{inparaenum}[(i)]
 \item parent of every class is present,
-\item interfaces classes implement are present,
+\item interfaces implemented by classes are present,
 \item interfaces extend \verb$Object$,
 \item classes do not implement other classes,
 \end{inparaenum}
 and creates links between nodes. Every loop-introducing node is rejected during the file-scanning phase.
 
-Class hierarchy provides methods that return pieces of information stored directly in its nodes, or methods that perform simple tree traversal, like returning the set of all ancestors of a class, and hence, there is no point in describing these in greater detail. The only non-trivial method inside this class is the destination-deciding algorithm for method calls, which was already discussed in section~\ref{section:TaintPropagation_DestDecision}. 
+Class hierarchy provides methods that return data stored directly in its nodes, or methods that perform simple tree traversal, like returning the set of all ancestors of a class. Since these are trivial, details of their implementation are omitted. The only non-trivial method inside this class is the destination-deciding algorithm for method calls, which was already discussed in section~\ref{section:TaintPropagation_DestDecision}. 
 
-It is worth mentioning that method calls can be performed not only on class types but also on arrays. Since their superclass is always \verb$Object$, i.e. they offer methods like \verb$equals$ and \verb$hashCode$, and they are not allowed to override or define methods, Dexter simply treats them as classes of type \verb$Object$. 
+It is worth mentioning that method calls can be performed not only on class types but also on arrays. Their superclass is always \verb$Object$, i.e. they inherit methods like \verb$equals$ and \verb$hashCode$, and they are not allowed to override them or define any new methods. Hence they are simply treated as \verb$Object$ classes. 
 
 \section{Intermediate Code Representation}
 
