@@ -1,0 +1,86 @@
+\section{Summary}
+
+\textbf{Discovered:} March 9, 2011 \\
+\textbf{Updated:} March 10, 2011 5:41:31 AM \\
+\textbf{Also Known As:} Troj/Bgserv-A [Sophos],	ANDROIDOS\_BGSERV.A [Trend] \\
+\textbf{Type:} Trojan \\
+\textbf{Infection Length:} 98,684 bytes \\
+\textbf{Systems Affected:} Android
+
+Android.Bgserv is a Trojan that opens a back door and transmits information from the device to a remote location. 
+
+\textbf{\large Antivirus Protection Dates}
+\begin{itemize}
+	\item \textit{Initial Rapid Release version} March 9, 2011 revision 022
+	\item \textit{Latest Rapid Release version} February 19, 2013 revision 016
+	\item \textit{Initial Daily Certified version} pending
+	\item \textit{Latest Daily Certified version} May 3, 2012 revision 004
+	\item \textit{Initial Weekly Certified release date} March 9, 2011
+\end{itemize}
+
+\textbf{\large Threat Assessment} \\
+\textbf{Wild}
+\begin{itemize}
+	\item \textit{Wild Level:} Low
+	\item \textit{Number of Infections:} 0 - 49
+	\item \textit{Number of Sites:} 0 - 2
+	\item \textit{Geographical Distribution:} Low
+	\item \textit{Threat Containment:} Easy
+	\item \textit{Removal:} Easy
+\end{itemize}
+\textbf{Damage}
+\begin{itemize}
+	\item \textit{Damage Level:} Low
+	\item \textit{Payload:} Opens a back door
+\end{itemize}
+\textbf{Distribution}
+\begin{itemize}
+	\item \textit{Distribution Level:} Low
+\end{itemize}
+
+\section{Technical Details}
+
+The threat arrives bundled inside a legitimate application.
+
+When the Trojan is executed, it collects the following information and saves it in the file [INSTALLATION PATH]/.hide/upload.xml:
+\begin{itemize}
+	\item IMEI
+	\item Phone Number
+	\item SMS Center
+	\item Install Time
+	\item System Version
+\end{itemize}
+
+It then uploads the collected information to the following remote site using the HTTP POST method: \\
+{[}http://{]}www.youlubg.com:81/Coop/reques[REMOVED]
+
+Next, it receives commands from the reply to the POST and saves the commands in the following file: \\
+{[}INSTALLATION PATH{]}/.hide/serverInfo.xml
+
+This allows the remote attacker to send SMS messages from the compromised device.
+
+The threat also has the capability to block incoming SMS messages.
+
+The threat may change the access port name (APN) to the following WAP network: \\
+\textbf{Name:} cmwap \\
+\textbf{APN:} cmwap \\
+\textbf{Proxy:} 10.0.0.172 \\
+\textbf{Port:} 80 \\
+\textbf{MCC:} 460 \\
+\textbf{MNC:} 02 \\
+\textbf{Type:} default \\
+\textbf{MMSC:} http://mmsc.monternet.com \\
+\textbf{Number:} [EXISTING SIM OPERATOR NUMBER] \\
+
+It then downloads a list of links from a remote site listed in the serverInfo.xml file and saves it as the following file: \\
+{[}INSTALLATION PATH{]}/.hide/vedio.xml
+
+It also downloads a file from a URL listed in the vedio.xml file and saves it as the following file: \\
+{[}INSTALLATION PATH{]}/.hide/vedio\_file.3gp
+
+It then restores the APN to its original settings.
+
+The Trojan logs its activities in the following file for debugging purposes: \\
+{[}INSTALLATION PATH{]}/.hide/log.txt
+
+\textbf{Writeup By:} Mario Ballano and Kaoru Hayashi

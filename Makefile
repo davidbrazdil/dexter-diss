@@ -13,11 +13,11 @@ PROP = proposal.tex propbody.tex
 
 diss.pdf:	$(DISS)
 	pdflatex diss
-	bibtex diss
-	pdflatex diss
-	bibtex diss
-	pdflatex diss
-	bibtex diss
+#	bibtex diss
+#	pdflatex diss
+#	bibtex diss
+#	pdflatex diss
+#	bibtex diss
 
 help:
 	@echo
