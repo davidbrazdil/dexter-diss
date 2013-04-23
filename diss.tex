@@ -1210,13 +1210,14 @@ Last step Dexter has to make is replacing the executable file in the original AP
 \cleardoublepage
 \chapter{Evaluation}
 
-\section{Success Criteria}
 
 \section{Case Studies}
 
-\subsection{Gone in 60 Seconds}
+\subsection{GoneSixty}
+Analysis in appendix~\ref{chapter:Report_Gone60}.
 
 \subsection{BgServ}
+Analysis in appendix~\ref{chapter:Report_BgServ}.
 
 \subsection{Find \& Call}
 
@@ -1224,7 +1225,58 @@ Last step Dexter has to make is replacing the executable file in the original AP
 
 \section{Performance Overhead}
 
+\subsection{Per-feature Measurements}
+
+\subsection{Benchmark}
+
+\begin{table}
+	\begin{center}
+	\begin{tabular}{|l|c|c|c|c|}
+		\firsthline
+		\textbf{Test Name} & \textbf{Points (orig.)} & \textbf{Points (inst.)} & \textbf{Diff} & \textbf{Diff \%} \\
+		\hline
+		CPU Integer   & $194.9 \pm 5.4$ & $193.0 \pm 3.2$ & $-1.9$ & $-0.97\%$ \\
+		CPU Float     & $342.9 \pm 9.5$ & $338.3 \pm 7.0$ & $-4.6$ & $-1.35\%$ \\
+		Graphic2D     & $150.4 \pm 12.0$ & $157.8 \pm 7.1$ & $+7.4$ & $+4.92\%$ \\
+		Graphic3D     & $350.8 \pm 9.2$ & $121.8 \pm 7.1$ & $-229.0$ & $-65.27\%$ \\
+		\lasthline
+	\end{tabular}
+	\end{center}
+	\caption{Comparison of QuickBenchmark results before and after instrumentation. Application was run 37 times on Nexus One.}
+	\label{table:Evaluation_QuickBenchmark}
+\end{table}
+
+
 \section{Code Bloat}
+
+\section{Success Criteria}
+
+\begin{enumerate}
+
+\item Application must communicate with Android devices and be able to
+      download/upload application packages (APKs).
+
+\item Application must be able to extract content of APK files
+      and to repackage them after instrumentation.
+
+\item Specification of sources, sinks and sanitizers has to be designed
+      and these properly identified by the instrumenting application.
+
+\item Instrumentation of DEX files for both explicit and implicit flow 
+      analysis needs to be designed, implemented and shown to propagate 
+      taint correctly.
+
+\item Capabilities of the information-flow analysis must be demonstrated
+      on examples of real applications.
+      
+\item Advantages and limitations of system-level integration versus 
+      per-application bytecode instrumentation for the purpose of 
+      taint-based flow analysis must be appraised.
+
+\item Performance must be compared to TaintDroid and overhead measured
+      against the original code.
+
+\end{enumerate}
 
 \cleardoublepage
 \chapter{Conclusion}
@@ -1245,10 +1297,12 @@ Last step Dexter has to make is replacing the executable file in the original AP
 \appendix
 
 \chapter{GoneSixty Security Report}
+\label{chapter:Report_Gone60}
 \input{report_gone60}
 \cleardoublepage
 
 \chapter{BgServ Security Report}
+\label{chapter:Report_BgServ}
 \input{report_bgserv}
 \cleardoublepage
 
