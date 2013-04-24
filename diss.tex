@@ -1225,42 +1225,21 @@ Analysis in appendix~\ref{chapter:Report_BgServ}.
 
 \section{Performance Overhead}
 
-\subsection{Testing Application Measurements}
+\begin{figure}
+	\centerline{	
+		\includegraphics[width=0.6\textwidth]{figs/fig_eval_testappbench.eps}
+	}
+	\caption{Time taken to initialize the application and access sources. Error bars represent interval of one standard deviation.}.
+	\label{figure:Evalutaion_TestAppBench}
+\end{figure}
 
-\begin{table}
-	\begin{center}
-	\begin{tabular}{|l|c|c|c|c|}
-		\firsthline
-		\textbf{Test} & \textbf{Time $/ms$ (orig.)} & \textbf{Time $/ms$ (inst.)} & \textbf{Diff} & \textbf{Diff \%} \\
-		\hline
-		App Init   & $70.3 \pm 12.3$ & $72.3 \pm 12.5$ & $+2.0$ & $+2.8\%$ \\
-		Contacts   & $231.6 \pm 42.4$ & $617.8 \pm 69.5$ & $+386.2$ & $+166.8\%$ \\
-		\lasthline
-	\end{tabular}
-	\end{center}
-	\caption{Comparison of QuickBenchmark results before and after instrumentation. Application was run 37 times on Nexus One.}
-	\label{table:Evaluation_QuickBenchmark}
-\end{table}
-
-\subsection{Benchmark}
-
-\begin{table}
-	\begin{center}
-	\begin{tabular}{|l|c|c|c|c|}
-		\firsthline
-		\textbf{Test} & \textbf{Points (orig.)} & \textbf{Points (inst.)} & \textbf{Diff} & \textbf{Diff \%} \\
-		\hline
-		CPU Integer   & $194.9 \pm 5.4$ & $193.0 \pm 3.2$ & $-1.9$ & $-0.97\%$ \\
-		CPU Float     & $342.9 \pm 9.5$ & $338.3 \pm 7.0$ & $-4.6$ & $-1.35\%$ \\
-		Graphic2D     & $150.4 \pm 12.0$ & $157.8 \pm 7.1$ & $+7.4$ & $+4.92\%$ \\
-		Graphic3D     & $350.8 \pm 9.2$ & $121.8 \pm 7.1$ & $-229.0$ & $-65.27\%$ \\
-		\lasthline
-	\end{tabular}
-	\end{center}
-	\caption{Comparison of QuickBenchmark results before and after instrumentation. Application was run 37 times on Nexus One.}
-	\label{table:Evaluation_QuickBenchmark}
-\end{table}
-
+\begin{figure}
+	\centerline{
+		\includegraphics[width=0.6\textwidth]{figs/fig_eval_quickbench.eps}
+	}
+	\caption{Points scored in QuickBenchmark. Error bars represent interval of one standard deviation.}.
+	\label{figure:Evalutaion_QuickBench}
+\end{figure}
 
 \section{Code Bloat}
 
