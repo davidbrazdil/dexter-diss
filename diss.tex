@@ -1329,30 +1329,25 @@ memory usage? data in proc
 \section{Success Criteria}
 
 \begin{enumerate}
+	\item \emph{Application must communicate with Android devices and be able to download/upload application packages (APKs).} \\
+	The SDK's \verb$adb$ tool was used both to download and upload APKs and framework files. By executing of shell commands on the device, it was also used to print the list of installed applications. Further integration with Dexter was not implemented.
 
-\item Application must communicate with Android devices and be able to
-      download/upload application packages (APKs).
+	\item \emph{Application must be able to extract content of APK files and to repackage them after instrumentation.} \\
+	Packages are extracted, executables instrumented and new APKs generated and digitally signed.
 
-\item Application must be able to extract content of APK files
-      and to repackage them after instrumentation.
+	\item \emph{Specification of sources, sinks and sanitizers has to be designed and these properly identified by the instrumenting application.} \\
+	Sources and sinks were defined by extending \verb$ExternalCallInstrumentor$ class, not through XML files as originally proposed. No sanitizers were implemented but could be defined the same way.
 
-\item Specification of sources, sinks and sanitizers has to be designed
-      and these properly identified by the instrumenting application.
+	\item \emph{Instrumentation of DEX files for both explicit and implicit flow analysis needs to be designed, implemented and shown to propagate taint correctly.} \\
+	Instrumented applications perform full dynamic explicit flow analysis, support for implicit flows is limited to exception throwing due to spending more time than expected on the assembling process. Both were tested on tailored code snippets.
 
-\item Instrumentation of DEX files for both explicit and implicit flow 
-      analysis needs to be designed, implemented and shown to propagate 
-      taint correctly.
-
-\item Capabilities of the information-flow analysis must be demonstrated
-      on examples of real applications.
+	\item \emph{Capabilities of the information-flow analysis must be demonstrated on examples of real applications.} \\
+	Three applications known to spy on users were instrumented and shown to successfully identify data leakage. 
       
-\item Advantages and limitations of system-level integration versus 
-      per-application bytecode instrumentation for the purpose of 
-      taint-based flow analysis must be appraised.
+	\item \emph{Advantages and limitations of system-level integration versus per-application bytecode instrumentation for the purpose of taint-based flow analysis must be appraised.} \\
 
-\item Performance must be compared to TaintDroid and overhead measured
-      against the original code.
-
+	\item \emph{Performance must be compared to TaintDroid and overhead measured against the original code.} \\
+	Overhead of individual operations was measured on the testing application. Benchmark downloaded from the application market was used for processor-bound performance measurements. Results were compared to those presented in the TaintDroid paper.
 \end{enumerate}
 
 \cleardoublepage
