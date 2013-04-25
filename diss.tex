@@ -318,7 +318,7 @@ Returns the taint tag of given object. Returns zero when \verb$obj == null$.
 Adds taint to \verb$obj$ by OR-ing its existing entry with the first parameter. Does nothing when \verb$obj == null$.
 \end{description}
 
-In the following sections, the \verb$taint-get$ and \verb$taint-set$ pseudo-instructions (explained in section~\ref{section:Code_Pseudoinstructions}) will be used as a shorthand for calling the \verb$get$ and \verb$set$ methods of the hash map. Their syntax follows the signatures above:
+In the following sections, the \verb$taint-get$ and \verb$taint-set$ macros (explained in section~\ref{section:Code_Macros}) will be used as a shorthand for calling the \verb$get$ and \verb$set$ methods of the hash map. Their syntax follows the signatures above:
 
 	\begin{figure}[H]
 		\centerbox{
@@ -919,12 +919,12 @@ In DEX, try blocks are stored separately from the bytecode. Each block is define
 
 By using markers inside of the code, both absolute and relative addresses of these points can be determined at the assembly stage, and inserting extra instructions into the code or replacing existing instructions with their different-sized variants does not break any links.
 
-\subsubsection{Pseudoinstructions}
-\label{section:Code_Pseudoinstructions}
+\subsubsection{Macros}
+\label{section:Code_Macros}
 
-Pseudoinstructions are a way of grouping several standard instructions. They were introduced because method calls in Dalvik consist of two separate instructions: an invoke instruction that jumps into the called method, and an optional \verb$move-result$ instruction that stores the returned value into a given register. But since the second instruction does not contain information about the called method, they cannot be instrumented separately. For this reason, intermediate code is scanned before the instrumentation and all these instruction pairs replaced with grouping pseudoinstructions. They are expanded again after instrumentation. Same approach is necessary for the \verb$filled-new-array$ instruction.
+Macros are a way of grouping several standard instructions. They were introduced because method calls in Dalvik consist of two separate instructions: an invoke instruction that jumps into the called method, and an optional \verb$move-result$ instruction that stores the returned value into a given register. But since the second instruction does not contain information about the called method, they cannot be instrumented separately. For this reason, intermediate code is scanned before the instrumentation and all these instruction pairs replaced with grouping macros. They are expanded again after instrumentation. Same approach is necessary for the \verb$filled-new-array$ instruction.
 
-At the same time, pseudoinstructions can simplify the implementation of some of the instrumentation rules, because they can be used as small inline functions. A simple example of this is the \verb$taint-get$ pseudoinstruction which was already introduced in section~\ref{section:TaintTagStorage_Objects}. It is inserted into the code by the instrumentation rules and afterwards expanded to:
+At the same time, macros can simplify the implementation of some of the instrumentation rules, because they can be used as small inline functions. A simple example of this is the \verb$taint-get$ macro which was already introduced in section~\ref{section:TaintTagStorage_Objects}. It is inserted into the code by the instrumentation rules and afterwards expanded to:
 	\begin{figure}[H]
 		\centerbox{
 			\asm{invoke-static TaintMap.get(vObject)} \\
@@ -971,9 +971,9 @@ These classes could be generated the same way as the rest of the instrumentation
 
 \subsection{Bytecode Instrumentation}
 
-The method code level is where the most notable instrumentation work is done. The \verb$DexCode.instrument$ method begins by replacing all instructions that need to be grouped as they cannot be instrumented independently (\verb$invoke$ or \verb$filled-new-array$ + \verb$move-result$) with their respective pseudoinstructions. 
+The method code level is where the most notable instrumentation work is done. The \verb$DexCode.instrument$ method begins by replacing all instructions that need to be grouped as they cannot be instrumented independently (\verb$invoke$ or \verb$filled-new-array$ + \verb$move-result$) with their respective macros. 
 
-With the code prepared, each (pseudo)instruction is asked to generate its instrumentation and place the extra instructions into the code. Implementation of these generators exactly follows the rules of taint propagation logic in section~\ref{section:DataFlowAnalysis}, and therefore will not be discussed any further. Once these are instrumented, the taint register initializing code (see section~\ref{section:TaintPropagation_MethodCalls_Internal}) is inserted in front of the \verb$START$ marker, and pseudoinstructions are expanded.
+With the code prepared, each instruction or macro is asked to generate its instrumentation and place the extra instructions into the code. Implementation of these generators exactly follows the rules of taint propagation logic in section~\ref{section:DataFlowAnalysis}, and therefore will not be discussed any further. Once these are instrumented, the taint register initializing code (see section~\ref{section:TaintPropagation_MethodCalls_Internal}) is inserted in front of the \verb$START$ marker, and macros are expanded.
 
 \begin{figure}
 	\centering
@@ -1017,7 +1017,7 @@ This fully instrumented code, however, might not be valid, since throwing instru
 
 It was already explained that the object taint map serves as a function from the set of all object references to integers representing their current taint as the instrumented application is being executed, and that it is one of the auxiliary classes implemented in Java and linked in. The data structure suitable to implement this function is a standard hash table, only it needs to use weak object references, because their presence in the table does not prevent garbage collection.
 
-The Java framework provides an implementation of such hash table in the \verb$WeakHashMap$ class. However, using an instance of this class could potentially lead to a change in application's behaviour. The problem is that \verb$WeakHashMap$ calls the \verb$hashCode$ method of the given object to determine the slot its entry should be in, and the \verb$equals$ method to compare it against the objects in the linked list of entries in that slot. Since objects can override the safe default implementations of these methods, insertion of the \verb$taint-get$ and \verb$taint-set$ pseudoinstructions would introduce method calls that were not present in the original application, not to mention the fact that these methods could throw exceptions, preventing the taint map from functioning. In addition, overriding \verb$equals$ can render any two objects equal, even if they are not of the same type, which would unify their taint tags and taint could propagate uncontrollably. For all these reasons, a safe version of \verb$WeakHashMap$, which would not call any of the object's methods, had to be implemented. 
+The Java framework provides an implementation of such hash table in the \verb$WeakHashMap$ class. However, using an instance of this class could potentially lead to a change in application's behaviour. The problem is that \verb$WeakHashMap$ calls the \verb$hashCode$ method of the given object to determine the slot its entry should be in, and the \verb$equals$ method to compare it against the objects in the linked list of entries in that slot. Since objects can override the safe default implementations of these methods, insertion of the \verb$taint-get$ and \verb$taint-set$ macros would introduce method calls that were not present in the original application, not to mention the fact that these methods could throw exceptions, preventing the taint map from functioning. In addition, overriding \verb$equals$ can render any two objects equal, even if they are not of the same type, which would unify their taint tags and taint could propagate uncontrollably. For all these reasons, a safe version of \verb$WeakHashMap$, which would not call any of the object's methods, had to be implemented. 
 
 Removing the call to the \verb$equals$ method is trivial - reference equality operator \verb$==$ is used instead. The \verb$obj.hashCode()$ call was replaced by \verb$obj.getClass().hashCode()$. The \verb$getClass$ method cannot be overridden as it is declared \verb$final$, making the call to it safe. It returns an object of type \verb$Class$, which represents the type of \verb$obj$. These are automatically generated by the virtual machine when classes are loaded, and so the method cannot be overridden and always uses the original implementation which returns the address of the \verb$Class$ object in the memory. Unfortunately, this means that all instances of one class type will generate the same hash code and will be stored in the same slot. If this ever proved to be a performance bottleneck, native code could be used to return the address of individual objects, but that would reduce the portability of the solution. 
 
