@@ -1276,9 +1276,15 @@ W/WiYun   (11333): Failed to get ad
 
 Unlike GoneSixty which steals personal data, BgServ is interested in information that can identify the device: phone number, IMEI, version of the system, etc. These are accessed through system service managers and from the output in figure~\ref{figure:Evaluation_BgServ} we see that Dexter recognized access to the \texttt{TelephonyManager}\footnote{\scriptsize\url{https://developer.android.com/reference/android/telephony/TelephonyManager.html}} singleton and that the data are again leaked being via HTTP. 
 
-BgServ also acquires the \texttt{WifiManager}, but no taint is assigned since access to network settings is not being tracked. Supporting it is simply a matter of adding the string identifier to a list of recognized services and allocating a flag bit in the taint tag representation. Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses an instance of \verb$XmlSerializer$\footnote{\scriptsize\url{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}}, which is currently not a recognized sink.
+BgServ also acquires the \texttt{WifiManager}, but no taint is assigned since access to network settings is not being tracked. Supporting it is simply a matter of adding the string identifier to a list of recognized services and allocating a flag bit in the taint tag representation. Same applies to the database query requesting network provider information. 
 
-\subsection{Find \& Call}
+Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses an instance of \verb$XmlSerializer$\footnote{\scriptsize\url{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}}, which is currently not a recognized sink.
+
+\subsection{Find\&Call}
+
+Find\&Call is a contact organizer, whose iOS version bacame known as the first malware for iOS, approved by Apple and distributed through App Store. Likewise, it briefly appeared on the open Google Play before it was removed in July 2012. While logging into user's online account, Find\&Call leaks contact list and phone number which are used by the server to send spam via text messages that seem to have been sent by the user. A blog entry\footnote{\scriptsize\url{https://www.securelist.com/en/blog/208193641/Find_and_Call_Leak_and_Spam}} by a Kaspersky Lab expert provides more information.
+
+Since Find\&Call itself makes heavy use of the log, the output produced by instrumented application is rather extensive and was omitted. Nevertheless, Dexter discovered multiple HTTP requests leaking the contents of the phonebook and user's location. Access to the service providing phone number information was also identified, but tagged data never reached the sink, which might indicate a bug in the implementation, or the fact that they simply were not leaked. Since the application is complex and its bytecode had been obfuscated, further investigation of this problem was not successful. The output also shows that taint automatically propagates between individual application components (activities) through IPC calls.
 
 \section{Testing}
 
