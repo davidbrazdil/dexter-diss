@@ -242,7 +242,7 @@ Each method can use up to 65,536 virtual registers. Actual mapping to hardware r
 Dalvik also has a very powerful preload class verifier. It infers types of values stored in registers at every single point of computation, and uses this information to identify illegal access to resources, pointer arithmetic and other illegal operations. A class containing such instructions is rejected and the application terminated.
 
 \subsubsection{Syntax of Assembly}
-Assembly syntax used in this dissertation is mostly based on the official Dalvik assembly. It follows the \emph{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g. the instruction
+Assembly syntax used in this dissertation is mostly based on the official Dalvik assembly. It follows the \emph{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g.\ the instruction
 		\centerbox{
 			\asm{add-int/lit16 v2, v8, \#1234}
 		}
@@ -290,8 +290,8 @@ For the sake of simplicity, Dexter adopts the same tag representation as TaintDr
 		1            & \verb$TAINT_SOURCE_SMS$       & text message data \\
 		2            & \verb$TAINT_SOURCE_CALL_LOG$  & call history information \\
 		3            & \verb$TAINT_SOURCE_LOCATION$  & location information \\
-		4            & \verb$TAINT_SOURCE_BROWSER$   & browser data, e.g. bookmarks \\
-		5            & \verb$TAINT_SOURCE_DEVICE_ID$ & device ID, e.g. IMEI/phone number \\
+		4            & \verb$TAINT_SOURCE_BROWSER$   & browser data, e.g.\ bookmarks \\
+		5            & \verb$TAINT_SOURCE_DEVICE_ID$ & device ID, e.g.\ IMEI/phone number \\
 		\hline
 		29           & \verb$TAINT_SINK_FILE$        & file-system sink \\
 		30           & \verb$TAINT_SINK_SOCKET$      & network sink \\
@@ -331,7 +331,7 @@ In the following sections, the \verb$taint-get$ and \verb$taint-set$ pseudo-inst
 
 \label{section:TaintStorage_Primitives}
 
-In the case of primitives, Dexter needs to create taint storage space everywhere where a primitive might be stored, i.e. method code registers, and class fields and arrays of primitive types. Taint will also be temporarily stored for method arguments during a method call, but this will be discussed in section~\ref{section:TaintPropagation_MethodCalls_Internal}.
+In the case of primitives, Dexter needs to create taint storage space everywhere where a primitive might be stored, i.e.\ method code registers, and class fields and arrays of primitive types. Taint will also be temporarily stored for method arguments during a method call, but this will be discussed in section~\ref{section:TaintPropagation_MethodCalls_Internal}.
 
 \begin{itemize}
 
@@ -423,7 +423,7 @@ Some of Dalvik instructions can throw exceptions, depending on the values of arg
 
 While the previous examples of propagation rules only dealt with tainting within the scope of one instrumented method, now we will focus on taint propagation when method calls are involved. 
 
-The five types of method invocation supported by Dalvik are listed in table~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each will vary in slight details, but for tainting it will be more important to know whether a method call's target lies inside the DEX file, in which case taint should be propagated into the invoked method, or whether it jumps into untrackable and uninstrumentable code, and the invocation instrumentation should therefore assign taint conservatively, assuming the worst, i.e. that the method will spread taint everywhere it can.
+The five types of method invocation supported by Dalvik are listed in table~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each will vary in slight details, but for tainting it will be more important to know whether a method call's target lies inside the DEX file, in which case taint should be propagated into the invoked method, or whether it jumps into untrackable and uninstrumentable code, and the invocation instrumentation should therefore assign taint conservatively, assuming the worst, i.e.\ that the method will spread taint everywhere it can.
 
 \begin{table}[h]
 	\begin{center}
@@ -458,7 +458,7 @@ Only slightly more complicated is the case of a \verb$invoke-static$ call. The r
 
 All the other calls rely on dynamic dispatch. Since they are very similar, only the standard \verb$invoke-virtual$ case will be discussed here. By the nature of virtual calls, we know that the invoked method is declared either in the referenced class or in one of its parents, and implemented in any of the children of the declaring class. But not all the implementations of the method can be called by the instruction. In general, these are only implementations in the referenced class, in any of its children, and in the closest parent (only E and H in the example in figure~\ref{fig:TaintPropagation_DestDecision_ClassHierarchy}). If these classes are all internal or all external, the destination of the call is decidable statically. 
 
-Code could be analyzed to further narrow down the number of callable implementations, e.g. by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflectively finding the target method and checking whether it carries the annotation or not. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation for public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is, nonetheless, obvious that these are both very expensive operations. 
+Code could be analyzed to further narrow down the number of callable implementations, e.g.\ by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflectively finding the target method and checking whether it carries the annotation or not. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation for public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is, nonetheless, obvious that these are both very expensive operations. 
 
 One last thing to note is that if an implementation is marked native, it should be considered external regardless of the internality of the containing class
 .
@@ -720,7 +720,7 @@ client.execute(post);
 
 Unfortunately, situation is more complicated for some of the sinks we want to support, namely I/O build around the \verb$Writer$ abstract class. Listing~\ref{listing:Sink_Socket} shows its typical usage for network communication. The tracked method is \verb$PrintWriter.println$, but checking only the taint of the argument is insufficient. In listing~\ref{listing:Sink_ByteArray}, \verb$Writer$ is created with a \verb$ByteArrayOutputStream$, does not form a sink, and we merely want the taint to propagate into \verb$array$. 
 
-We handle this by setting a flag inside the \verb$Socket$ object's taint tag when it is initialized, i.e. making the \verb$Socket.<init>$ method a source of \verb$TAINT_SINK_SOCKET$ data. This taint propagates into the output stream and eventually into the \verb$Writer$ object. Code inserted for the \verb$println$ method then checks whether the object it is called on carries a sink taint, and only proceeds to checking the taint of the argument if it does.
+We handle this by setting a flag inside the \verb$Socket$ object's taint tag when it is initialized, i.e.\ making the \verb$Socket.<init>$ method a source of \verb$TAINT_SINK_SOCKET$ data. This taint propagates into the output stream and eventually into the \verb$Writer$ object. Code inserted for the \verb$println$ method then checks whether the object it is called on carries a sink taint, and only proceeds to checking the taint of the argument if it does.
 
 \begin{figure}[h]
 	\centering
@@ -811,7 +811,7 @@ The input of the program is the APK file of the application to be instrumented t
 
 \section{Runtime Class Hierarchy}
 
-The motivation for constructing the complete runtime class hierarchy was being able to reason about the nature of method call destinations, necessary for choosing the correct type of their instrumentation. But class hierarchy is useful in other situations as well, e.g. sources and sinks use it to identify their tracked methods even if the invoking instruction does not reference the expected class but one of its children. Code shown in listing~\ref{listing:Sink_ApacheHTTPClient_CanBeApplied} was taken from a method that returns \verb$true$ iff given method call should be instrumented as an Apache HTTP Client sink. The tracked \verb$execute$ method is defined in the \verb$HttpClient$ interface, and therefore it can be invoked either using the \verb$invoke-interface$ instruction, referencing the interface as the object type, or using the other two virtual calls, \verb$invoke-virtual$ and \verb$invoke-super$, referencing some class that implements the interface. Information about these relations is provided by the class hierarchy. 
+The motivation for constructing the complete runtime class hierarchy was being able to reason about the nature of method call destinations, necessary for choosing the correct type of their instrumentation. But class hierarchy is useful in other situations as well, e.g.\ sources and sinks use it to identify their tracked methods even if the invoking instruction does not reference the expected class but one of its children. Code shown in listing~\ref{listing:Sink_ApacheHTTPClient_CanBeApplied} was taken from a method that returns \verb$true$ iff given method call should be instrumented as an Apache HTTP Client sink. The tracked \verb$execute$ method is defined in the \verb$HttpClient$ interface, and therefore it can be invoked either using the \verb$invoke-interface$ instruction, referencing the interface as the object type, or using the other two virtual calls, \verb$invoke-virtual$ and \verb$invoke-super$, referencing some class that implements the interface. Information about these relations is provided by the class hierarchy. 
 
 \begin{figure}
 	\centering
@@ -864,7 +864,7 @@ and creates links between nodes. Every loop-introducing node is rejected during 
 
 Class hierarchy provides methods that return data stored directly in its nodes, or methods that perform simple tree traversal, like returning the set of all ancestors of a class. Since these are trivial, details of their implementation are omitted. The only non-trivial method inside this class is the destination-deciding algorithm for method calls, which was already discussed in section~\ref{section:TaintPropagation_DestDecision}. 
 
-It is worth mentioning that method calls can be performed not only on class types but also on arrays. Their superclass is always \verb$Object$, i.e. they inherit methods like \verb$equals$ and \verb$hashCode$, and they are not allowed to override them or define any new methods. Hence they are simply treated as \verb$Object$ classes. 
+It is worth mentioning that method calls can be performed not only on class types but also on arrays. Their superclass is always \verb$Object$, i.e.\ they inherit methods like \verb$equals$ and \verb$hashCode$, and they are not allowed to override them or define any new methods. Hence they are simply treated as \verb$Object$ classes. 
 
 \section{Intermediate Representation}
 
@@ -944,7 +944,7 @@ During the conversion of instructions, the address of every original instruction
 \subsection{Parameter Registers}
 \label{section:Code_ParamRegMapping}
 
-A very first code modification is also applied at this stage. It later simplifies the process of register allocation by removing one of the constraints the algorithm needs to satisfy, which comes from the fact that every Dalvik method with parameters accesses them through a set of virtual registers with identifiers at the end of the register spectrum it allocates, e.g. a method with seven registers and three parameters accesses them through registers \verb$v4$, \verb$v5$ and \verb$v6$ until it overwrites their values. 
+A very first code modification is also applied at this stage. It later simplifies the process of register allocation by removing one of the constraints the algorithm needs to satisfy, which comes from the fact that every Dalvik method with parameters accesses them through a set of virtual registers with identifiers at the end of the register spectrum it allocates, e.g.\ a method with seven registers and three parameters accesses them through registers \verb$v4$, \verb$v5$ and \verb$v6$ until it overwrites their values. 
 
 Dexter deals with this by creating a set of registers only for the parameters, inserting \verb$move$ instructions at the beginning of the method to copy the values into the correct registers used in the bytecode, and later explicitly allocating these at the end of the spectrum. This way, register allocation can assign identifiers to the regular registers regardless of this requirement.
 
@@ -952,7 +952,7 @@ Dexter deals with this by creating a set of registers only for the parameters, i
 
 Once the executable is parsed and converted, the modifications laid out in the preparation chapter can be applied to it. This is when all the effort put into converting the DEX to an intermediate data structure pays off, because the code for application of the instrumentation rules becomes simple and elegant. 
 
-Instrumentation of individual elements is carried out by their respective data structures, e.g. an instance of class \verb$DexField$ that represents an internal field of primitive type creates a new field of type \verb$int$ inside the same class to hold its taint tag, making sure that its name will not conflict with a name of an existing field. 
+Instrumentation of individual elements is carried out by their respective data structures, e.g.\ an instance of class \verb$DexField$ that represents an internal field of primitive type creates a new field of type \verb$int$ inside the same class to hold its taint tag, making sure that its name will not conflict with a name of an existing field. 
 
 The process of instrumentation starts by calling the \verb$instrument$ method of the root \verb$Dex$ object, which sets up the environment and delegates the work to its \verb$DexClass$ children. The children pass around an instance of \verb$DexInstrumentationCache$ through which they share common information, like the names of the introduced taint fields.
 
@@ -1033,7 +1033,7 @@ The complexity of this problem unfortunately led to the necessity to build a nea
 
 \subsection{Generic Register Allocation}
 
-Register allocation is an optimization problem of assigning a large number of source code variables to a small number of CPU registers. Same register can be used to hold the value of multiple variables, as long as the variables are not \emph{live} at the same time, i.e. the intervals between storing a value and the last point of reading it back do not overlap. If a solution cannot be found, storage in memory is created for some of the variables and load/store instructions that move the value to/from a designated temporary register are inserted in the program, in order to reduce the number of values that need to be held in CPU registers at the same time. This is called \emph{register spilling}.
+Register allocation is an optimization problem of assigning a large number of source code variables to a small number of CPU registers. Same register can be used to hold the value of multiple variables, as long as the variables are not \emph{live} at the same time, i.e.\ the intervals between storing a value and the last point of reading it back do not overlap. If a solution cannot be found, storage in memory is created for some of the variables and load/store instructions that move the value to/from a designated temporary register are inserted in the program, in order to reduce the number of values that need to be held in CPU registers at the same time. This is called \emph{register spilling}.
 
 \subsubsection{Allocation by Graph Colouring}
 
@@ -1062,7 +1062,7 @@ In CFG, each standard node represents a maximal sequence of instructions, called
 \end{inparaenum}
 Execution of instructions within a basic block is therefore always strictly linear. Nodes $A$ and $B$ are connected by a directed edge iff the execution of last instruction in $A$ can be followed by the execution of first instruction in $B$. For example, an \verb$if$ instruction would always end a basic block which would have two successors, since the instruction can either proceed to the next instruction or jump to a target marker. There are also two special nodes, \verb$START$ and \verb$EXIT$, that represent the entry and exit points of the method and are connected to other nodes accordingly.
 
-The principle of CFG generation is not complicated. Each element of the executable code, i.e. both instructions and markers, can specify whether it starts or ends a basic block, whether it can exit the method, and also the complete list of its successors. If it has more than two, it is automatically assumed it ends a block. Code is scanned linearly, instructions put in the current basic block, and new block is created whenever an instruction starting or ending a block is encountered. Blocks are then connected according to the lists of successors of their respective last instructions.
+The principle of CFG generation is not complicated. Each element of the executable code, i.e.\ both instructions and markers, can specify whether it starts or ends a basic block, whether it can exit the method, and also the complete list of its successors. If it has more than two, it is automatically assumed it ends a block. Code is scanned linearly, instructions put in the current basic block, and new block is created whenever an instruction starting or ending a block is encountered. Blocks are then connected according to the lists of successors of their respective last instructions.
 
 Completeness of the CFG is crutial in order to produce correct liveness intervals of variables and not miss any clashes. A lot of effort therefore had to be invested into reading the (often incomplete) Dalvik documentation to make sure \emph{every} instruction provided a complete list of its successors, reflecting all aspects of the execution semantics, even including the catch blocks the program can jump to if exceptions of various types are thrown. Similarly, instructions throwing exceptions not caught by the surrounding try block must return \verb$true$ when asked whether they can exit the method.
 
@@ -1090,7 +1090,7 @@ As not to pollute smaller ranges, colours are first assigned from the higher par
 
 \subsubsection{Consecutive-Identifier Constraints}
 
-For code density reasons, some Dalvik instructions reference part of their registers implicitly, e.g. instructions operating with 64-bit values store these in register pairs and require them to have consecutive identifiers because they explicitly address only the first register of each pair. There are also \verb$/range$ variants of the \verb$invoke$ instructions which are used to call methods with more than five arguments. These address consecutive registers by specifying the identifier of the first one and their count.
+For code density reasons, some Dalvik instructions reference part of their registers implicitly, e.g.\ instructions operating with 64-bit values store these in register pairs and require them to have consecutive identifiers because they explicitly address only the first register of each pair. There are also \verb$/range$ variants of the \verb$invoke$ instructions which are used to call methods with more than five arguments. These address consecutive registers by specifying the identifier of the first one and their count.
 
 Intermediate instructions reference all register objects explicitly and provide information about their allocation constraints. Dexter acquires these before the graph colouring, checks that they are not in conflict with each other, and builds so-called \emph{node runs} - sequences of one or more Clash Graph nodes that must be assigned consecutive colours. These are built by putting each node in its own linked list, and joining them according to the provided constraints. The order-generating part of the graph-colouring algorithm is modified to find which run the node with lowest degree belongs to, pushing the node run on the stack and removing all its nodes from the graph. The stack-popping loop then needs to be changed to operate on node runs instead. It acquires the addressing limits for each individual register, finds a non-conflicting colour for the first one and checks whether the rest of the run can be assigned the following colours. This is repeated until a valid colouring is found, or until all colours are tried.
 
