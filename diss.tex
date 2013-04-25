@@ -213,7 +213,7 @@ One out of three free apps spies on users: \url{http://www.huffingtonpost.com/al
 
 Dalvik is an open-source virtual machine and an essential component of the Android operating system. It was developed specifically for use on mobile devices such as smartphones and tablets, and its design was optimized for running on battery-powered systems with low-performance processor and limited memory. 
 
-Built around the Apache Harmony project, Dalvik runs programs that are compatible with a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file using tools in the Android SDK. With release 2.2, Dalvik introduced Just-In-Time compilation which significantly increased its performance and efficiency\footnote{\url{http://android-developers.blogspot.com/2010/05/dalvik-jit.html}}.
+Built around the Apache Harmony project, Dalvik runs programs that are compatible with a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file using tools in the Android SDK. With release 2.2, Dalvik introduced Just-In-Time compilation which significantly increased its performance and efficiency\footnote{\scriptsize\url{http://android-developers.blogspot.com/2010/05/dalvik-jit.html}}.
 
 \subsection{Application Package Files}
 
@@ -231,7 +231,7 @@ These files are stored on the device when applications are downloaded from the m
 
 \subsection{Bytecode}
 
-Dalvik bytecode is very similar to that of the Java Virtual Machine in the sense that it has a large set of rather high-level instructions, making the assembly nearly identical to the original source code unless obfuscation tools like ProGuard\footnote{\url{https://developer.android.com/tools/help/proguard.html}} are used. This makes analysis and reverse-engineering of applications a significantly easier task, and is also the reason why we will use both assembly and Java code examples freely.
+Dalvik bytecode is very similar to that of the Java Virtual Machine in the sense that it has a large set of rather high-level instructions, making the assembly nearly identical to the original source code unless obfuscation tools like ProGuard\footnote{\scriptsize\url{https://developer.android.com/tools/help/proguard.html}} are used. This makes analysis and reverse-engineering of applications a significantly easier task, and is also the reason why we will use both assembly and Java code examples freely.
 
 \subsubsection{Registers}
 
@@ -1225,15 +1225,8 @@ Android/GoneSixty is a spyware which was, according to the author, written only 
 \begin{figure}[t]
 	\scriptsize
 	\begin{verbatim}
-I/ActivityManager(  187): Starting: Intent { act=android.intent.action.MAIN 
-                                             cat=[android.intent.category.LAUNCHER] 
-                                             flg=0x10200000 
-                                             cmp=com.gone603/com.gone60.gone60 } from pid 295
 I/ActivityManager(  187): Start proc com.gone603 for activity com.gone603/com.gone60.gone60: 
                           pid=10912 uid=10065 gids={3003}
-D/dalvikvm(10912): GC_EXTERNAL_ALLOC freed 47K, 51% free 2679K/5379K, external 0K/0K, paused 48ms
-D/dalvikvm(10912): GC_EXTERNAL_ALLOC freed 1K, 51% free 2680K/5379K, external 1K/513K, paused 47ms
-D/dalvikvm(10912): GC_EXTERNAL_ALLOC freed <1K, 51% free 2680K/5379K, external 601K/1113K, paused 50ms
 I/System.out(10912): $ content query: content://com.android.contacts/contacts => 1
 I/System.out(10912): $ content query: content://sms => 2
 I/System.out(10912): $ browser data => 16
@@ -1256,7 +1249,34 @@ and store the data into commonly accessible class fields. The fifth thread waits
 
 \subsection{BgServ}
 
-Analysis in appendix~\ref{chapter:Report_BgServ}.
+Second analyzed application was infected with the Android/BgServ trojan, which is significantly more dangerous and complex than GoneSixty. Discovered in March 2011, it was inserted into various ordinary applications and then distributed through third party application markets, mostly in China. It runs in the background, sends sensitive data to a remote location and opens a backdoor. Getting orders from the server, it sends premium SMS messages or changes Internet connection settings. Appendix~\ref{chapter:Report_BgServ} contains a security report by Symantec with further details. 
+
+\begin{figure}[t]
+	\scriptsize
+	\begin{verbatim}
+I/ActivityManager(  187): Starting: Intent { cmp=com.virsir.android.chinamobile10086/.Root 
+                            } from pid 11333
+I/System.out(11333): $ system service request: alarm => 0
+E/FlurryAgent(11333): onEvent called before onStartSession.  Event: ActivityCreate:Root
+E/FlurryAgent(11333): onEvent called before onStartSession.  Event: ActivityCreate:MainView
+D/FlurryAgent(11333): Starting new session
+D/FlurryAgent(11333): Sending report to: http://data.flurry.com/aar.do
+I/System.out(11333): $ system service request: wifi => 0
+I/System.out(11333): $ content query: content://telephony/carriers/preferapn => 0
+I/System.out(11333): $ system service request: phone => 32
+I/System.out(11333): $ system service request: wifi => 0
+I/System.out(11333): $ system service request: phone => 32
+I/System.out(11333): $! tainted Apache HTTPClient request executed => T=32
+W/WiYun   (11333): Failed to get ad
+W/WiYun   (11333): Failed to get ad
+	\end{verbatim}
+	\caption{Log output generated by the instrumented version of BgServ.}
+	\label{figure:Evaluation_BgServ}
+\end{figure}
+
+Unlike GoneSixty which steals personal data, BgServ is interested mainly in leaking information that can identify the device: phone number, IMEI, version of the system, etc. These are accessed through system service managers and from the output in figure~\ref{figure:Evaluation_BgServ} we see that Dexter recognized access to the \texttt{TelephonyManager}\footnote{\scriptsize\url{https://developer.android.com/reference/android/telephony/TelephonyManager.html}} singleton and that the data are again leaked being via HTTP. 
+
+BgServ also acquires the \texttt{WifiManager}, but no taint is assigned since access to network settings is not being tracked. Supporting it is simply a matter of adding the string identifier to a list of recognized services and allocating a flag bit in the taint tag representation. Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses an instance of \verb$XmlSerializer$\footnote{\scriptsize\url{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}}, which is currently not being recognized as sink.
 
 \subsection{Find \& Call}
 
