@@ -1,0 +1,113 @@
+--------- beginning of /dev/log/main
+D/dalvikvm(  683): GC_EXPLICIT freed 6K, 51% free 2670K/5379K, external 0K/0K, paused 81ms
+--------- beginning of /dev/log/system
+I/ActivityManager(  187): Starting: Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.gone603/com.gone60.gone60 } from pid 295
+I/ActivityManager(  187): Start proc com.gone603 for activity com.gone603/com.gone60.gone60: pid=10912 uid=10065 gids={3003}
+D/dalvikvm(10912): GC_EXTERNAL_ALLOC freed 47K, 51% free 2679K/5379K, external 0K/0K, paused 48ms
+D/dalvikvm(10912): GC_EXTERNAL_ALLOC freed 1K, 51% free 2680K/5379K, external 1K/513K, paused 47ms
+D/dalvikvm(10912): GC_EXTERNAL_ALLOC freed <1K, 51% free 2680K/5379K, external 601K/1113K, paused 50ms
+I/System.out(10912): $ content query: content://com.android.contacts/contacts => 1
+I/System.out(10912): $ content query: content://sms => 2
+I/System.out(10912): $ content query: content://call_log/calls => 4
+I/ActivityManager(  187): Start proc android.process.acore for content provider com.android.providers.contacts/.ContactsProvider2: pid=10925 uid=10005 gids={3003, 1015}
+I/ActivityManager(  187): Displayed com.gone603/com.gone60.gone60: +598ms (total +20s834ms)
+I/ActivityThread(10925): Pub com.android.social: com.android.providers.contacts.SocialProvider
+I/ActivityThread(10925): Pub applications: com.android.providers.applications.ApplicationsProvider
+I/ActivityThread(10925): Pub contacts;com.android.contacts: com.android.providers.contacts.ContactsProvider2
+I/Database(10925): sqlite returned: error code = 0, msg = Recovered 82 frames from WAL file /data/data/com.android.providers.contacts/databases/contacts2.db-wal
+I/ActivityThread(10925): Pub call_log: com.android.providers.contacts.CallLogProvider
+I/ActivityThread(10925): Pub user_dictionary: com.android.providers.userdictionary.UserDictionaryProvider
+I/System.out(10912): $ content query: content://com.android.contacts/data/phones => 1
+I/System.out(10912): $! tainted Apache HTTPClient request executed => T=23
+W/System.err(10912): java.net.UnknownHostException: gi60s.com
+W/System.err(10912): 	at java.net.InetAddress.lookupHostByName(InetAddress.java:506)
+W/System.err(10912): 	at java.net.InetAddress.getAllByNameImpl(InetAddress.java:294)
+W/System.err(10912): 	at java.net.InetAddress.getAllByName(InetAddress.java:256)
+W/System.err(10912): 	at org.apache.http.impl.conn.DefaultClientConnectionOperator.openConnection(DefaultClientConnectionOperator.java:136)
+W/System.err(10912): 	at org.apache.http.impl.conn.AbstractPoolEntry.open(AbstractPoolEntry.java:164)
+W/System.err(10912): 	at org.apache.http.impl.conn.AbstractPooledConnAdapter.open(AbstractPooledConnAdapter.java:119)
+W/System.err(10912): 	at org.apache.http.impl.client.DefaultRequestDirector.execute(DefaultRequestDirector.java:359)
+W/System.err(10912): 	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:555)
+W/System.err(10912): 	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:487)
+W/System.err(10912): 	at org.apache.http.impl.client.AbstractHttpClient.execute(AbstractHttpClient.java:465)
+W/System.err(10912): 	at com.gone60.json_class.execHttpRequest(json_class.java)
+W/System.err(10912): 	at com.gone60.json_class.access$1(json_class.java)
+W/System.err(10912): 	at com.gone60.json_class$2.run(json_class.java)
+W/System.err(10912): 	at java.lang.Thread.run(Thread.java:1019)
+W/System.err(10912): 	at com.gone60.json_class.GetData(json_class.java)
+W/System.err(10912): 	at com.gone60.MyService$6.run(MyService.java)
+W/System.err(10912): 	at java.lang.Thread.run(Thread.java:1019)
+I/ActivityManager(  187): Starting: Intent { act=android.intent.action.DELETE dat=package:com.gone603 cmp=com.android.packageinstaller/.UninstallerActivity } from pid 10912
+D/szipinf (  187): Initializing inflate state
+I/ActivityManager(  187): Start proc com.android.packageinstaller for activity com.android.packageinstaller/.UninstallerActivity: pid=10938 uid=10046 gids={}
+D/szipinf (10938): Initializing inflate state
+D/dalvikvm(  187): GC_CONCURRENT freed 590K, 44% free 5417K/9543K, external 57K/568K, paused 3ms+6ms
+D/dalvikvm(10938): GC_EXTERNAL_ALLOC freed 43K, 51% free 2677K/5379K, external 0K/0K, paused 45ms
+I/ActivityManager(  187): Displayed com.android.packageinstaller/.UninstallerActivity: +320ms
+D/szipinf (10925): Initializing inflate state
+D/dalvikvm(10925): GC_CONCURRENT freed 174K, 48% free 2963K/5639K, external 0K/0K, paused 5ms+3ms
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/dalvikvm(  295): GC_EXPLICIT freed 257K, 48% free 3280K/6215K, external 4134K/5163K, paused 65ms
+D/dalvikvm(  732): GC_EXPLICIT freed 2K, 53% free 2665K/5575K, external 0K/0K, paused 39ms
+D/dalvikvm(  744): GC_EXPLICIT freed 5K, 53% free 2722K/5767K, external 0K/0K, paused 62ms
+D/dalvikvm(  758): GC_EXPLICIT freed 6K, 53% free 2691K/5639K, external 0K/0K, paused 82ms
+I/ActivityManager(  187): Starting: Intent { act=android.intent.action.VIEW cmp=com.android.packageinstaller/.UninstallAppProgress (has extras) } from pid 10938
+D/dalvikvm(10938): GC_EXTERNAL_ALLOC freed 63K, 50% free 2727K/5379K, external 288K/521K, paused 26ms
+I/PackageManager(  187): Removing non-system package:com.gone603
+I/Process (  187): Sending signal. PID: 10912 SIG: 9
+I/ActivityManager(  187): Force stopping package com.gone603 uid=10065
+W/ActivityManager(  187): Scheduling restart of crashed service com.gone603/com.gone60.MyService in 5000ms
+I/ActivityManager(  187):   Force finishing activity HistoryRecord{40855130 com.gone603/com.gone60.gone60}
+I/ActivityManager(  187):   Force stopping service ServiceRecord{40816eb0 com.gone603/com.gone60.MyService}
+D/PackageManager(  187): Removing package com.gone603
+D/PackageManager(  187):   Services: com.gone60.MyService
+I/WindowManager(  187): WIN DEATH: Window{40917058 com.gone603/com.gone60.gone60 paused=true}
+I/ActivityManager(  187): No longer want com.cooliris.media (pid 609): hidden #16
+D/PackageManager(  187):   Activities: com.gone60.gone60
+I/ActivityManager(  187): Displayed com.android.packageinstaller/.UninstallAppProgress: +318ms
+I/ActivityManager(  187): Force stopping package com.gone603 uid=10065
+D/dalvikvm(  187): GC_EXPLICIT freed 309K, 44% free 5391K/9543K, external 35K/547K, paused 71ms
+D/dalvikvm(10925): GC_EXPLICIT freed 155K, 49% free 2919K/5639K, external 0K/0K, paused 68ms
+D/dalvikvm(  295): GC_EXPLICIT freed 40K, 48% free 3239K/6215K, external 3614K/4513K, paused 70ms
+D/szipinf (  187): Initializing inflate state
+D/szipinf (  187): Initializing inflate state
+D/szipinf (  187): Initializing inflate state
+D/HomeLoaders(  295): application intent received: android.intent.action.PACKAGE_REMOVED, replacing=false
+D/HomeLoaders(  295):   --> package:com.gone603
+D/HomeLoaders(  295):   --> remove package
+D/szipinf (  187): Initializing inflate state
+D/szipinf (  187): Initializing inflate state
+D/szipinf (  187): Initializing inflate state
+I/ThemeManager(  758): Handling removed theme package: com.gone603
+D/szipinf (  187): Initializing inflate state
+D/VoiceDialerReceiver(  766): onReceive Intent { act=android.intent.action.PACKAGE_REMOVED dat=package:com.gone603 flg=0x10000000 cmp=com.android.voicedialer/.VoiceDialerReceiver (has extras) }
+V/RecognizerEngine(  766): deleteCachedGrammarFiles /data/data/com.android.voicedialer/files/openentries.txt
+D/dalvikvm(  187): GC_EXPLICIT freed 113K, 44% free 5395K/9543K, external 35K/547K, paused 58ms
+I/installd(  134): unlink /data/dalvik-cache/data@app@com.gone603-1.apk@classes.dex
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/szipinf (10925): Initializing inflate state
+D/dalvikvm(  766): GC_EXPLICIT freed 11K, 53% free 2674K/5639K, external 0K/0K, paused 53ms
