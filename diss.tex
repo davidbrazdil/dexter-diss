@@ -807,6 +807,8 @@ two short paragraphs, no subsections
 
 Figure~\ref{fig:Implementation_Overview} shows a schematic diagram of all stages an APK file goes through when processed by Dexter. Because of the purpose of some of the stages and the overall feed-forward structure of the process, Dexter's architecture resembles one of a compiler.
 
+MAKE BETTER OVERVIEW
+
 The input of the program is the APK file of the application to be instrumented together with a set of files that form the Android framework, both of which had previously been acquired from the user's device. The content of all of these files is parsed to create a complete picture of the classes available to the application at runtime, a crucial source of information used later. The path of the actual APK file starts by extracting the executable from the package, parsing and turning it into intermediate code, Dexter's internal representation more suitable for analysis and modification than plain assembly. This code is then instrumented according to the rules laid out in the previous chapter, reassembled and new file generated. By making a copy of the original APK file and replacing the executable in it, the final output is created. Each part of this process will be thoroughly explained in the following sections.
 
 \section{Runtime Class Hierarchy}
@@ -853,14 +855,14 @@ The class hierarchy is a standard rooted tree and is implemented as such. Each n
 \item access flags and annotations.
 \end{inparaenum}
 
-All DEX files are parsed by DexLib, its data structures then read and relevant pieces of information passed to the class hierarchy object. Same is done for JAR files, only these are parsed by the BCEL library. Once all of the files have been scanned, \verb$DexClassHierarchy.checkConsistency$ method is called, which makes sure that:
+All DEX files are parsed by DexLib, its data structures then read and relevant pieces of information passed to the class hierarchy object. Same is done for JAR files, only these are parsed by the BCEL library. Once all of the files have been scanned, it is ensured that:
 \begin{inparaenum}[(i)]
 \item parent of every class is present,
 \item interfaces implemented by classes are present,
 \item interfaces extend \verb$Object$,
 \item classes do not implement other classes,
 \end{inparaenum}
-and creates links between nodes. Every loop-introducing node is rejected during the file-scanning phase.
+and links between nodes created. Loop-introducing nodes are rejected during the file-scanning phase.
 
 Class hierarchy provides methods that return data stored directly in its nodes, or methods that perform simple tree traversal, like returning the set of all ancestors of a class. Since these are trivial, details of their implementation are omitted. The only non-trivial method inside this class is the destination-deciding algorithm for method calls, which was already discussed in section~\ref{section:TaintPropagation_DestDecision}. 
 
@@ -882,7 +884,7 @@ Instrumentation will also necessarily introduce new constants, classes, methods,
 
 \subsection{File Structure}
 
-Classes that represent an executable can be found in the \verb$uk.ac.cam.db538.dexter.dex$ package. Every file is represented by an instance of class \verb$Dex$, which contains a list of \verb$DexClass$ objects, which in turn contain lists of \verb$DexMethod$ and \verb$DexField$ objects, etc. Compared to the DexLib classes these are nearly equivalent, but they can be modified much more easily because of their object-oriented nature.
+Every file is represented by an instance of class \verb$Dex$, which contains a list of \verb$DexClass$ objects, which in turn contain lists of \verb$DexMethod$ and \verb$DexField$ objects, etc. Compared to the DexLib classes these are nearly equivalent, but they can be modified much more easily because of their object-oriented nature.
 
 Each of these classes can be created either manually or by passing an instance of the respective DexLib class, which gets recursively parsed. Similarly, each class offers an assembling method that calls itself on all its children in the structure, combines the results and outputs DexLib's representation.
 
