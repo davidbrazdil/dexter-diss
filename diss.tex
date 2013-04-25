@@ -1220,7 +1220,7 @@ Last step Dexter has to make is replacing the executable file in the original AP
 
 \subsection{Gone in 60 Seconds}
 
-Android/GoneSixty is a spyware which was, according to the author, written only for educational purposes. Initially available on the Google Play market, users would download the application, and then watch it send their sensitive data to a remote server immediately after launch. Even though GoneSixty is virtually harmless and its methods of distribution and data collection unsophisticated, it nicely demonstrates access to various sensitive sources, and propagation of the data to a sink. Security report by AVG, with more details on how GoneSixty works, can be found in appendix~\ref{chapter:Report_Gone60}.
+Android/GoneSixty is a spyware which was, according to the author, written only for educational purposes. Initially available on the Google Play market, users would download the application, and then watch it swiftly send their sensitive data to a remote server immediately after first launch. Even though GoneSixty is virtually harmless and its methods of distribution and data collection unsophisticated, it nicely demonstrates how various data sources are accessed, and also propagates the data to a sink in a nontrivial way. Security report by AVG, with more details on how GoneSixty works, can be found in appendix~\ref{chapter:Report_Gone60}.
 
 \begin{figure}[t]
 	\scriptsize
@@ -1252,9 +1252,10 @@ Manual inspection of the bytecode showed that GoneSixty runs five threads. First
 \item recent calls,
 \item browser history,
 \end{inparaenum}
-and store the data into commonly accessible class fields. The fifth thread waits for the other four to finish and then combines the data into a single JSON request, converting them to base64 first, and sends these to a remote server using the Apache HTTP Client. Output of the instrumented application in figure~\ref{figure:Evaluation_GoneSixty} shows that Dexter correctly identified access to all four of these sources, and successfully propagated the taint tags all the way to the HTTP request execution.
+and store the data into commonly accessible class fields. The fifth thread waits for the other four to finish and combines the data into a single JSON structure, converting them to base64 first. They are then sent to to a remote server as an HTTP POST request using the Apache client. Output of the instrumented application in figure~\ref{figure:Evaluation_GoneSixty} shows that Dexter correctly identified access to all four of these sources, successfully propagated the taint tags all the way to the HTTP request execution and printed a leakage warning. 
 
 \subsection{BgServ}
+
 Analysis in appendix~\ref{chapter:Report_BgServ}.
 
 \subsection{Find \& Call}
