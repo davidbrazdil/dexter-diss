@@ -1282,7 +1282,7 @@ Unlike GoneSixty which steals personal data, BgServ is interested in information
 
 As one can also see from the output, Bgserv requests access to \verb$alarm$ and \verb$wifi$ services and reads network settings from the system database. These are not being tracked at the moment, but support could easily be added.
 
-Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses \verb$XmlSerializer$\footnote{\scriptsize\url{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}} to do that, which is currently not a recognized sink.
+Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses \verb$XmlSerializer$\footnote{\scriptsize\url{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}}, which is currently not a recognized sink.
 
 \subsection{Find\&Call}
 
