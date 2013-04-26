@@ -1284,9 +1284,11 @@ Moreover, the security report mentions that data are written into a temporary fi
 
 Find\&Call is a contact organizer, whose iOS version bacame known as the first malware for iOS, approved by Apple and distributed through App Store. Likewise, it briefly appeared on the open Google Play before it was removed in July 2012. While logging into user's online account, Find\&Call leaks contact list and phone number which are used by the server to send spam via text messages that seem to have been sent by the user. A blog entry\footnote{\scriptsize\url{https://www.securelist.com/en/blog/208193641/Find_and_Call_Leak_and_Spam}} by a Kaspersky Lab expert provides more information.
 
-Since the instrumented Find\&Call generates a rather extensive output, the complete log was omitted. Nevertheless, Dexter discovered multiple HTTP requests leaking the contents of the phonebook and user's location. Access to the service providing phone number information was also identified, but tagged data never reached the sink, which might indicate a bug in the implementation, or the fact that they simply were not leaked. Since the application is complex and its bytecode had been obfuscated, further investigation of this problem was not successful. The output also shows that taint automatically propagates between individual application components (activities) through IPC calls.
+Dexter discovered multiple HTTP requests leaking the contents of the phonebook and user's location. Access to the service providing phone number information was also identified, but tagged data never reached the sink, which might indicate a bug in the implementation or they simply were not leaked. Since the application is complex and its bytecode had been obfuscated, further investigation of this problem was not successful. Output also shows that sensitive data are being shared between application's components (activities) through IPC calls, and that these propagate taint without any extra instrumentation neccessary.
 
 \section{Testing}
+
+debugging difficult cause couldn't put breakpoints => new debugging instrumentation, logging
 
 \section{Performance Overhead}
 
