@@ -1291,17 +1291,11 @@ Dexter discovered multiple HTTP requests leaking the contents of the phonebook a
 
 \section{Performance Overhead}
 
-Overhead of taint tracking was assessed by running multiple experiments on Google Nexus One running Android 2.3. 
+The extra work done by taint tracking instructions naturally has negative effect on the overall performance of the application. Similar systems tend to incur 2-20 times slowdown {[}REF], but this is usually acceptable because these techniques are generally used with applications that mostly wait for user's input and perform very little computation. 
 
-\begin{figure}
-	\centerline{	
-		\includegraphics[width=0.7\textwidth]{figs/fig_eval_testappbench.eps}
-	}
-	\caption{Time taken to initialize the application and access sources. Error bars represent interval of one standard deviation.}.
-	\label{figure:Evalutaion_TestAppBench}
-\end{figure}
+Nevertheless, the overhead of Dexter's instrumentation was assessed and the results are presented in this section. All experiments were conducted on Google Nexus One running Android 2.3. 
 
-Are they normally distributed?
+\subsection{Benchmark}
 
 \begin{figure}
 	\centerline{
@@ -1309,6 +1303,24 @@ Are they normally distributed?
 	}
 	\caption{Points scored in QuickBenchmark. Error bars represent interval of one standard deviation.}.
 	\label{figure:Evalutaion_QuickBench}
+\end{figure}
+
+To measure the overhead of heavily processor-bound computation, a benchmarking application was downloaded from the official market, instrumented and results compared with the original. Unfortunately, benchmarks commonly used by the community, like AnTuTu or Quadrant, run their tests in native code which is not instrumented. A lesser known QuickBenchmark therefore had to be chosen instead. Results are summarized in Figure~\ref{figure:Evalutaion_QuickBench}. 
+
+First two tests simply run a loop in which they perform integer and float computation respectively. Even though for each such instruction, the instrumentation adds an OR of the taint tags, the difference was less than 2\% and well within the margin of error in both cases. The reason probably lies in the fact that the original computation and taint tracking have zero data dependencies between each other, which allows the superscalar CPU in the phone to run them in parallel.
+
+Third test draws 2D shapes on the screen, animates them and measures the frame rate. Similarly to the first two, it runs a loop with some floating point computation, but also calls external drawing methods. Since it operates only with primitives, with no dependencies whatsoever, and instrumentation of external calls is cheap, we still do not see a speed drop. On average, the benchmark actually awarded slightly more points to the instrumented version, but the results are still within one standard deviation of each other. 
+
+It is the last test that finally shows how expensive taint tracking can be. It draws two rotating cubes in 3D with OpenGL, which would make it equivalent to the 2D test, but now represents each cube as an independent instance of a cube class. The additional use of expensive internal calls (see section~\ref{section:TaintPropagation_MethodCalls_Internal}) results in a 65\% performance drop.
+
+Are they normally distributed?
+
+\begin{figure}
+	\centerline{	
+		\includegraphics[width=0.7\textwidth]{figs/fig_eval_testappbench.eps}
+	}
+	\caption{Time taken to initialize the application and access sources. Error bars represent interval of one standard deviation.}.
+	\label{figure:Evalutaion_TestAppBench}
 \end{figure}
 
 \section{Code Bloat}
