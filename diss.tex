@@ -1279,7 +1279,7 @@ D/FlurryAgent(  712): Ending session
 	\label{figure:Evaluation_BgServ}
 \end{figure}
 
-Unlike GoneSixty which steals personal data, BgServ is interested in information that can identify the device: phone number, IMEI, version of the system, etc. These are accessed through system service managers and from the output in figure~\ref{figure:Evaluation_BgServ} we see that Dexter recognized access to location and phone service managers, and that the data are again being leaked via HTTP. This is consistent with findings made by TaintDroid.
+Unlike GoneSixty which steals personal data, BgServ is interested in information that can identify the device: phone number, IMEI, version of the system, etc. These are accessed through system service managers and from the output in figure~\ref{figure:Evaluation_BgServ} we see that Dexter recognized access to location and phone service managers, and that the data are again being leaked via HTTP. This is consistent with findings made by the TaintDroid team.
 
 As one can also see from the output, Bgserv requests access to few other system services and reads network settings from the database. These are not being tracked at the moment, but support could easily be added.
 
