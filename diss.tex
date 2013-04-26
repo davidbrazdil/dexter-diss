@@ -1281,9 +1281,7 @@ D/FlurryAgent(  712): Ending session
 
 Unlike GoneSixty which steals personal data, BgServ is interested in information that can identify the device: phone number, IMEI, version of the system, etc. These are accessed through system service managers and from the output in figure~\ref{figure:Evaluation_BgServ} we see that Dexter recognized access to location and phone service managers, and that the data are again being leaked via HTTP. This is consistent with findings made by the TaintDroid team, who analyzed it as well.
 
-As one can also see from the output, Bgserv requests access to few other system services and reads network settings from the database. These are not being tracked at the moment, but support could easily be added.
-
-Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses \verb$XmlSerializer$\footnote{\scriptsize\url{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}}, which is currently not a recognized sink.
+As one can also see from the output, Bgserv requests access to few other system services and reads network settings from the database. These are not being tracked at the moment, but support could easily be added. Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses \verb$XmlSerializer$\footnote{\scriptsize\url{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}}, which is currently not a recognized sink.
 
 \subsection{Find\&Call}
 
