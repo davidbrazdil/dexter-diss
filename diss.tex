@@ -782,6 +782,10 @@ two short paragraphs, no subsections
 
 \subsection{Approach}
 
+\section{Testing}
+
+debugging difficult cause couldn't put breakpoints => new debugging instrumentation, logging
+
 \subsection{Android Genome Project}
 
 \subsection{Programming Languages}
@@ -1286,9 +1290,6 @@ Find\&Call is a contact organizer, whose iOS version bacame known as the first m
 
 Dexter discovered multiple HTTP requests leaking the contents of the phonebook and user's location. Access to the service providing phone number information was also identified, but tagged data never reached the sink, which might indicate a bug in the implementation or they simply were not leaked. Since the application is complex and its bytecode had been obfuscated, further investigation of this problem was not successful. Output also shows that sensitive data are being shared between application's components (activities) through IPC calls, and that these propagate taint without any extra instrumentation neccessary.
 
-\section{Testing}
-
-debugging difficult cause couldn't put breakpoints => new debugging instrumentation, logging
 
 \section{Performance Overhead}
 
