@@ -541,6 +541,7 @@ locationManager.requestLocationUpdates(
 \end{figure}
 
 \subsection{External Method Calls}
+\label{section:TaintPropagation_MethodCalls_External}
 
 TODO: example?
 
@@ -1358,6 +1359,14 @@ Looking at the data in Figure~\ref{figure:Evalutaion_FileSize}, one can see that
 However, the change in distribution of opcodes is substantial. Figure~\ref{figure:Evalutaion_CodeBloat} shows some selected intermediate instruction types and how many times they appeared in the parsed, instrumented and pre-assembly representation of the GoneSixty spyware. We see instructions that are virtually unaffected, like \verb$BinaryOpLiteral$ and \verb$ReturnVoid$ that are only added with the linked auxiliary classes, and that there are slightly more \emph{if} statements, mostly used for decisions during method calls and source/sink identification. On the other hand, increase in number of instructions directly involved in tainting is radical, especially looking at \verb$invoke$ opcodes that jumped from 400 to more than 3000 occurrences. These are nearly exclusively \verb$taint-get$ and \verb$taint-set$ calls, which go hand in hand with insertion of \verb$BinaryOp$ \emph{OR} instructions to combine tags. Also notice that \verb$move$s are added during the assembly phase as a result of register spilling.
 
 \section{Limitations}
+
+The case studies above proved that taint tracking can indeed provide useful information about data leakage, but the approach naturally has its limits which will be discussed in this section. 
+
+Regarding flow analysis, Dexter is by design restricted to tracking taint only from within a running VM and the code of the application. Hence it cannot compete with the the system wide, VM modifying solution of TaintDroid that can propagate taint through the framework, between applications, through the filesystem, and also through reflective calls which Dexter simply treats as external. The same applies to dynamically loaded code, but since Dexter is implemented in Java, it could potentially be linked into the application and the code instrumented on-the-fly before being passed to the class loader.
+
+As we saw in the BgServ case study, correct identification of sources and sinks requires information about \emph{all} framework methods that provide access to them. These definitions can be created very easily, but unfortunately this does not scale well. Covering all exotic ways of leaking data is therefore unrealistic in the light of the sheer size of the framework and the frequent updates to it.
+
+During testing, the greatest limiting factor of the actual implementation turned out to be the register allocating algorithm, incapable of dealing with very constrained methods. Even though SSA was implemented to solve this problem, an approach worth investigating further would be converting Dexter's IR into the IR of the standard JVM-DEX compiler and letting it reassemble the code.
 
 \section{Success Criteria}
 
