@@ -1313,15 +1313,25 @@ Third test draws 2D shapes on the screen, animates them and measures the frame r
 
 It is the last test that finally shows how expensive taint tracking can be. It draws two rotating cubes in 3D with OpenGL, which would make it equivalent to the 2D test, but now represents each cube as an independent instance of a cube class. The additional use of expensive internal calls (see section~\ref{section:TaintPropagation_MethodCalls_Internal}) results in a 65\% performance drop.
 
-Are they normally distributed?
+\subsection{Source Access}
 
 \begin{figure}
 	\centerline{	
 		\includegraphics[width=0.7\textwidth]{figs/fig_eval_testappbench.eps}
 	}
-	\caption{Time taken to initialize the application and access sources. Error bars represent interval of one standard deviation.}.
+	\caption{Time taken to initialize the application and access sources. Error bars represent interval of one standard deviation, and each test was executed 100 times.}.
 	\label{figure:Evalutaion_TestAppBench}
 \end{figure}
+
+Since the benchmark works nearly exclusively with primitives and does not access any sensitive data, further experiments were conducted on an in-house testing application. Measured operations are equivalent to those assessed under TaintDroid for comparison. 
+
+Load time of the application was hardly affected by the instrumentation, slowing down from 70ms to 72ms and exactly matching TaintDroid. 
+
+Reading the phonebook, just like was shown in Listing~\ref{listing:Source_DatabaseQuery}, saw a significant decrease in performance, taking nearly three times as long to finish. This is partialy caused by the analysis of the database query, but mainly by the propagation of taint into returned string objects, which all collide when stored in the object taint map. According to the academic paper, similar operation on TaintDroid had overhead of mere eighteen percent. 
+
+Access time was also measured for the web browsing history, similar to that in Listing~\ref{listing:Source_Browser}. Slowing down by approximately a quarter, the difference is considerably smaller because no string comparisons of the query are carried out, and far fewer strings are tainted as only a single column is read from the results, in contrast to four in the previous test.
+
+Are they normally distributed?
 
 \section{Code Bloat}
 
