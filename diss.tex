@@ -1339,9 +1339,13 @@ Are they normally distributed?
 	\centerline{
 		\includegraphics[width=0.7\textwidth]{figs/fig_eval_filesize.eps}
 	}
-	\caption{Difference between sizes of \emph{classes.dex} files before and after instrumentation, expressed as percentage of the original size.}.
+	\caption{Increase in size of the executable DEX file caused by instrumentation.}.
 	\label{figure:Evalutaion_FileSize}
 \end{figure}
+
+Next we study the difference in the size of the instrumented file and the change in distribution of instruction types. Rather than being a performance metric, this creates a bigger picture of what flow analysis involves.
+
+Looking at the data in Figure~\ref{figure:Evalutaion_FileSize}, one can see that the overall size of the \emph{classes.dex} file approximately doubles, ranging between 90-140\% increase. This accounts for all sections of the file, i.e. the bytecode, class definition, constants, etc. On modern smartphones this should not be an issue as these executables are typically not bigger than few hundred kilobytes.
 
 \begin{figure}
 	\centerline{	
@@ -1351,11 +1355,13 @@ Are they normally distributed?
 	\label{figure:Evalutaion_CodeBloat}
 \end{figure}
 
+
+
 instruction count: orig, instrumented, assembled \\
 file size: orig, assembled
 memory usage? data in proc
 
-\section{TaintDroid Comparison}
+\section{Limitations}
 
 \section{Success Criteria}
 
