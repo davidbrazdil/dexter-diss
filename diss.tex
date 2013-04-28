@@ -1032,6 +1032,10 @@ Removing the call to the \verb$equals$ method is trivial - reference equality op
 
 In its current implementation, the hash table is initialized with 1024 slots and does not support dynamic resizing. It exploits temporal locality by moving entries to the beginning of their respective linked lists whenever they are accessed, and deletes garbage collected entries as it encounters them. Methods are declared \verb$public static$ so that they can be invoked from any place in the application. Data are stored in \verb$private static$ fields.
 
+\subsection{User Interaction}
+
+When imminent data leakage is identified, the instrumented application should ideally display a dialog, providing information about the event, and offering either to continue or to terminate it. However, the standard Android programming model does not provide any form of execution pausing mechanism which could be used to show a modal window without the application being killed by the operating system as non-responsive. In addition, background-running threads are not even allowed access to the UI. Implementation of this feature therefore proved extremely complicated, requiring deeper access to the system message loop. In its current state, Dexter merely prints warnings into the system log.
+
 \section{Reassembling}
 
 The algorithms used in parsing and instrumentation are rather elementary and the only difficulty arises from the number of instruction types or file structure elements that need to be dealt with individually. This is not the case for the assembling phase, when the intermediate code is converted back to DexLib's data structures. DexLib will automatically generate constant sections of the file and will replace references to their elements by addresses within the file, but it is up to Dexter to generate bytecode that satisfies all the constraints imposed on it by Dalvik. 
@@ -1216,8 +1220,6 @@ Just like with register identifiers, the space for offsets inside instructions i
 
 Last step Dexter has to make is replacing the executable file in the original APK. Since APKs are mere ZIP files, \emph{zip4j} library is used to do this. The file is first copied to a temporary file, executable is replaced and the \verb$META-INF$ folder removed. This folder contains the digital signature of the publisher, which becomes invalid when the executable is replaced and needs to be regenerated. Any key could be used to do this, but Dexter currently calls the \verb$keytool$ from the JDK to create a random key, and passes it to the \verb$jarsigner$ command that signs the APK. Temporary file is renamed to the given output file name and that concludes the lengthy process of instrumentation.
 
-\section{User Interaction}
-
 \cleardoublepage
 \chapter{Evaluation}
 
@@ -1388,7 +1390,7 @@ During testing, the greatest limiting factor of the actual implementation turned
       
 	\item \emph{Advantages and limitations of system-level integration versus per-application bytecode instrumentation for the purpose of taint-based flow analysis must be appraised.} \\
 	FINISH!!!
-	
+
 	\item \emph{Performance must be compared to TaintDroid and overhead measured against the original code.} \\
 	Overhead of individual operations was measured on the testing application. Benchmark downloaded from the application market was used for processor-bound performance measurements. Results were compared to those presented in the TaintDroid paper.
 \end{enumerate}
