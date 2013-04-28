@@ -772,30 +772,13 @@ byte[] array = baos.toByteArray();
 	\end{lstlisting}
 \end{figure}
 
-\section{Requirements Analysis}
-look at AdCache
-
 \section{Software Engineering and Toolchain}
 
-two short paragraphs, no subsections
+Existing reverse-engineering tools for Android, usually built on top of Androguard\footnote{\scriptsize\url{https://code.google.com/p/androguard/}}, provide API for simple implementation of custom static analyses, but they do not offer means of instrumenting and recompiling the bytecode in a way that was described in this section, which led to decision to build a new tool, designed specifically for this purpose.
 
-\subsection{Approach}
+Java was chosen as the programming language, as opposed to Python used by the existing tools, in order to utilize DexLib, an existing DEX-manipulating library built as the core of the Smali\footnote{\scriptsize\url{https://code.google.com/p/smali/}} (dis)assembler. Project Lombok\footnote{\scriptsize\url{http://projectlombok.org/}}, a tool extending the features of the language, was incorporated. Strict use of Java could also potentialy allow Dexter to integrate with the official compilation toolchain, or to run directly on the device. Source code was managed by the Git\footnote{\scriptsize\url{https://git.kernel.org/}} revision control system, in a repository hosted at the GitHub\footnote{\scriptsize\url{https://github.com/}} cloud storage.
 
-\section{Testing}
-
-debugging difficult cause couldn't put breakpoints => new debugging instrumentation, logging
-
-\subsection{Android Genome Project}
-
-\subsection{Programming Languages}
-
-\subsection{Software Libraries}
-
-\subsection{Android SDK}
-
-\subsection{Version Control}
-
-\subsection{Evaluation Tools}
+Implementation of internal algorithms followed the Test-Driven Development philosophy by building a set of JUnit tests that ensured their expected behaviour. The rules of taint propagation, main subject of research, were tested on small programs, written in Java or assembly, each focusing on a single feature of the bytecode. In the end, the final solution was applied on a series of real applications downloaded directly from the official market, and on samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\footnote{\scriptsize\url{http://www.malgenomeproject.org/}}.
 
 \cleardoublepage
 \chapter{Implementation}
@@ -860,7 +843,7 @@ The class hierarchy is a standard rooted tree and is implemented as such. Each n
 \item access flags and annotations.
 \end{inparaenum}
 
-All DEX files are parsed by DexLib, its data structures then read and relevant pieces of information passed to the class hierarchy object. Same is done for JAR files, only these are parsed by the BCEL library. Once all of the files have been scanned, it is ensured that:
+All DEX files are parsed by DexLib, its data structures then read and relevant pieces of information passed to the class hierarchy object. Same is done for JAR files, only these are parsed by the BCEL\footnote{\scriptsize\url{https://commons.apache.org/proper/commons-bcel/}} library. Once all of the files have been scanned, it is ensured that:
 \begin{inparaenum}[(i)]
 \item parent of every class is present,
 \item interfaces implemented by classes are present,
@@ -1216,7 +1199,7 @@ Just like with register identifiers, the space for offsets inside instructions i
 
 \section{APK Repackaging}
 
-Last step Dexter has to make is replacing the executable file in the original APK. Since APKs are mere ZIP files, \emph{zip4j} library is used to do this. The file is first copied to a temporary file, executable is replaced and the \verb$META-INF$ folder removed. This folder contains the digital signature of the publisher, which becomes invalid when the executable is replaced and needs to be regenerated. Any key could be used to do this, but Dexter currently calls the \verb$keytool$ from the JDK to create a random key, and passes it to the \verb$jarsigner$ command that signs the APK. Temporary file is renamed to the given output file name and that concludes the lengthy process of instrumentation.
+Last step Dexter has to make is replacing the executable file in the original APK. Since APKs are mere ZIP files, Zip4j\footnote{\scriptsize\url{http://www.lingala.net/zip4j/}} library is used to do this. The file is first copied to a temporary file, executable is replaced and the \verb$META-INF$ folder removed. This folder contains the digital signature of the publisher, which becomes invalid when the executable is replaced and needs to be regenerated. Any key could be used to do this, but Dexter currently calls the \verb$keytool$ from the JDK to create a random key, and passes it to the \verb$jarsigner$ command that signs the APK. Temporary file is renamed to the given output file name and that concludes the lengthy process of instrumentation.
 
 \cleardoublepage
 \chapter{Evaluation}
