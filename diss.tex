@@ -1223,9 +1223,9 @@ Last step Dexter has to make is replacing the executable file in the original AP
 
 \section{Case Studies}
 
-\subsection{Gone in 60 Seconds}
+\subsection{Android/GoneSixty}
 
-Android/GoneSixty is a spyware which the author claims was written for educational purposes only. Initially available on the Google Play market, users would download the application and then watch it swiftly send their sensitive data to a remote server immediately after first launch. Even though GoneSixty is virtually harmless and its methods of distribution and data collection unsophisticated, it nicely demonstrates how various data sources are accessed, and also propagates the data to a sink in a nontrivial way. Security report by AVG, with more details on how GoneSixty works, can be found in appendix~\ref{chapter:Report_Gone60}.
+Gone in 60 Seconds is a spyware which the author claims was written for educational purposes only. Initially available on the Google Play market, users would download the application and then watch it swiftly send their sensitive data to a remote server immediately after first launch. Even though GoneSixty is virtually harmless and its methods of distribution and data collection unsophisticated, it nicely demonstrates how various data sources are accessed, and also propagates the data to a sink in a nontrivial way. Security report by AVG, with more details on how GoneSixty works, can be found in appendix~\ref{chapter:Report_Gone60}.
 
 \begin{figure}[t]
 	\scriptsize
@@ -1252,9 +1252,9 @@ Manual inspection of the bytecode showed that GoneSixty runs five threads. First
 \end{inparaenum}
 and store the data into commonly accessible class fields. The fifth thread waits for the other four to finish and combines the data into a single JSON structure, converting them to base64 first. They are then sent to to a remote server as an HTTP POST request using the Apache client. Output of the instrumented application in figure~\ref{figure:Evaluation_GoneSixty} shows that Dexter correctly identified access to all four of these sources, successfully propagated the taint tags all the way to the HTTP request execution and printed a leakage warning. 
 
-\subsection{BgServ}
+\subsection{Android/BgServ}
 
-Second analyzed application was infected with the Android/BgServ trojan, which is significantly more dangerous and complex than GoneSixty. Discovered in March 2011, it was inserted into various ordinary applications and then distributed through third party application markets. It runs in the background, sends sensitive data to a remote location and opens a backdoor. Getting orders from the server, it sends premium SMS messages or changes Internet connection settings. Appendix~\ref{chapter:Report_BgServ} contains a security report by Symantec with further details. 
+Second analyzed application was infected with the BgServ trojan, which is significantly more dangerous and complex than GoneSixty. Discovered in March 2011, it was inserted into various ordinary applications and then distributed through third party application markets. It runs in the background, sends sensitive data to a remote location and opens a backdoor. Getting orders from the server, it sends premium SMS messages or changes Internet connection settings. Appendix~\ref{chapter:Report_BgServ} contains a security report by Symantec with further details. 
 
 \begin{figure}[t]
 	\scriptsize
