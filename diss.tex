@@ -211,7 +211,7 @@ One out of three free apps spies on users: \url{http://www.huffingtonpost.com/al
 
 Dalvik is an open-source virtual machine and an essential component of the Android operating system. It was developed specifically for use on mobile devices such as smartphones and tablets, and its design was optimized for running on battery-powered systems with low-performance processor and limited memory. 
 
-Built around the Apache Harmony project, Dalvik runs programs that are compatible with a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file using tools in the Android SDK. With release 2.2, Dalvik introduced Just-In-Time compilation which significantly increased its performance and efficiency\footnote{\scriptsize\url{http://android-developers.blogspot.com/2010/05/dalvik-jit.html}}.
+Built around the Apache Harmony project, Dalvik runs programs that are compatible with a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file using tools in the Android SDK. With release 2.2, Dalvik introduced Just-In-Time compilation which significantly increased its performance and efficiency\cite{web:DalvikJit}.
 
 \subsection{Application Package Files}
 
@@ -1269,7 +1269,7 @@ As one can also see from the output, Bgserv requests access to few other system 
 
 \subsection{Find\&Call}
 
-Find\&Call is a contact organizer, whose iOS version became known as the first malware for iOS, approved by Apple and distributed through App Store. Likewise, it briefly appeared on the open Google Play before it was removed in July 2012. While logging into user's online account, Find\&Call leaks contact list and phone number which are used by the server to send spam via text messages that seem to have been sent by the user. A blog entry\footnote{\scriptsize\url{https://www.securelist.com/en/blog/208193641/Find_and_Call_Leak_and_Spam}} by a Kaspersky Lab expert provides more information.
+Find\&Call is a contact organizer, whose iOS version became known as the first malware for iOS, approved by Apple and distributed through App Store. Likewise, it briefly appeared on the open Google Play before it was removed in July 2012. While logging into user's online account, Find\&Call leaks contact list and phone number which are used by the server to send spam via text messages that seem to have been sent by the user. A blog entry\cite{report:FindAndCall} by a Kaspersky Lab expert provides more information.
 
 Dexter discovered multiple HTTP requests leaking the contents of the phonebook and user's location. Access to the service providing phone number information was also identified, but tagged data never reached the sink, which might indicate a bug in the implementation or they simply were not leaked. Since the application is complex and its bytecode had been obfuscated, further investigation of this problem was not successful. Output also shows that sensitive data are being shared between application's components (activities) through IPC calls, which propagate taint without any extra instrumentation necessary.
 

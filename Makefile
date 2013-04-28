@@ -4,7 +4,7 @@
 # Note that continuation lines require '\'
 # and that TAB is used after ':' and before unix commands.
 
-DISS = diss.tex refs.bib propbody.tex figs/diagram.eps makefile.txt
+DISS = diss.tex refs.bib propbody.tex figs/* makefile.txt
 
 PROP = proposal.tex propbody.tex
 
@@ -13,11 +13,11 @@ PROP = proposal.tex propbody.tex
 
 diss.pdf:	$(DISS)
 	pdflatex diss
-#	bibtex diss
-#	pdflatex diss
-#	bibtex diss
-#	pdflatex diss
-#	bibtex diss
+	bibtex diss
+	pdflatex diss
+	bibtex diss
+	pdflatex diss
+	bibtex diss
 
 help:
 	@echo
