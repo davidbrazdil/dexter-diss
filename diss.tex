@@ -224,7 +224,7 @@ Nevertheless, both of these policies fail to protect against applications that h
 
 \section{Overview of Dexter}
 
-Taint-based data flow analysis is a popular technique of providing deeper insight into the runtime behaviour of applications, capable of dynamically monitoring access to resources and identifying data paths between them. It was previously successfully implemented on various platforms\cite{Zhu:2011:TPS:1945023.1945039}, and recently also ported to Android in the TaintDroid project\cite{web:TaintDroid}\cite{Enck:2010:TIT:1924943.1924971}, a joint study by Intel Labs, Penn State, and Duke University. However, their solution involves changes to the operating system and its virtual machine, limiting its usage to experts in possesion of one of few supported devices. The goal of this project was therefore to assess the limits of implementing the analysis within the bounds of the stock version of Android.
+Taint-based dynamic data flow analysis is a popular technique of providing deeper insight into the runtime behaviour of applications, capable of monitoring access to resources and identifying data paths between them. It was previously successfully implemented on various platforms\cite{Zhu:2011:TPS:1945023.1945039}, and recently also ported to Android in the TaintDroid project\cite{web:TaintDroid}\cite{Enck:2010:TIT:1924943.1924971}, a joint study by Intel Labs, Penn State, and Duke University. However, their solution involves changes to the operating system and its virtual machine, limiting its usage to experts in possesion of one of few supported devices. The goal of this project was therefore to assess the limits of implementing the analysis within the bounds of the stock version of Android.
 
 \subsection{Data Flow Analysis}
 
@@ -235,6 +235,10 @@ Taint-based data flow analysis is a popular technique of providing deeper insigh
 	\caption{Overview of data flow tracked by assigning taint tags.}
 	\label{fig:Introduction_TaintingOverview}
 \end{figure}
+
+Dynamic taint analysis relies on the ability to assign attributes, called \emph{taint tags}, to data in the memory, here representing the potential to contain private information. The execution of the program is altered such that tags are assigned to data at the points of their origin, known as \emph{sources}, and inputs of \emph{sinks}, operations capable of sending data away, are monitored to make sure no tainted data leave the system. Between sources and sinks it is made sure that tags propagate correctly as data are moved and combined. 
+
+In the context of Android, sources and sinks are represented by various methods provided in the framework, and the semantics of VM instructions need to be extended according to the rules of propagation logic, summarized in Figure~\ref{fig:Introduction_TaintingOverview}. As an example, imagine an application that reads the phone book and sends it to a remote server via HTTP. Methods that can read it are monitored and their results are tagged. Propagation logic ensures that the HTTP request inherits the tag, and passing it to an API call that opens a network socket triggers a warning. 
 
 \subsection{Application Instrumentation}
 
