@@ -226,13 +226,7 @@ Nevertheless, both of these policies fail to protect against applications that h
 
 Taint-based data flow analysis is a popular technique of providing deeper insight into the runtime behaviour of applications, capable of dynamically monitoring access to resources and identifying data paths between them. It was previously successfully implemented on various platforms\cite{Zhu:2011:TPS:1945023.1945039}, and recently also ported to Android in the TaintDroid project\cite{web:TaintDroid}\cite{Enck:2010:TIT:1924943.1924971}, a joint study by Intel Labs, Penn State, and Duke University. However, their solution involves changes to the operating system and its virtual machine, limiting its usage to experts in possesion of one of few supported devices. The goal of this project was therefore to assess the limits of implementing the analysis within the bounds of the stock version of Android.
 
-\begin{figure}
-	\centerline{	
-		\includegraphics[width=0.5\textwidth]{figs/fig_intro_overview.png}
-	}
-	\caption{Principle of application replacement with its instrumented version.}
-	\label{fig:Introduction_AppReplacement}
-\end{figure}
+\subsection{Data Flow Analysis}
 
 \begin{figure}
 	\centerline{	
@@ -240,6 +234,16 @@ Taint-based data flow analysis is a popular technique of providing deeper insigh
 	}
 	\caption{Overview of data flow tracked by assigning taint tags.}
 	\label{fig:Introduction_TaintingOverview}
+\end{figure}
+
+\subsection{Application Instrumentation}
+
+\begin{figure}
+	\centerline{	
+		\includegraphics[width=0.5\textwidth]{figs/fig_intro_overview.png}
+	}
+	\caption{Principle of application replacement with its instrumented version.}
+	\label{fig:Introduction_AppReplacement}
 \end{figure}
 
 \section{Similar Work}
