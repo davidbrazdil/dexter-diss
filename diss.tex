@@ -220,9 +220,11 @@ Sometimes applications request access to more resources than they eventually use
 
 Current state of the art in data protection on smartphones lags behind the techniques described above. On Android, developers can freely publish their applications on the official store, and can be removed if they are identified as malware either by an automated system called Bouncer\cite{web:Bouncer} or by third parties\cite{web:LookoutPlayRemoval}. Amid installation the user is merely shown a list of permissions requested, without any justification of their necessity. Situation is slightly better on the rivalling iOS, where each application must pass a manual approval process before being published on the store. Users also grant access to a resource the first time it is used, at least giving them the context in which data are needed.
 
-However, both of these policies fail to protect against applications that have a legitimate initial reason to read private data but secretely leak them at the same time, since once access is granted the applications are free to use the resource in any way they want.
+Nevertheless, both of these policies fail to protect against applications that have a legitimate initial reason to read private data but secretely leak them at the same time, since once access is granted the applications are free to use the resource in any way they want.
 
 \section{Overview of Dexter}
+
+Taint-based data flow analysis is a popular technique of providing deeper insight into the runtime behaviour of applications, capable of dynamically monitoring access to resources and identifying data paths between them. It was previously successfully implemented on various platforms\cite{Zhu:2011:TPS:1945023.1945039}, and recently also ported to Android in the TaintDroid project\cite{web:TaintDroid}\cite{Enck:2010:TIT:1924943.1924971}, a joint study by Intel Labs, Penn State, and Duke University. However, their solution involves changes to the operating system and its virtual machine, limiting its usage to experts in possesion of one of few supported devices. The goal of this project was therefore to assess the limits of implementing the analysis within the bounds of the stock version of Android.
 
 \begin{figure}
 	\centerline{	
