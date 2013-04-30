@@ -209,7 +209,7 @@ Smartphones have grown to become very popular over the past few years as univers
 Applications for smartphones have access to a startling amount of personal information which is, in most cases, highly beneficial to the user. They can get access to the contact list, calendar, call log, browser history or even the current location of the user, and combine these in a novel way that renders everyday tasks simpler. But as studies have shown\cite{web:Appthority}\cite{web:HuffingtonOneInThree}, applications can and \emph{do} misuse permissions that were given to them in good faith, and leak the collected data a remote server where the user loses control over them. We can categorize these as follows:
 \begin{description}
 \item \textbf{Data Stealing} \\
-Due to Android's openness, it is not uncommon for programs to contain some form of malicious code. Though this applies mainly to pirated and trojanized installation packages\cite{Zhou:2012:DRS:2133601.2133640}, from time to time malware appears even on the official market\cite{web:LookoutPlayRemoval}. Usually these masquarade as legitimate applications but run a background trojan which sends premium text messages, logs keystrokes and sends its authors sensitive data useful for spamming or identity theft. Needless to say this is an undesirable behaviour.
+Due to Android's openness, it is not uncommon for programs to contain some form of malicious code. Usually these masquarade as legitimate applications but run a background trojan which sends premium text messages, logs keystrokes and sends its authors sensitive data useful for spamming or identity theft. Malware is present mainly on third-party application markets and in illegal pirated and trojanized software\cite{Zhou:2012:DRS:2133601.2133640}, but from time to time malicious applications appear even on the official market\cite{web:LookoutPlayRemoval}.
 
 \item \textbf{Mismatch of Expectations} \\
 Behaviour that is not deliberately malicous but might pose security risks defines a group of applications referred to as \emph{grayware}. It includes software that collects personal data, typically advertising libraries which use the phone number, location or browsing history to uniquely identify the person and show tailored ads. However, users are not always properly informed about this.
@@ -218,7 +218,9 @@ Behaviour that is not deliberately malicous but might pose security risks define
 Sometimes applications request access to more resources than they eventually use by mistake. A cautious user might want to monitor their behaviour preventively. 
 \end{description}
 
-\section{State of the Art}
+Current state of the art in data protection on smartphones lags behind the techniques described above. On Android, developers can freely publish their applications on the official store, and the user is merely shown a list of permissions an installed application requests without any information about the reasons what they might be needed for. Programs can be removed from the store if they are identified as malware either by the users\cite{web:LookoutPlayRemoval} or by an automated system called Bouncer\cite{web:Bouncer}. Situation is slightly better on the rivalling iOS, where each application must pass a manual approval process before being published on the store, the only official way of installing applications, and users grant access to a resource the first time it is used, at least giving the user the context in which data are needed.
+
+However, both of these approaches fail to protect the user against applications that have a legitimate initial reason to read their private data but secretely leak them at the same time, since once access is granted the applications are free to use the resource in any way they want.
 
 \section{Overview of Dexter}
 
