@@ -206,21 +206,21 @@ Smartphones have grown to become very popular over the past few years as univers
 
 \section{Problem Statement}
 
-Applications for smartphones have access to a startling amount of personal information which is, in most cases, highly beneficial to the user. They can get access to the contact list, calendar, call log, browser history or even the current location of the user, and combine these in a novel way that renders everyday tasks simpler. But as studies have shown\cite{web:Appthority}\cite{web:HuffingtonOneInThree}, applications can and \emph{do} misuse permissions that were given to them in good faith, and leak the collected data a remote server where the user loses control over them. We can categorize these as follows:
+Applications for smartphones have access to a startling amount of personal information which is often highly beneficial to the user. They can get access to the contact list, calendar, call log, browser history or even the current location of the user, and combine these in novel ways that render everyday tasks simpler. But as studies have shown\cite{web:Appthority}\cite{web:HuffingtonOneInThree}, applications can and \emph{do} misuse the permissions they were given in good faith, and leak the collected data a remote server where the user loses control over them. These fall into three categories:
 \begin{description}
 \item \textbf{Data Stealing} \\
-Due to Android's openness, it is not uncommon for programs to contain some form of malicious code. Usually these masquarade as legitimate applications but run a background trojan which sends premium text messages, logs keystrokes and sends its authors sensitive data useful for spamming or identity theft. Malware is present mainly on third-party application markets and in illegal pirated and trojanized software\cite{Zhou:2012:DRS:2133601.2133640}, but from time to time malicious applications appear even on the official market\cite{web:LookoutPlayRemoval}.
+Due to Android's openness, it is not uncommon for programs to contain some form of malicious code. Usually these masquarade as legitimate applications but run a background trojan which sends premium text messages, logs keystrokes and sends its authors sensitive data useful for spamming or identity theft. Malware is present mainly on third-party application markets and in illegal pirated and trojanized software\cite{Zhou:2012:DRS:2133601.2133640}, but from time to time appears even on the official store\cite{web:LookoutPlayRemoval}.
 
 \item \textbf{Mismatch of Expectations} \\
-Behaviour that is not deliberately malicous but might pose security risks defines a group of applications referred to as \emph{grayware}. It includes software that collects personal data, typically advertising libraries which use the phone number, location or browsing history to uniquely identify the person and show tailored ads. However, users are not always properly informed about this.
+Behaviour that is not deliberately malicous but might pose a security risk defines a group of applications referred to as \emph{grayware}. These are typically advertising libraries which collect personal data in order to uniquely identify the person and show tailored ads, without adequately informing the user.
 
 \item \textbf{Accidental Permissions} \\
 Sometimes applications request access to more resources than they eventually use by mistake. A cautious user might want to monitor their behaviour preventively. 
 \end{description}
 
-Current state of the art in data protection on smartphones lags behind the techniques described above. On Android, developers can freely publish their applications on the official store, and the user is merely shown a list of permissions an installed application requests without any information about the reasons what they might be needed for. Programs can be removed from the store if they are identified as malware either by the users\cite{web:LookoutPlayRemoval} or by an automated system called Bouncer\cite{web:Bouncer}. Situation is slightly better on the rivalling iOS, where each application must pass a manual approval process before being published on the store, the only official way of installing applications, and users grant access to a resource the first time it is used, at least giving the user the context in which data are needed.
+Current state of the art in data protection on smartphones lags behind the techniques described above. On Android, developers can freely publish their applications on the official store, and can be removed if they are identified as malware either by an automated system called Bouncer\cite{web:Bouncer} or by third parties\cite{web:LookoutPlayRemoval}. Amid installation the user is merely shown a list of permissions requested, without any justification of their necessity. Situation is slightly better on the rivalling iOS, where each application must pass a manual approval process before being published on the store. Users also grant access to a resource the first time it is used, at least giving them the context in which data are needed.
 
-However, both of these policies fail to protect the user against applications that have a legitimate initial reason to read their private data but secretely leak them at the same time, since once access is granted the applications are free to use the resource in any way they want.
+However, both of these policies fail to protect against applications that have a legitimate initial reason to read private data but secretely leak them at the same time, since once access is granted the applications are free to use the resource in any way they want.
 
 \section{Overview of Dexter}
 
@@ -228,22 +228,19 @@ However, both of these policies fail to protect the user against applications th
 	\centerline{	
 		\includegraphics[width=0.5\textwidth]{figs/fig_intro_overview.png}
 	}
-	\caption{Example class hierarchy; invoked class: $G$, classes implementing the invoked method: $B$, $E$, $F$, $H$}
-	\label{fig:Introduction_Overview}
+	\caption{Principle of application replacement with its instrumented version.}
+	\label{fig:Introduction_AppReplacement}
 \end{figure}
 
 \begin{figure}
 	\centerline{	
 		\includegraphics[width=0.8\textwidth]{figs/fig_intro_tainting.png}
 	}
-	\caption{Example class hierarchy; invoked class: $G$, classes implementing the invoked method: $B$, $E$, $F$, $H$}
-	\label{fig:Introduction_Overview}
+	\caption{Overview of data flow tracked by assigning taint tags.}
+	\label{fig:Introduction_TaintingOverview}
 \end{figure}
 
 \section{Similar Work}
-
-ubiquity - vsudypritomnost \\
-amid - kvuli (negativni)
 
 TaintDroid \cite{Enck:2010:TIT:1924943.1924971} \\
 Towards practical Taint Tracking - QEMU, good examples \cite{Ermolinskiy:EECS-2010-92} \\
@@ -254,6 +251,7 @@ Tainting in detail \cite{Schwartz:2010:YEW:1849417.1849981} \\
 Aurasium - protecting access to sources, policy enforcement (might have legitimate reasons), native \cite{Xu:2012:APP:2362793.2362820} \\
 implicit flow \cite{Nair:2008:VMB:1346355.1346524} \\
 static- ScanDal \cite{2012kim_scandal}
+
 \cleardoublepage
 \chapter{Preparation}
 
