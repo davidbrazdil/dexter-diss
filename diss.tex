@@ -206,7 +206,14 @@ Smartphones have grown to become very popular over the past few years as univers
 
 \section{Problem Statement}
 
-Applications for smartphones have access to a startling amount of personal information which is in most cases highly beneficial to the user. They can get access to the contact list, calendar, call log, browser history or even the current location of the user, and combine these in a novel way that renders everyday tasks simpler. But as studies have shown\cite{web:Appthority}\cite{web:HuffingtonOneInThree}, applications can and do misuse the permissions that were given to them in good faith, and leak the collected data a remote server where the user loses control over them. 
+Applications for smartphones have access to a startling amount of personal information which is, in most cases, highly beneficial to the user. They can get access to the contact list, calendar, call log, browser history or even the current location of the user, and combine these in a novel way that renders everyday tasks simpler. But as studies have shown\cite{web:Appthority}\cite{web:HuffingtonOneInThree}, applications can and \emph{do} misuse permissions that were given to them in good faith, and leak the collected data a remote server where the user loses control over them. We can categorize these as follows:
+\begin{description}
+\item \textbf{Data Stealing} \\
+Due to Android's openness, it is not uncommon for programs to contain some form of malicious code. Though this applies mainly to pirated and trojanized installation packages\cite{Zhou:2012:DRS:2133601.2133640}, from time to time malware appears even on the official market\cite{web:LookoutPlayRemoval}. Usually these masquarade as legitimate applications but run a trojan in the background which sends premium text messages, logs keystrokes and sends its authors sensitive data useful for spamming or identity theft.
+
+\item \textbf{Mismatch of Expectations} \\
+Behaviour that is not deliberately malicous but might pose security risks defines a group of applications referred to as \emph{grayware}. It includes software that collects personal data without properly warning the user, typically advertising libraries which use the phone number, IMEI or location to uniquely identify the person and show tailored ads.
+\end{description}
 
 \section{Overview of Dexter}
 
