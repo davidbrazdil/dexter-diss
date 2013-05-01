@@ -236,11 +236,11 @@ Taint-based dynamic data flow analysis is a popular technique of providing deepe
 	\label{fig:Introduction_TaintingOverview}
 \end{figure}
 
-Dynamic taint analysis relies on the ability to assign attributes, called \emph{taint tags}, to data in the memory, here representing the potential to contain private information. The execution of the program is altered such that tags are assigned to data at the points of their origin, known as \emph{sources}, and inputs of \emph{sinks}, operations capable of sending data away, are monitored to make sure no tainted data leave the system. Between sources and sinks it is made sure that tags propagate correctly as data are moved and combined. 
+Dynamic taint analysis relies on the ability to assign attributes, called \emph{taint tags}, to data in the memory, here representing the potential to contain private information. The execution of the program is altered such that tags are assigned to tracked data at the points of their origin, known as \emph{sources}, and inputs of \emph{sinks}, operations capable of sending data away, are monitored to make sure no tainted data leave the system. Between sources and sinks it is made sure that tags propagate correctly as data are moved and combined. 
 
-In the context of Android, sources and sinks are represented by various methods provided in the framework, and the semantics of VM instructions need to be extended according to the rules of propagation logic, summarized in Figure~\ref{fig:Introduction_TaintingOverview}. As an example, imagine an application that reads the phone book and sends it to a remote server via HTTP. Methods that can read it are monitored and their results are tagged. Propagation logic ensures that the HTTP request inherits the tag, and passing it to an API call that opens a network socket triggers a warning. 
+In the context of Android, sources and sinks are resources like the contacts database and network sockets. Access to these resources needs to be monitored by the taint tracking system, and the semantics of VM instructions extended according to the rules of propagation logic.
 
-\subsection{Application Instrumentation}
+The approach adopted by TaintDroid monitors sources and sinks on kernel level and modifies the VM and the file-system to propagate taint. This allows it to track data flow throughout the interpreted code, even between applications. Dexter, limited by the boundaries of the VM, performs the analysis only within a single application by instrumenting its executable code. Resources are accessed through framework methods, and it cannot track taint outside the scope of the methods defined by the application, so-called \emph{internal code}, not even through the framework. This is summarized in Figure~\ref{fig:Introduction_TaintingOverview}. 
 
 \begin{figure}
 	\centerline{	
@@ -249,6 +249,8 @@ In the context of Android, sources and sinks are represented by various methods 
 	\caption{Principle of application replacement with its instrumented version.}
 	\label{fig:Introduction_AppReplacement}
 \end{figure}
+
+From the user's perspective, the process of protection extension of an application is simple. Smartphone is connected to a PC running Dexter, and the user is presented with a list of applications installed on the device. The selected one is downloaded into the computer, instrumented, repackaged and uploaded back to the device where it replaces the original application. When executed, it performs the taint analysis in the background and warns the user when tracked data reach a monitored sink.
 
 \section{Similar Work}
 
