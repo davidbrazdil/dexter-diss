@@ -240,17 +240,21 @@ Dynamic taint analysis relies on the ability to assign attributes, called \emph{
 
 In the context of Android, sources and sinks are resources like the contacts database and network sockets. Access to these resources needs to be monitored by the taint tracking system, and the semantics of VM instructions extended according to the rules of propagation logic.
 
-The approach adopted by TaintDroid monitors sources and sinks on kernel level and modifies the VM and the file-system to propagate taint. This allows it to track data flow throughout the interpreted code, even between applications. Dexter, limited by the boundaries of the VM, performs the analysis only within a single application by instrumenting its executable code. Resources are accessed through framework methods, and it cannot track taint outside the scope of the methods defined by the application, so-called \emph{internal code}, not even through the framework. This is summarized in Figure~\ref{fig:Introduction_TaintingOverview}. 
+The approach adopted by TaintDroid monitors sources and sinks on kernel level and modifies the VM and the file-system to propagate taint. This allows it to track data flow throughout all of the interpreted code, even between applications. Dexter, limited by the boundaries of the VM, performs the analysis only within a single application by instrumenting its executable code. Resources are accessed through framework methods, and it cannot track taint outside the scope of the methods defined by the application, so-called \emph{internal code}, not even through the framework, as summarized in Figure~\ref{fig:Introduction_TaintingOverview}. 
 
-\begin{figure}
-	\centerline{	
-		\includegraphics[width=0.5\textwidth]{figs/fig_intro_overview.png}
-	}
-	\caption{Principle of application replacement with its instrumented version.}
-	\label{fig:Introduction_AppReplacement}
-\end{figure}
+% \begin{figure}
+% 	\centerline{	
+% 		\includegraphics[width=0.5\textwidth]{figs/fig_intro_overview.png}
+% 	}
+% 	\caption{Principle of application replacement with its instrumented version.}
+% 	\label{fig:Introduction_AppReplacement}
+% \end{figure}
 
-From the user's perspective, the process of protection extension of an application is simple. Smartphone is connected to a PC running Dexter, and the user is presented with a list of applications installed on the device. The selected one is downloaded into the computer, instrumented, repackaged and uploaded back to the device where it replaces the original application. When executed, it performs the taint analysis in the background and warns the user when tracked data reach a monitored sink.
+From the user's perspective, the process of protection extension of an application is simple. Smartphone is connected to a PC running Dexter, and the user is presented with a list of applications installed on the device. The selected one is downloaded into the computer, instrumented, repackaged and uploaded back to the device where it replaces the original application. When executed, it performs the taint analysis in background and warns the user when tracked data reach a monitored sink.
+
+\subsection{Potential Uses}
+
+
 
 \section{Similar Work}
 
