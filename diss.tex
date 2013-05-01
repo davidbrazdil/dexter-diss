@@ -224,7 +224,7 @@ Nevertheless, both of these policies fail to protect against applications that h
 
 \section{Project Overview}
 
-Taint-based dynamic data flow analysis is a popular technique of providing deeper insight into the runtime behaviour of applications, capable of monitoring access to resources and identifying data paths between them. It was previously successfully implemented on various platforms\cite{Zhu:2011:TPS:1945023.1945039}, and recently also ported to Android in the TaintDroid project\cite{web:TaintDroid, Enck:2010:TIT:1924943.1924971}, a joint study by Intel Labs, Penn State, and Duke University. However, their solution involves changes to the operating system and its virtual machine, limiting its usage to experts in possesion of one of few supported devices. The goal of this project was therefore to assess the limits of implementing the analysis within the bounds of the stock version of Android.
+Taint-based dynamic data flow analysis is a popular technique of providing deeper insight into the runtime behaviour of applications, capable of monitoring access to resources and identifying data paths between them. It was previously successfully implemented on other platforms\cite{Zhu:2011:TPS:1945023.1945039}, and recently ported to Android in the TaintDroid project\cite{web:TaintDroid, Enck:2010:TIT:1924943.1924971}, a joint study by Intel Labs, Penn State, and Duke University. However, their solution involves changes to the operating system and its virtual machine, limiting its usage to experts in possesion of one of few supported devices. The goal of this project was therefore to assess the limits of implementing the analysis within the bounds of the stock version of Android.
 
 \subsection{Data Flow Analysis}
 
@@ -258,12 +258,14 @@ Even though the aim of Dexter is to make TaintDroid functionality available on e
 
 \section{Similar Work}
 
+Malware and spyware detection is an ever-lasting problem of Android and researchers have been investing significant effort into solving it, mostly by porting techniques that had proven 
+
 TaintEraser - same thing for x86 \cite{Zhu:2011:TPS:1945023.1945039} \\
 Towards practical Taint Tracking - QEMU, good examples \cite{Ermolinskiy:EECS-2010-92} \\
 Automated detection - North Carolina active; Hey Get Off of My Market \cite{Yajin:12NDSS} \cite{Grace:2012:RSA:2307636.2307663} \\
 Aurasium - protecting access to sources, policy enforcement (might have legitimate reasons), native \cite{Xu:2012:APP:2362793.2362820} \\
-implicit flow \cite{Nair:2008:VMB:1346355.1346524} \\
 static- ScanDal \cite{2012kim_scandal}
+HoneyNet
 
 \cleardoublepage
 \chapter{Preparation}
