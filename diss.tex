@@ -206,7 +206,7 @@ Smartphones have grown to become very popular over the past few years as univers
 
 \section{Problem Statement}
 
-Applications for smartphones have access to a startling amount of personal information which is often highly beneficial to the user. They can get access to the contact list, calendar, call log, browser history or even the current location of the user, and combine these in novel ways that render everyday tasks simpler. But as studies have shown\cite{web:Appthority}\cite{web:HuffingtonOneInThree}, applications can and \emph{do} misuse the permissions they were given in good faith, and leak the collected data a remote server where the user loses control over them. These fall into three categories:
+Applications for smartphones have access to a startling amount of personal information which is often highly beneficial to the user. They can get access to the contact list, calendar, call log, browser history or even the current location of the user, and combine these in novel ways that render everyday tasks simpler. But as studies have shown\cite{web:Appthority, web:HuffingtonOneInThree}, applications can and \emph{do} misuse the permissions they were given in good faith, and leak the collected data a remote server where the user loses control over them. These fall into three categories:
 \begin{description}
 \item \textbf{Data Stealing} \\
 Due to Android's openness, it is not uncommon for programs to contain some form of malicious code. Usually these masquarade as legitimate applications but run a background trojan which sends premium text messages, logs keystrokes and sends its authors sensitive data useful for spamming or identity theft. Malware is present mainly on third-party application markets and in illegal pirated and trojanized software\cite{Zhou:2012:DRS:2133601.2133640}, but from time to time appears even on the official store\cite{web:LookoutPlayRemoval}.
@@ -222,9 +222,9 @@ Current state of the art in data protection on smartphones lags behind the techn
 
 Nevertheless, both of these policies fail to protect against applications that have a legitimate initial reason to read private data but secretely leak them at the same time, since once access is granted the applications are free to use the resource in any way they want.
 
-\section{Overview of Dexter}
+\section{Project Overview}
 
-Taint-based dynamic data flow analysis is a popular technique of providing deeper insight into the runtime behaviour of applications, capable of monitoring access to resources and identifying data paths between them. It was previously successfully implemented on various platforms\cite{Zhu:2011:TPS:1945023.1945039}, and recently also ported to Android in the TaintDroid project\cite{web:TaintDroid}\cite{Enck:2010:TIT:1924943.1924971}, a joint study by Intel Labs, Penn State, and Duke University. However, their solution involves changes to the operating system and its virtual machine, limiting its usage to experts in possesion of one of few supported devices. The goal of this project was therefore to assess the limits of implementing the analysis within the bounds of the stock version of Android.
+Taint-based dynamic data flow analysis is a popular technique of providing deeper insight into the runtime behaviour of applications, capable of monitoring access to resources and identifying data paths between them. It was previously successfully implemented on various platforms\cite{Zhu:2011:TPS:1945023.1945039}, and recently also ported to Android in the TaintDroid project\cite{web:TaintDroid, Enck:2010:TIT:1924943.1924971}, a joint study by Intel Labs, Penn State, and Duke University. However, their solution involves changes to the operating system and its virtual machine, limiting its usage to experts in possesion of one of few supported devices. The goal of this project was therefore to assess the limits of implementing the analysis within the bounds of the stock version of Android.
 
 \subsection{Data Flow Analysis}
 
@@ -236,11 +236,13 @@ Taint-based dynamic data flow analysis is a popular technique of providing deepe
 	\label{fig:Introduction_TaintingOverview}
 \end{figure}
 
-Dynamic taint analysis relies on the ability to assign attributes, called \emph{taint tags}, to data in the memory, here representing the potential to contain private information. The execution of the program is altered such that tags are assigned to tracked data at the points of their origin, known as \emph{sources}, and inputs of \emph{sinks}, operations capable of sending data away, are monitored to make sure no tainted data leave the system. Between sources and sinks it is made sure that tags propagate correctly as data are moved and combined. 
+Dynamic taint analysis relies on the ability to assign attributes, called \emph{taint tags}, to data in the memory, here representing the potential to contain private information. The execution of the program is altered such that tags are assigned to tracked data at the points of their origin, known as \emph{sources}, and inputs of \emph{sinks}, operations capable of sending data away, are monitored to make sure no tainted data leave the system. Between sources and sinks it is made sure that tags propagate correctly as data are moved and combined. In the context of Android, sources and sinks are resources like the contacts database and network sockets. Access to these resources needs to be monitored by the taint tracking system, and the semantics of VM instructions extended according to the rules of propagation logic.
 
-In the context of Android, sources and sinks are resources like the contacts database and network sockets. Access to these resources needs to be monitored by the taint tracking system, and the semantics of VM instructions extended according to the rules of propagation logic.
+The approach adopted by TaintDroid monitors sources and sinks on kernel level and modifies the VM and the file-system to propagate taint. This allows it to track data flow throughout all of the interpreted code, even between applications. Dexter, limited by the boundaries of the VM, performs the analysis only within a single application by instrumenting its executable code. Resources are accessed through framework methods, and it cannot track taint outside the scope of methods defined by the application, so-called \emph{internal code}, not even through the framework. Stages of the analysis are summarized in Figure~\ref{fig:Introduction_TaintingOverview}. 
 
-The approach adopted by TaintDroid monitors sources and sinks on kernel level and modifies the VM and the file-system to propagate taint. This allows it to track data flow throughout all of the interpreted code, even between applications. Dexter, limited by the boundaries of the VM, performs the analysis only within a single application by instrumenting its executable code. Resources are accessed through framework methods, and it cannot track taint outside the scope of the methods defined by the application, so-called \emph{internal code}, not even through the framework, as summarized in Figure~\ref{fig:Introduction_TaintingOverview}. 
+Tainting systems generally share some limitations. Most notably they struggle to avoid \emph{taint explosion}, i.e.\ uncontrollable spread of taint due to too conservative propagation logic, and nearly all of them entirely ignore \emph{implicit data flows}, which propagate data through control flow. For instance, \verb$while (x--) y++;$ moves the value of \verb$x$ into \verb$y$ unnoticed. Attempts have been made to identify such constructs through static analysis\cite{Nair:2008:VMB:1346355.1346524}, but they increase the chances of taint explosion. Further details about tainting can be found in \cite{Schwartz:2010:YEW:1849417.1849981, Ermolinskiy:EECS-2010-92}.
+
+\subsection{Usage of Dexter}
 
 % \begin{figure}
 % 	\centerline{	
@@ -252,18 +254,13 @@ The approach adopted by TaintDroid monitors sources and sinks on kernel level an
 
 From the user's perspective, the process of protection extension of an application is simple. Smartphone is connected to a PC running Dexter, and the user is presented with a list of applications installed on the device. The selected one is downloaded into the computer, instrumented, repackaged and uploaded back to the device where it replaces the original application. When executed, it performs the taint analysis in background and warns the user when tracked data reach a monitored sink.
 
-\subsection{Potential Uses}
-
-
+Even though the aim of Dexter is to make TaintDroid functionality available on every Android device, it is still a tool that only security analysts and cautious power users would use. Its biggest potential however lies in the enterprise sector, protecting corporate data on personal phones of the employees, much like increasingly popular \emph{app wrapping}\cite{web:AppWrapping}. With some modifications it could also replace TaintDroid as the flow tracking component inside CleanOS\cite{Tang:2012:CLM:2387880.2387888}, another security-enhancing project that prevents data theft.
 
 \section{Similar Work}
 
-TaintDroid \cite{Enck:2010:TIT:1924943.1924971} \\
+TaintEraser - same thing for x86 \cite{Zhu:2011:TPS:1945023.1945039} \\
 Towards practical Taint Tracking - QEMU, good examples \cite{Ermolinskiy:EECS-2010-92} \\
 Automated detection - North Carolina active; Hey Get Off of My Market \cite{Yajin:12NDSS} \cite{Grace:2012:RSA:2307636.2307663} \\
-TaintEraser - same thing for x86 \cite{Zhu:2011:TPS:1945023.1945039} \\
-CleanOS - possible use \cite{Tang:2012:CLM:2387880.2387888} \\
-Tainting in detail \cite{Schwartz:2010:YEW:1849417.1849981} \\
 Aurasium - protecting access to sources, policy enforcement (might have legitimate reasons), native \cite{Xu:2012:APP:2362793.2362820} \\
 implicit flow \cite{Nair:2008:VMB:1346355.1346524} \\
 static- ScanDal \cite{2012kim_scandal}
