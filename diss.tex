@@ -260,61 +260,64 @@ Of course tainting brings complications as well. Most notably, it often struggle
 % 	\label{fig:Introduction_AppReplacement}
 % \end{figure}
 
-From the user's perspective, the process of protection extension of an application is simple. Smartphone is connected to a PC running Dexter, and the user is presented with a list of applications installed on the device. The selected one is downloaded into the computer, instrumented, repackaged and uploaded back to the device where it replaces the original application. When executed, it performs the taint analysis in background and warns the user when tracked data reach a monitored sink.
+From the user's perspective, the process of application protection enhancement is simple. Smartphone is connected to a PC running Dexter, and the user is presented with a list of applications installed on the device. The selected one is downloaded into the computer, instrumented, repackaged and uploaded back to the device where it replaces its original counterpart. This application then runs the taint analysis in the background and warns the user when tainted data reach a monitored sink.
 
-Even though the aim of Dexter is to make TaintDroid functionality available on every Android device, it is still a tool that only security analysts and cautious power users would use. Its biggest potential however lies in the enterprise sector, protecting corporate data on personal phones of the employees, much like increasingly popular \emph{app wrapping}\cite{web:AppWrapping}. With some modifications it could also replace TaintDroid as the flow tracking component inside CleanOS\cite{Tang:2012:CLM:2387880.2387888}, another security-enhancing project that prevents data theft.
+Even though the aim of Dexter is to make TaintDroid functionality available on every Android device, it is still a tool that only security experts and cautious power users would use. Its biggest potential however lies in the enterprise sector, protecting corporate data on personal phones of the employees, much like increasingly popular \emph{app wrapping}\cite{web:AppWrapping}. With some modifications it could also replace TaintDroid as the flow tracking component inside CleanOS\cite{Tang:2012:CLM:2387880.2387888}, another security-enhancing project that prevents data theft.
 
 \section{Related Work}
 
-The community around Android has built an ecosystem of tools that help security experts analyze and reverse-engineer applications, and grouped them into the HoneyNet project\weblink{http://www.honeynet.org/}. The core of these tools is usually formed by the Smali\weblink{https://code.google.com/p/smali/} (dis)assembler and the Androguard\weblink{https://code.google.com/p/androguard/} static analysis framework. Of particular significance to professionals are APKInspector\weblink{https://github.com/honeynet/apkinspector}, which provides useful behavioural information through static taint analysis\cite{2012kim_scandal}, and DroidBox\weblink{https://code.google.com/p/droidbox/}, a sandboxed emulator environment with resource monitoring. 
+The community around Android has built an entire ecosystem of tools that help security experts analyze and reverse-engineer applications, and grouped them into the HoneyNet project\weblink{http://www.honeynet.org/}. The core of these tools is usually formed by the Smali\weblink{https://code.google.com/p/smali/} (dis)assembler and the Androguard\weblink{https://code.google.com/p/androguard/} static analysis framework. Of particular significance to professionals are APKInspector\weblink{https://github.com/honeynet/apkinspector}, which provides useful behavioural information through static taint analysis\cite{2012kim_scandal}, and DroidBox\weblink{https://code.google.com/p/droidbox/}, a sandboxed emulator environment with resource monitoring. 
 
-In terms of techniques, a lot of attention has been paid to automated static analysis of applications, in order to instantly prevent distribution of malware through both the official and alternative market stores. Projects like RiskRanker\cite{Grace:2012:RSA:2307636.2307663} and DroidRanger\cite{Yajin:12NDSS} look for behavioural patterns common to known spyware and malware, while for example DroidMoss\cite{Zhou:2012:DRS:2133601.2133640} focuses on identifying repackaged applications that could have been trojanized. 
+In terms of techniques, a lot of attention has been paid to automated malware detection, in order to instantly prevent its distribution through both the official and alternative market stores. Projects like RiskRanker\cite{Grace:2012:RSA:2307636.2307663} and DroidRanger\cite{Yajin:12NDSS} look for behavioural patterns common to known spyware and malware, while for example DroidMoss\cite{Zhou:2012:DRS:2133601.2133640} focuses on identifying repackaged applications that could have been trojanized. 
 
-Another large set of projects, including TaintDroid, put effort into enhancing the runtime privacy policies of the platform. For instance, Aurasium \cite{Xu:2012:APP:2362793.2362820} can intercept and prevent interactions of repackaged applications with the OS by inserting native code between the kernel and the VM, and MockDroid\cite{Beresford:2011:MTP:2184489.2184500} offers fine-grained permission removal through resource mocking. In the enterprise sector, virtualization\cite{web:Virtualization} and app wrapping\cite{web:AppWrapping} are gaining popularity as ways of creating a separate corporate workspace on personal devices.
+Another large set of projects, including TaintDroid, puts effort into enhancing the runtime privacy policies of the platform. For instance, MockDroid\cite{Beresford:2011:MTP:2184489.2184500} allows fine-grained permission removal through resource mocking, and Aurasium \cite{Xu:2012:APP:2362793.2362820} can intercept and prevent interactions of applications with the OS by repackaging them in order to insert its monitor between the kernel and the VM. In the enterprise sector, virtualization\cite{web:Virtualization} and app wrapping\cite{web:AppWrapping} are gaining popularity as ways of creating a separate corporate workspace on personal devices.
 
 \cleardoublepage
 \chapter{Preparation}
 
 \section{Dalvik Virtual Machine}
 
-Dalvik is an open-source virtual machine and an essential component of the Android operating system. It was developed specifically for use on mobile devices such as smartphones and tablets, and its design was optimized for running on battery-powered systems with low-performance processor and limited memory. 
+Dalvik is an open-source virtual machine and an essential component of the Android operating system. It was developed specifically for use on mobile devices and its design was optimized for running on battery-powered systems with low-performance processor and limited memory. 
 
-Built around the Apache Harmony project, Dalvik runs programs that are compatible with a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file using tools in the Android SDK. With release 2.2, Dalvik introduced Just-In-Time compilation which significantly increased its performance and efficiency\cite{web:DalvikJit}.
+Built around the Apache Harmony project, Dalvik runs programs that make use of a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file\cite{web:DalvikDex} using tools in the Android SDK. With release 2.2, Dalvik introduced Just-In-Time compilation which significantly increased its performance and efficiency\cite{web:DalvikJit}.
 
 \subsection{Application Package Files}
 
 Applications for Android are distributed in Application Package files (APK). These are ZIP files signed by the publisher, which contain:
 \begin{inparaenum}[(i)]
-\item the executable \emph{classes.dex} file,
+\item \emph{classes.dex} executable file,
 \item application resources (images, UI layouts, ...),
 \item native code binaries,
 \item manifest.
 \end{inparaenum}
 
-The compulsory manifest file contains essential information about the application to the operating system. Among other things, this includes its unique package name, list of permissions requested by the application, and a list of all its entry points.
+The manifest contains essential information about the application to the operating system. Among other things, this includes its unique package name, list of permissions requested by the application, and a list of all its entry points.
 
-These files are stored on the device when applications are downloaded from the market or installed manually. System applications can be found in the \verb$/system/app$ folder, most applications installed by the user in \verb$/data/app$. Applications can also be moved to an SD card, in which case they are encrypted and accessed through virtual file-system. Either way, they can be retrieved from the device only with root access. The instrumented APK can be installed on any device, regardless of it being rooted or not. 
+APKs are stored on the device when applications are downloaded from the market or installed manually, and can be retrieved from the device only with root access. Instrumented files can be installed on any device. 
 
 \subsection{Bytecode}
 
-Dalvik bytecode is very similar to that of the Java Virtual Machine in the sense that it has a large set of rather high-level instructions, making the assembly nearly identical to the original source code unless obfuscation tools like ProGuard\weblink{https://developer.android.com/tools/help/proguard.html} are used. This makes analysis and reverse-engineering of applications a significantly easier task, and is also the reason why we will use both assembly and Java code examples freely.
+Dalvik bytecode is very similar to that of JVM in the sense that they both have a large set of rather high-level instructions\cite{web:DalvikBytecode, web:JavaBytecode}, making the assembly very similar to the source code unless obfuscation tools like ProGuard\weblink{https://developer.android.com/tools/help/proguard.html} are used. This makes analysis and reverse-engineering of applications significantly easier, and is also the reason why we will freely interchange examples in assembly and Java.
 
 \subsubsection{Registers}
 
-Unlike the stack-based JVM, Dalvik uses a register-based programming model with 32-bit register width and variable-length instructions. 64-bit values are stored in two adjacent registers.
+Unlike the stack-based JVM, Dalvik uses a register-based programming model with 32-bit register width and variable-length instructions\cite{web:DalvikInsnFormat}. 64-bit values are stored in two adjacent registers.
 
-Each method can use up to 65,536 virtual registers. Actual mapping to hardware registers depends on the machine architecture. On a typical Android device, the first 16 virtual registers would map to the 16 registers available in the ARM instruction set, and rest would be stored in memory. Depending on their length, instructions can address either the first 16, first 256, or all 65k virtual registers. If an instruction needs to address a register out of the available range, the register contents are expected to get moved to a lower register first.
+Each method can use up to 65,536 virtual registers mapped either to hardware registers or stack memory depending on the underlying architecture. 
+% On a typical Android device, the first 16 virtual registers would map to the 16 registers available in the ARM instruction set, and rest would be stored in memory. 
+Instructions can address either the first 16, 256, or all 65k virtual registers based on their length. If an instruction needs to address a register out of the available range, the register contents are expected to get moved to a lower register first.
 
-Dalvik also has a very powerful preload class verifier. It infers types of values stored in registers at every single point of computation, and uses this information to identify illegal access to resources, pointer arithmetic and other illegal operations. A class containing such instructions is rejected and the application terminated.
+Dalvik also has a very powerful preload class verifier\cite{web:DalvikVerifier, web:DalvikDexopt}. It infers types of values in registers for every point of computation, and uses these to identify illegal access to resources, pointer arithmetic and other invalid operations. A~class containing such instructions is rejected and the application terminated.
 
 \subsubsection{Syntax of Assembly}
-Assembly syntax used in this dissertation is mostly based on the official Dalvik assembly. It follows the \emph{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g.\ the instruction
+
+Assembly syntax used in this dissertation is mostly based on the official Dalvik assembly\cite{web:DalvikBytecode}. It follows the \emph{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g.\ the instruction
 		\centerbox{
 			\asm{add-int/lit16 v2, v8, \#1234}
 		}
 adds 1234 to the value of register 8, and stores the result into register 2. 
 
-Written rules of taint propagation will treat registers like variables. For example the following piece of code retrieves an element of an array pointed to by \verb$vArray$, and multiplies it by three.
+Since actual numerical register identifiers are irrelevant to the propagation logic we will treat them as variables. For example the following piece of code retrieves an element of an array pointed to by \verb$vArray$, and multiplies it by three.
 	\begin{figure}[H]
 		\centerbox{
 			\asm{aget-int vElement, vArray, vIndex} \\
@@ -333,9 +336,9 @@ Register pairs forming a wide argument will be separated by a bar.
 
 \subsubsection{Instruction Variants}
 
-To achieve higher code density, some Dalvik instructions come in several variants. They are semantically equivalent but they differ in size. A good example of this is the \verb$const$ instruction. Its variant \verb$const/16$ stores a 16-bit constant into a register addressed by an 8-bit number, fitting into 4 bytes. On the other hand, \verb$const/4$ fits into 2 bytes, but can only address registers in the 4-bit range and carry a 4-bit constant.
+To achieve higher code density, some Dalvik instructions come in several variants\cite{web:DalvikBytecode}. They are semantically equivalent but they differ in size. A good example of this is the \verb$const$ instruction. Its variant \verb$const/16$ stores a 16-bit constant into a register addressed by an 8-bit number, fitting into 4 bytes. On the other hand, \verb$const/4$ fits into 2 bytes, but can only address registers in the 4-bit range and carry a 4-bit constant.
 
-All variants of semantically equivalent instructions are parsed as the same instruction type in Dexter, and thus will be referred to  by the same name. During the reassembly phase, Dexter automatically outputs the most optimized variant of the instruction possible.
+All variants of semantically equivalent instructions are parsed as the same instruction type in Dexter, and thus will be referred to by the same name. During the reassembly phase, Dexter automatically outputs the most optimized variant of the instruction possible.
 
 \section{Data Flow Analysis}
 \label{section:DataFlowAnalysis}
