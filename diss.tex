@@ -68,6 +68,8 @@
 \newcommand{\tick}{$\checkmark$}
 \newcommand{\cross}{$\times$}
 
+\newcommand{\weblink}[1] {\footnote{\scriptsize\url{#1}}}
+
 \setlength{\intextsep}{10pt}
 
 \definecolor{lightGreen}{HTML}{E3FFD5}
@@ -262,16 +264,13 @@ From the user's perspective, the process of protection extension of an applicati
 
 Even though the aim of Dexter is to make TaintDroid functionality available on every Android device, it is still a tool that only security analysts and cautious power users would use. Its biggest potential however lies in the enterprise sector, protecting corporate data on personal phones of the employees, much like increasingly popular \emph{app wrapping}\cite{web:AppWrapping}. With some modifications it could also replace TaintDroid as the flow tracking component inside CleanOS\cite{Tang:2012:CLM:2387880.2387888}, another security-enhancing project that prevents data theft.
 
-\section{Similar Work}
+\section{Related Work}
 
-Malware and spyware detection is an ever-lasting problem of Android and researchers have been investing significant effort into solving it, mostly by porting techniques that had proven 
+The community around Android has built an ecosystem of tools that help security experts analyze and reverse-engineer applications, and grouped them into the HoneyNet project\weblink{http://www.honeynet.org/}. The core of these tools is usually formed by the Smali\weblink{https://code.google.com/p/smali/} (dis)assembler and the Androguard\weblink{https://code.google.com/p/androguard/} static analysis framework. Of particular significance to professionals are APKInspector\weblink{https://github.com/honeynet/apkinspector}, which provides useful behavioural information through static taint analysis\cite{2012kim_scandal}, and DroidBox\weblink{https://code.google.com/p/droidbox/}, a sandboxed emulator environment with resource monitoring. 
 
-TaintEraser - same thing for x86 \cite{Zhu:2011:TPS:1945023.1945039} \\
-Towards practical Taint Tracking - QEMU, good examples \cite{Ermolinskiy:EECS-2010-92} \\
-Automated detection - North Carolina active; Hey Get Off of My Market \cite{Yajin:12NDSS} \cite{Grace:2012:RSA:2307636.2307663} \\
-Aurasium - protecting access to sources, policy enforcement (might have legitimate reasons), native \cite{Xu:2012:APP:2362793.2362820} \\
-static- ScanDal \cite{2012kim_scandal}
-HoneyNet
+In terms of techniques, a lot of attention has been paid to automated static analysis of applications, in order to instantly prevent distribution of malware through both the official and alternative market stores. Projects like RiskRanker\cite{Grace:2012:RSA:2307636.2307663} and DroidRanger\cite{Yajin:12NDSS} look for behavioural patterns common to known spyware and malware, while for example DroidMoss\cite{Zhou:2012:DRS:2133601.2133640} focuses on identifying repackaged applications that could have been trojanized. 
+
+Another large set of projects, including TaintDroid, put effort into enhancing the runtime privacy policies of the platform. For instance, Aurasium \cite{Xu:2012:APP:2362793.2362820} can intercept and prevent interactions of repackaged applications with the OS by inserting native code between the kernel and the VM, and MockDroid\cite{Beresford:2011:MTP:2184489.2184500} offers fine-grained permission removal through resource mocking. In the enterprise sector, virtualization\cite{web:Virtualization} and app wrapping\cite{web:AppWrapping} are gaining popularity as ways of creating a separate corporate workspace on personal devices.
 
 \cleardoublepage
 \chapter{Preparation}
@@ -298,7 +297,7 @@ These files are stored on the device when applications are downloaded from the m
 
 \subsection{Bytecode}
 
-Dalvik bytecode is very similar to that of the Java Virtual Machine in the sense that it has a large set of rather high-level instructions, making the assembly nearly identical to the original source code unless obfuscation tools like ProGuard\footnote{\scriptsize\url{https://developer.android.com/tools/help/proguard.html}} are used. This makes analysis and reverse-engineering of applications a significantly easier task, and is also the reason why we will use both assembly and Java code examples freely.
+Dalvik bytecode is very similar to that of the Java Virtual Machine in the sense that it has a large set of rather high-level instructions, making the assembly nearly identical to the original source code unless obfuscation tools like ProGuard\weblink{https://developer.android.com/tools/help/proguard.html} are used. This makes analysis and reverse-engineering of applications a significantly easier task, and is also the reason why we will use both assembly and Java code examples freely.
 
 \subsubsection{Registers}
 
@@ -918,11 +917,11 @@ byte[] array = baos.toByteArray();
 
 \section{Software Engineering and Toolchain}
 
-Existing reverse-engineering tools for Android, usually built on top of Androguard\footnote{\scriptsize\url{https://code.google.com/p/androguard/}}, provide API for simple implementation of custom static analyses, but they do not offer means of instrumenting and recompiling the bytecode in a way that was described in this section, which led to decision to build a new tool, designed specifically for this purpose.
+Existing reverse-engineering tools for Android provide API for simple implementation of custom static analyses, but they do not offer means of instrumenting and recompiling the bytecode in a way that was described in this section, which led to the decision to build an entirely new tool, designed specifically for this purpose.
 
-Java was chosen as the programming language, as opposed to Python used by the existing tools, in order to utilize DexLib, an existing DEX-manipulating library built as the core of the Smali\footnote{\scriptsize\url{https://code.google.com/p/smali/}} (dis)assembler. Project Lombok\footnote{\scriptsize\url{http://projectlombok.org/}}, a tool extending the features of the language, was incorporated. Strict use of Java could also potentialy allow Dexter to integrate with the official compilation toolchain, or to run directly on the device. Source code was managed by the Git\footnote{\scriptsize\url{https://git.kernel.org/}} revision control system, in a repository hosted at the GitHub\footnote{\scriptsize\url{https://github.com/}} cloud storage.
+Java was chosen as the programming language, as opposed to Python used by the existing tools, in order to utilize DexLib, an existing DEX-manipulating library built as the core of the Smali assembler. Project Lombok\weblink{http://projectlombok.org/}, a tool extending the features of the language, was incorporated. Strict use of Java could also potentialy allow Dexter to integrate with the official compilation toolchain, or to run directly on the device. Source code was managed by the Git\weblink{https://git.kernel.org/} revision control system, in a repository hosted at the GitHub\weblink{https://github.com/} cloud storage.
 
-Implementation of internal algorithms followed the Test-Driven Development philosophy by building a set of JUnit tests that ensured their expected behaviour. The rules of taint propagation, main subject of research, were tested on small programs, written in Java or assembly, each focusing on a single feature of the bytecode. In the end, the final solution was applied on a series of real applications downloaded directly from the official market, and on samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\footnote{\scriptsize\url{http://www.malgenomeproject.org/}}.
+Implementation of internal algorithms followed the Test-Driven Development philosophy by building a set of JUnit tests that ensured their expected behaviour. The rules of taint propagation, main subject of research, were tested on small programs, written in Java or assembly, each focusing on a single feature of the bytecode. In the end, the final solution was applied on a series of real applications downloaded directly from the official market, and on samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
 
 \cleardoublepage
 \chapter{Implementation}
@@ -987,7 +986,7 @@ The class hierarchy is a standard rooted tree and is implemented as such. Each n
 \item access flags and annotations.
 \end{inparaenum}
 
-All DEX files are parsed by DexLib, its data structures then read and relevant pieces of information passed to the class hierarchy object. Same is done for JAR files, only these are parsed by the BCEL\footnote{\scriptsize\url{https://commons.apache.org/proper/commons-bcel/}} library. Once all of the files have been scanned, it is ensured that:
+All DEX files are parsed by DexLib, its data structures then read and relevant pieces of information passed to the class hierarchy object. Same is done for JAR files, only these are parsed by the BCEL\weblink{https://commons.apache.org/proper/commons-bcel/} library. Once all of the files have been scanned, it is ensured that:
 \begin{inparaenum}[(i)]
 \item parent of every class is present,
 \item interfaces implemented by classes are present,
@@ -1343,7 +1342,7 @@ Just like with register identifiers, the space for offsets inside instructions i
 
 \section{APK Repackaging}
 
-Last step Dexter has to make is replacing the executable file in the original APK. Since APKs are mere ZIP files, Zip4j\footnote{\scriptsize\url{http://www.lingala.net/zip4j/}} library is used to do this. The file is first copied to a temporary file, executable is replaced and the \verb$META-INF$ folder removed. This folder contains the digital signature of the publisher, which becomes invalid when the executable is replaced and needs to be regenerated. Any key could be used to do this, but Dexter currently calls the \verb$keytool$ from the JDK to create a random key, and passes it to the \verb$jarsigner$ command that signs the APK. Temporary file is renamed to the given output file name and that concludes the lengthy process of instrumentation.
+Last step Dexter has to make is replacing the executable file in the original APK. Since APKs are mere ZIP files, Zip4j\weblink{http://www.lingala.net/zip4j/} library is used to do this. The file is first copied to a temporary file, executable is replaced and the \verb$META-INF$ folder removed. This folder contains the digital signature of the publisher, which becomes invalid when the executable is replaced and needs to be regenerated. Any key could be used to do this, but Dexter currently calls the \verb$keytool$ from the JDK to create a random key, and passes it to the \verb$jarsigner$ command that signs the APK. Temporary file is renamed to the given output file name and that concludes the lengthy process of instrumentation.
 
 \cleardoublepage
 \chapter{Evaluation}
@@ -1409,7 +1408,7 @@ D/FlurryAgent(  712): Ending session
 
 Unlike GoneSixty which steals personal data, BgServ is interested in information that can identify the device: phone number, IMEI, version of the system, etc. These are accessed through system service managers and from the output in figure~\ref{figure:Evaluation_BgServ} we see that Dexter recognized access to location and phone service managers, and that the data are again being leaked via HTTP. This is consistent with findings made by the TaintDroid team, who analyzed it as well.
 
-As one can also see from the output, Bgserv requests access to few other system services and reads network settings from the database. These are not being tracked at the moment, but support could easily be added. Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses \verb$XmlSerializer$\footnote{\scriptsize\url{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}}, which is currently not a recognized sink.
+As one can also see from the output, Bgserv requests access to few other system services and reads network settings from the database. These are not being tracked at the moment, but support could easily be added. Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses \verb$XmlSerializer$\weblink{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}, which is currently not a recognized sink.
 
 \subsection{Find\&Call}
 
