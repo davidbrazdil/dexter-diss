@@ -345,9 +345,9 @@ All variants of semantically equivalent instructions are parsed as the same inst
 
 \subsection{Taint Tags}
 
-Different taint tracking systems choose different ways of representing taint tags. This fundamental choice has large effect on the overall design of the system, its capabilities and limits, as well as performance and memory overhead. The authors of TaintDroid decided to store taint tags as 32-bit integers where each bit represents one source of sensitive data. This is a very efficient and compact format, sufficient for the purposes of TaintDroid, but quickly reaches its limits as the functionality is extended. One of the challenges faced by the CleanOS project, which builds on TaintDroid, was the necessity to potentially track millions of taint sources. Their solution alters TaintDroid to store taint as a 32-bit pointer into an SQL database, which increases the number of trackable sources, but significantly impedes performance at the same time. 
+Different tainting systems choose different ways of representing tags. This fundamental choice has large effect on the overall design of the system, its capabilities and limits, as well as performance and memory overhead. The authors of TaintDroid decided to store them as 32-bit integers where each bit represents one source of sensitive data. This is a very efficient and compact format, sufficient for the purposes of TaintDroid, but quickly reaches its limits as the functionality is extended. One of the challenges faced by the CleanOS project\cite{Tang:2012:CLM:2387880.2387888}, which builds on TaintDroid, was the necessity to potentially track millions of taint sources. Their solution alters TaintDroid to store taint as a 32-bit pointer into an SQL database, which increases the number of trackable sources, but significantly impedes performance at the same time. 
 
-For the sake of simplicity, Dexter adopts the same tag representation as TaintDroid, with one slight modification. As will be demonstrated later, identification of some sinks relies on distinguishing how certain objects were created. Hence upper bits of the tags are reserved to represent the potential of an object to create a particular type of sink if passed as an argument to some API calls. The meaning of each bit being set is summarized in table~\ref{table:TaintTagStorage_BitMeaning}.
+For the sake of simplicity, Dexter adopts the same tag representation as TaintDroid, with one slight modification. As will be demonstrated later, identification of some sinks relies on distinguishing how certain objects were created. Hence upper bits of the tags are reserved to represent the potential of an object to create a particular type of sink. Meaning of bits being set is summarized in Table~\ref{table:TaintTagStorage_BitMeaning}.
 
 \begin{table}
 	\begin{center}
@@ -360,7 +360,7 @@ For the sake of simplicity, Dexter adopts the same tag representation as TaintDr
 		2            & \verb$TAINT_SOURCE_CALL_LOG$  & call history information \\
 		3            & \verb$TAINT_SOURCE_LOCATION$  & location information \\
 		4            & \verb$TAINT_SOURCE_BROWSER$   & browser data, e.g.\ bookmarks \\
-		5            & \verb$TAINT_SOURCE_DEVICE_ID$ & device ID, e.g.\ IMEI/phone number \\
+		5            & \verb$TAINT_SOURCE_DEVICE_ID$ & device ID, e.g.\ IMEI, phone number \\
 		\hline
 		29           & \verb$TAINT_SINK_FILE$        & file-system sink \\
 		30           & \verb$TAINT_SINK_SOCKET$      & network sink \\
@@ -374,25 +374,24 @@ For the sake of simplicity, Dexter adopts the same tag representation as TaintDr
 
 \subsection{Tag Storage}
 
-To store and propagate taint tags, Dexter must build an attribute system inside the modified application, so that every piece of data accessible by the executable code can carry a tag if necessary. The way these are stored differs for objects and for primitives. The crucial difference between these is that when a primitive is copied, operations on one of the copies do not effect the other ones, which means that there needs to be a tag storage for every copy. On the other hand, when a reference to an object is copied, operations on one of the copies are visible by dereferencing any of them, and so there should be only one taint tag per object, not per every copy of its reference. 
+To store and propagate taint tags, Dexter must build an attribute system inside the application, so that every piece of data accessible by internal code can carry one. The way these are stored differs for objects and primitives. The distinction is that when a primitive is copied, operations on one of the copies do not effect the other, which means that there has to be a tag storage for every copy, while when a reference to an object is copied, operations on one of the copies are visible by dereferencing any of them, and so there should only be one tag per object, not per every copy of its reference. 
 
 \subsubsection{Objects}
 \label{section:TaintTagStorage_Objects}
 
-Dexter allows to store one taint tag per object by adding a globally accessible hash map from object references to integers. The only two supported operation are:
+Dexter stores tags with objects by creating a globally accessible hash map from object references to integers. The only supported operations are:
 \begin{description} 
 \item \verb$int get(Object obj)$ \\
-Returns the taint tag of given object. Returns zero when \verb$obj == null$.
+Returns the taint tag of given object, or zero when \verb$obj == null$.
 \item \verb$void set(int taint, Object obj)$ \\
 Adds taint to \verb$obj$ by OR-ing its existing entry with the first parameter. Does nothing when \verb$obj == null$.
 \end{description}
 
-In the following sections, the \verb$taint-get$ and \verb$taint-set$ macros (explained in section~\ref{section:Code_Macros}) will be used as a shorthand for calling the \verb$get$ and \verb$set$ methods of the hash map. Their syntax follows the signatures above:
-
+In the following sections, the \verb$taint-get$ and \verb$taint-set$ macros (see section~\ref{section:Code_Macros}) will be used as a shorthand for calling these methods. 
 	\begin{figure}[H]
 		\centerbox{
 			\asm{taint-get vResult, vObject} \\
-			\asm{taint-set vAddedTaint, vObject}
+			\asm{taint-set vTaint, vObject}
 		}
 	\end{figure}
 
@@ -400,29 +399,29 @@ In the following sections, the \verb$taint-get$ and \verb$taint-set$ macros (exp
 
 \label{section:TaintStorage_Primitives}
 
-In the case of primitives, Dexter needs to create taint storage space everywhere where a primitive might be stored, i.e.\ method code registers, and class fields and arrays of primitive types. Taint will also be temporarily stored for method arguments during a method call, but this will be discussed in section~\ref{section:TaintPropagation_MethodCalls_Internal}.
+As was mentioned, tag storage needs to be created everywhere where a primitive might be stored, i.e.\ method code registers, primitive class fields and primitive arrays. Taint of parameters is also temporarily stored during method calls, but this is discussed in section~\ref{section:TaintPropagation_MethodCalls_Internal}.
 
 \begin{itemize}
 
 \item \textbf{method code registers} \\
-For every register that appears in the original method code, Dexter creates a new one that can be used for storing taint. This effectively doubles the number of used registers, which is why Dexter needs to perform constraint-solving register colouring during the assembly phase. Otherwise some instructions might not be able to address these new registers.
+For every register that appears in the original bytecode, Dexter creates a new one for storing taint. Doubling the number of registers is why Dexter needs to reallocate registers after instrumentation, otherwise some instructions might not be able to address these new registers.
 
 \item \textbf{internal class fields} \\
-Classes defined inside the application's DEX file can be fully modified by Dexter. Hence, for every field of primitive type, a new field of type \verb$int$ is created, with a name that will not clash with any of the existing fields.
+Classes defined internally can be fully modified by Dexter. For every field of primitive type, a new field of type \verb$int$ is created, with a name that does not clash with any of the existing fields.
 
 \item \textbf{external class fields} \\
-Extra fields cannot be inserted into class defined outside the scope of the instrumented application, and therefore a different approach must be adopted. 
+Extra fields cannot be inserted into external classes and therefore a different approach must be adopted. 
 \begin{itemize}
-\item static fields \\
-A special class is created inside the application which contains one field of type \verb$int$ per every external static field that is accessed by the application. Taint tags are stored in these associated fields.
+\item \textit{static fields} \\
+New class is created to contain one field of type \verb$int$ per every external static field that is accessed by the application. Taint tags are stored in these associated fields.
 
-\item instance fields \\
-It would be possible to create taint storage for every field inside every instance of an external class, for example by creating one global map from object references to integers per every accessed external instance field. However, it will be shown that it is actually necessary to assign the taint to the object itself, and thus storage space for these fields is not needed.
-
-\item \textbf{arrays} \\
-In Dexter's taint propagation logic, primitive arrays are equivalent to external instance fields, and therefore only one taint tag per array is stored.
+\item \textit{instance fields} \\
+Creating a storage for every external instance field would be possible, e.g.\ through a hash map from instance references to integers for every such field, but it will be shown that the propagation logic actually requires to assign taint to the object itself, and thus storage space for these fields is superfluous.
 
 \end{itemize}
+
+\item \textbf{arrays} \\
+Primitive array elements are considered equivalent to external instance fields under Dexter's propagation logic, and thus only one taint tag per array is stored.
 
 \end{itemize}
 
