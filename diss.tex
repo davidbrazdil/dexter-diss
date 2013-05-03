@@ -428,13 +428,13 @@ Primitive array elements are considered equivalent to external instance fields u
 
 \subsection{Principles of Taint Propagation}
 
-Once taint storage is created, Dexter can insert extra instructions that will propagate taint as data are used. Dalvik supports 217 different opcodes, but these can be divided into groups that share the same propagation logic. General rule of thumb is that for every instruction, taint of all arguments should be acquired from their respective storage spaces, combined and stored to the taint storage of the result. Therefore, only a handful of examples will be presented here to illustrate the principle and to explain some of the subtleties.
+Once taint storage is created, Dexter can insert extra instructions that will propagate taint as data are used. Dalvik supports 217 opcodes, but these can be split into groups sharing the same propagation logic. General rule of thumb is that for every instruction, taint of all its inputs should be acquired from their respective storage spaces, combined and assigned to the outputs. Therefore, only a handful of examples will be presented here to illustrate the principle and to explain some of the subtleties.
 
 The following sections will contain examples of instrumentation, first in Dalvik assembly and later in Java for better readability. Instrumentation will always be highlighted in green. 
 
 \subsubsection{Constants}
 
-Constants are created without any taint flags set. Zero should therefore be stored in the appropriate taint register.
+Constants are not tainted, and so zero is stored in the appropriate taint register.
 
 	\begin{figure}[H]
 		\centerbox{
@@ -445,7 +445,7 @@ Constants are created without any taint flags set. Zero should therefore be stor
 
 \subsubsection{Instructions Combining Taint}
 
-Arithmetic instructions are the simplest example of taint tag combination. Tags of the operands are OR-ed and this combined tag is assigned to the result of the original instruction.
+Arithmetic instructions are the simplest example of taint tag combination. Tags of operands are OR-ed and this combined tag assigned to the result.
 
 	\begin{figure}[H]
 		\centerbox{
@@ -456,7 +456,7 @@ Arithmetic instructions are the simplest example of taint tag combination. Tags 
 
 \subsubsection{Instructions Operating on Wide Registers}
 
-Taint for 64-bit primitives stored in wide register pairs is only stored in the taint register associated with the higher of the two original registers. This is safe because accessing only one of the registers as a single-width register is an illegal operation. Class containing such instruction will be rejected by Dalvik's preload class verifier.
+Taint of 64-bit primitives is stored only in the taint register of the higher of the two original registers holding the value. This is safe because accessing only one of them as a single-width register is an illegal operation. Classes containing such instruction will be rejected by Dalvik's preload class verifier.
 
 	\begin{figure}[H]
 		\centerbox{
@@ -467,7 +467,7 @@ Taint for 64-bit primitives stored in wide register pairs is only stored in the 
 
 \subsubsection{Instructions Throwing Exceptions}
 
-Some of Dalvik instructions can throw exceptions, depending on the values of arguments. This is a form of implicit data flow which could potentially leak data. For example, integer division will throw \verb$ArithmeticException$ iff the divisor is zero, making this information deducible from the fact that the exception was thrown. Dexter deals with this by wrapping every such instruction in a try block, catching the exception, passing the correct taint to it and then throwing it again.
+Some of Dalvik instructions can throw exceptions depending on the values of arguments. This is a form of implicit data flow which could potentially leak data. For example, integer division will throw \verb$ArithmeticException$ iff the divisor is zero, making this information deducible from the fact that the exception was thrown. Such instructions are wrapped in a try block, and the exception caught, tainted and thrown again.
 
 	\begin{figure}[H]
 		\centerbox{
@@ -489,9 +489,9 @@ Some of Dalvik instructions can throw exceptions, depending on the values of arg
 \subsection{Method Call Destination Decidability}
 \label{section:TaintPropagation_DestDecision}
 
-While the previous examples of propagation rules only dealt with tainting within the scope of one instrumented method, now we will focus on taint propagation when method calls are involved. 
+While the previous examples only dealt with tainting within one method, now we will focus on taint propagation when method calls are involved. 
 
-The five types of method invocation supported by Dalvik are listed in table~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each will vary in slight details, but for tainting it will be more important to know whether a method call's target lies inside the DEX file, in which case taint should be propagated into the invoked method, or whether it jumps into untrackable and uninstrumentable code, and the invocation instrumentation should therefore assign taint conservatively, assuming the worst, i.e.\ that the method will spread taint everywhere it can.
+The five types of method invocation supported by Dalvik are listed in Table~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each varies in slight details, but for tainting it is more important to know whether the target method lies inside the DEX file, in which case taint should be propagated into it, or whether it jumps into external, untrackable code and the instrumentation should therefore assign taint conservatively, assuming the worst, i.e.\ the method will spread taint everywhere it can.
 
 \begin{table}[h]
 	\begin{center}
@@ -512,9 +512,9 @@ The five types of method invocation supported by Dalvik are listed in table~\ref
 	\label{table:TaintPropagation_MethodCallTypes}
 \end{table}
 
-Deciding the destination of a method call is trivial for \verb$invoke-direct$ instructions. The method signature, instruction's argument, always contains the name of the class implementing the method. Thus, it will perform an internal jump iff the referenced class is internal.
+Deciding the destination of a method call is trivial for \verb$invoke-direct$. The method signature, instruction's argument, always contains the name of the class implementing the method. Thus, it will perform an internal jump iff the referenced class is internal.
 
-Only slightly more complicated is the case of a \verb$invoke-static$ call. The reason being that the method might not be implemented directly in the referenced class, but inherited from a parent, rendering the referenced class internality check insufficient. Dexter must check that the class indeed implements the method and recursively explore the parent if not.
+Only slightly more complicated is the case of \verb$invoke-static$ calls. The reason being that the method might not be implemented directly in the referenced class, but inherited from a parent, rendering the referenced class internality check insufficient. Dexter must check whether the class indeed implements the method and recursively explore parents if not.
 
 \begin{figure}
 	\centerline{	
@@ -556,9 +556,9 @@ if (a == null) {
 	\end{lstlisting}
 \end{figure}
 
-All the other calls rely on dynamic dispatch. Since they are very similar, only the standard \verb$invoke-virtual$ case will be discussed here. By the nature of virtual calls, we know that the invoked method is declared either in the referenced class or in one of its parents, and implemented in any of the children of the declaring class. But not all the implementations of the method can be called by the instruction. In general, these are only implementations in the referenced class, in any of its children, and in the closest parent (only E and H in the example in figure~\ref{fig:TaintPropagation_DestDecision_ClassHierarchy}). If these classes are all internal or all external, the destination of the call is decidable statically. 
+All the other calls rely on dynamic dispatch, and since they are similar in principle, only the \verb$invoke-virtual$ case is discussed here. Looking at Figure~\ref{fig:TaintPropagation_DestDecision_ClassHierarchy}, we see that the invoked method is declared either in the referenced class or in one of its parents, and implemented in any of the children of the declaring class. But not all the implementations of the method can be called by the instruction. Those are only implementations in the referenced class, any of its children, and the closest parent, that is $E$ and $H$ in the example. If these classes are all internal or all external, the destination type is decidable statically. 
 
-Code could be analyzed to further narrow down the number of callable implementations, e.g.\ by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflectively finding the target method and checking whether it carries the annotation or not. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation for public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is, nonetheless, obvious that these are both very expensive operations. 
+Code could be further analyzed to narrow down the number of callable implementations, e.g.\ by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflection. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in Listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation of public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is nonetheless obvious that these are both very expensive operations. 
 
 One last thing to note is that if an implementation is marked native, it should be considered external regardless of the internality of the containing class.
 
