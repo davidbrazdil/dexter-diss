@@ -924,8 +924,6 @@ Implementation of internal algorithms followed the Test-Driven Development philo
 \cleardoublepage
 \chapter{Implementation}
 
-NOT WHAT, BUT WHY
-
 \begin{figure}
 	\centerline{	
 		\includegraphics[width=0.9\textwidth]{figs/fig_implementation_overview.png}
@@ -934,11 +932,7 @@ NOT WHAT, BUT WHY
 	\label{fig:Implementation_Overview}
 \end{figure}
 
-Figure~\ref{fig:Implementation_Overview} shows a schematic diagram of all stages an APK file goes through when processed by Dexter. Because of the purpose of some of the stages and the overall feed-forward structure of the process, Dexter's architecture resembles one of a compiler.
-
-MAKE BETTER OVERVIEW
-
-The input of the program is the APK file of the application to be instrumented together with a set of files that form the Android framework, both of which had previously been acquired from the user's device. The content of all of these files is parsed to create a complete picture of the classes available to the application at runtime, a crucial source of information used later. The path of the actual APK file starts by extracting the executable from the package, parsing and turning it into intermediate code, Dexter's internal representation more suitable for analysis and modification than plain assembly. This code is then instrumented according to the rules laid out in the previous chapter, reassembled and new file generated. By making a copy of the original APK file and replacing the executable in it, the final output is created. Each part of this process will be thoroughly explained in the following sections.
+Preparation chapter explained the principles of taint analysis and proposed suitable instrumentation that will carry it out. This part of the dissertation will describe how applications are parsed, this additional code inserted, and new executable generated, a process which will encompass many aspects of compilation. We will also see that more than just a single APK is necessary to reason about the outcomes of dynamic dispatch, and will therefore build a complete picture of the runtime framework. Schematic diagram in Figure~\ref{fig:Implementation_Overview} shows an overview of the individual stages.
 
 \section{Runtime Class Hierarchy}
 
