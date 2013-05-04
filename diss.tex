@@ -702,7 +702,7 @@ public int externalMethod (Object rArg1, int rArg2, String rArg3);
 	\end{lstlisting}
 \end{figure}
 
-\subsection{Propagation Logic for Instance Fields}
+\subsection{Propagation Logic for Instance Fields (WRONG)}
 
 One assumption of the external call tainting policy is that the method has access to all fields inside passed objects and all elements of passed arrays. It would be possible to iterate through each field and acquire taint separately, but this would be complicated for private fields and could prove extremely slow. Instead, instructions assigning to instance fields are instrumented to propagate taint to the containing object, so that the combined taint can be created only by acquiring its taint tag. Internal fields also have separate taint storage to store their own subset of object taint, but external ones do not because their value could be overwritten by untrackable code which would not update the taint anyway.
 
