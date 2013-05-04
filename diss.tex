@@ -629,28 +629,21 @@ In the external origin case, instrumentation should also assign the taint of \ve
 	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
-LocationManager locationManager = 
-  (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+LocationManager manager = (LocationManager) 
+	context.getSystemService(Context.LOCATION_SERVICE);
 
 // define a listener that responds to location updates
-LocationListener locationListener = new LocationListener() {
+LocationListener listener = new LocationListener() {
   public void onLocationChanged(Location location) {
-    // called when a new location is found 
-    // by the network location provider
-    useNewLocation(location);
+    // use the location
   }
 
-  public void onStatusChanged(
-    String provider, int status, Bundle extras) { }
-
-  public void onProviderEnabled(String provider) { }
-
-  public void onProviderDisabled(String provider) { }
+  ... // other methods 
 };
 
-// register the listener with the Location Manager
-locationManager.requestLocationUpdates(
-  LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+// register the listener with the LocationManager
+manager.requestLocationUpdates(
+  LocationManager.NETWORK_PROVIDER, 0, 0, listener);
 	\end{lstlisting}
 	\end{tabular}
 	\begin{lstlisting}[caption={Example of a location-updating callback class},
@@ -660,6 +653,26 @@ locationManager.requestLocationUpdates(
 
 \subsection{External Method Calls}
 \label{section:TaintPropagation_MethodCalls_External}
+
+External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters is combined and assigned to the result and all \emph{mutable} parameters. The assumptions made here are that the method can access only data passed to it, and that it can return them or move them into any mutable parameter. If this proves to cause problematic over-tainting in some cases, Dexter offers a way of defining custom policies.
+
+Unfortunately, these assumptions are not safe as we can see in Listing~\ref{listing:ExternalMethodCalls_LogicHole}. The logic hole depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. Some combination of framework calls could, however, lead to unidentified leakage. A solution to this problem would be to unify taints of interacting objects, so that tainting \verb$objB$ would automatically taint \verb$objA$ because they interacted on the previous line. But this could easily result in taint explosion.
+
+\begin{figure}[H]
+	\centering
+	\begin{tabular}{c}
+	\begin{lstlisting}
+ClassA objA = new ClassA();     // external class
+ClassB objB = new ClassB();     // internal class
+objA.setX(objB);                // store B inside A
+objB.setY(getSensitiveData());  // taint B
+objA.useX();                    // use B inside
+	\end{lstlisting}
+	\end{tabular}
+	\begin{lstlisting}[caption={Example of a propagation logic hole},
+	                   label={listing:ExternalMethodCalls_LogicHole}]
+	\end{lstlisting}
+\end{figure}
 
 \begin{figure}
 	\centering
@@ -688,26 +701,6 @@ public int externalMethod (Object rArg1, int rArg2, String rArg3);
 	                   label={listing:TaintPropagation_ExternalMethodCall}]
 	\end{lstlisting}
 \end{figure}
-
-External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters (including \verb$this$) is combined and assigned to the result and all \emph{mutable} parameters. The assumptions made here are that the method call will always use only data passed to it, and that it can move any of these data to any mutable parameter. In case this proved to cause problematic over-tainting, Dexter offers a way of defining custom policies.
-
-\begin{figure}
-	\centering
-	\begin{tabular}{c}
-	\begin{lstlisting}
-ClassA objA = new ClassA();     // external class
-ClassB objB = new ClassB();     // internal class
-objA.setX(objB);                // store B inside A
-objB.setY(getSensitiveData());  // taint B
-objA.useX();                    // use B inside
-	\end{lstlisting}
-	\end{tabular}
-	\begin{lstlisting}[caption={Example of a propagation logic hole},
-	                   label={listing:ExternalMethodCalls_LogicHole}]
-	\end{lstlisting}
-\end{figure}
-
-Unfortunately, these assumptions are not safe, as shows the taint-bypassing snippet of code in listing~\ref{listing:ExternalMethodCalls_LogicHole}. It depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. Some combination of framework calls could, however, lead to unidentified leakage. A solution to this problem would be to unify taints of interacting objects, so that tainting \verb$objB$ would automatically taint \verb$objA$, because they interacted on the previous line. But this could easily result in taint explosion.
 
 \subsection{Propagation Logic for Instance Fields}
 
