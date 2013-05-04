@@ -704,9 +704,9 @@ public int externalMethod (Object rArg1, int rArg2, String rArg3);
 
 \subsection{Propagation Logic for Instance Fields}
 
-External call tainting policy also relies on combining taint of all data accessible to the method, even through multiple dereferences. It is possible to recursively traverse all fields of all data structures, but this would prove extremely slow for private fields accessible only through reflection. Instead, instructions assigning to instance fields are instrumented to propagate taint to the containing object, so that it combines the taint. Internal fields also have separate taint storage to store their own subset of object taint, but external ones do not because their value could be overwritten by untrackable code which would not update the taint anyway.
+External call tainting relies on combining taint of all data accessible to the method, even through multiple dereferences. It is possible to recursively traverse all fields of all data structures, but this would prove extremely slow as non-public fields are accessible only through reflection. Instructions storing to instance fields are instead instrumented to propagate taint to the containing object, so that it combines taint. Internal fields also have separate taint storage to store their own subset of it, but external ones do not because their value could be overwritten by untrackable code which would not update the taint anyway.
 
-This logic also contains a loophole which could lead to unidentified leakage. The problem is that taint does not propagate all the way to the root object in multi-level data structures. Current sinks cannot be exploited this way but serialization can. Apart from deep traversal, one could again use taint unification to solve this issue.
+This logic also contains a loophole which could lead to unidentified leakage. The problem is that taint does not propagate to all parents in multi-level data structures. Current sinks cannot be exploited this way but serialization can. Apart from deep traversal, one could again use taint unification to solve this issue.
 
 \subsection{Data Sources}
 
