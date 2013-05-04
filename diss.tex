@@ -810,11 +810,9 @@ while (cursor.moveToNext()) {
 
 The aim of sink instrumentation is to check whether framework methods known to transfer data out of the application are called with tainted arguments. Sinks were divided into two groups based on the required approach.
 
-In the following code examples, the \verb$TAINT_SOURCE$ and \verb$TAINT_SINK$ constants will be used. These are bit masks that correspond to the regions of tag representation reserved for source and sink flags as defined in Table~\ref{table:TaintTagStorage_BitMeaning}.
-
 \subsubsection{Always-leaking API Calls}
 
-Most tracked API calls are easy to handle, because they always leak the data they get. Sinks implemented this way are listed in table~\ref{table:Sinks_AlwaysLeaking}, and more could easily be added.
+Most tracked API calls are easy to handle, because they always leak the data they get. Three sinks listed in Table~\ref{table:Sinks_AlwaysLeaking} were implemented this way.
 
 \begin{table}[h]
 	\begin{center}
@@ -832,7 +830,7 @@ Most tracked API calls are easy to handle, because they always leak the data the
 	\label{table:Sinks_AlwaysLeaking}
 \end{table}
 
-Listing~\ref{listing:Sink_ApacheHTTPClient} shows a piece of code that sends data to a remote server using the Apache HTTP Client included in the framework. Thanks to taint propagation, \verb$post$ inherits the tag of \verb$data$, which is checked when it is passed to \verb$execute$.
+Listing~\ref{listing:Sink_ApacheHTTPClient} shows a piece of code that sends data to a remote server using the Apache HTTP Client included in the framework. Thanks to taint propagation, \verb$post$ inherits the tag of \verb$data$, which is checked when \verb$post$ is passed to \verb$execute$.
 
 \begin{figure}[h]
 	\centering
@@ -858,9 +856,11 @@ client.execute(post);
 
 \subsubsection{I/O Writers}
 
-Unfortunately, situation is more complicated for some of the sinks we want to support, namely I/O build around the \verb$Writer$ abstract class. Listing~\ref{listing:Sink_Socket} shows its typical usage for network communication. The tracked method is \verb$PrintWriter.println$, but checking only the taint of the argument is insufficient. In listing~\ref{listing:Sink_ByteArray}, \verb$Writer$ is created with a \verb$ByteArrayOutputStream$, does not form a sink, and we merely want the taint to propagate into \verb$array$. 
+Situation is more complicated for sinks build around the \verb$Writer$ class used for I/O. Listing~\ref{listing:Sink_Socket} shows its typical usage for network communication. The tracked method is \verb$PrintWriter.println$, but checking only the taint of the argument is insufficient. In Listing~\ref{listing:Sink_ByteArray} \verb$Writer$ created with \verb$ByteArrayOutputStream$ does not form a sink, and we merely want the taint to propagate into \verb$array$. 
 
-We handle this by setting a flag inside the \verb$Socket$ object's taint tag when it is initialized, i.e.\ making the \verb$Socket.<init>$ method a source of \verb$TAINT_SINK_SOCKET$ data. This taint propagates into the output stream and eventually into the \verb$Writer$ object. Code inserted for the \verb$println$ method then checks whether the object it is called on carries a sink taint, and only proceeds to checking the taint of the argument if it does.
+We handle this by labelling the \verb$Socket$ object when it is initialized, i.e.\ making the \verb$Socket.<init>$ method a source of \verb$TAINT_SINK_SOCKET$ data. This taint propagates into the output stream and eventually into the \verb$Writer$ object. Code inserted for the \verb$println$ method then checks whether its object carries a sink taint and only proceeds to checking the argument taint if it does.
+
+The example uses the \verb$TAINT_SOURCE$ and \verb$TAINT_SINK$ constants. These are bit masks that correspond to the regions of tag representation reserved for source and sink flags as defined in Table~\ref{table:TaintTagStorage_BitMeaning}.
 
 \begin{figure}[h]
 	\centering
