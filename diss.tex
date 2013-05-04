@@ -656,7 +656,7 @@ manager.requestLocationUpdates(
 
 External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters is combined and assigned to the result and all \emph{mutable} parameters. The assumptions made here are that the method can access only data passed to it, and that it can return them or move them into any mutable parameter. If this proves to cause problematic over-tainting in some cases, Dexter offers a way of defining custom policies.
 
-Unfortunately, these assumptions are not safe as we can see in Listing~\ref{listing:ExternalMethodCalls_LogicHole}. The logic hole depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. Some combination of framework calls could, however, lead to unidentified leakage. A solution to this problem would be to unify taints of interacting objects, so that tainting \verb$objB$ would automatically taint \verb$objA$ because they interacted on the previous line. But this could easily result in taint explosion.
+Unfortunately, these assumptions are not safe as we can see in Listing~\ref{listing:ExternalMethodCalls_LogicHole}. The logic hole depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. However, it could be abused by serializing the object and leaking the untainted byte array. A solution to this problem would be to unify taints of interacting objects, so that tainting \verb$objB$ would automatically taint \verb$objA$ because they interacted on the previous line. But this could easily result in taint explosion.
 
 \begin{figure}[H]
 	\centering
@@ -702,9 +702,11 @@ public int externalMethod (Object rArg1, int rArg2, String rArg3);
 	\end{lstlisting}
 \end{figure}
 
-\subsection{Propagation Logic for Instance Fields (WRONG)}
+\subsection{Propagation Logic for Instance Fields}
 
-One assumption of the external call tainting policy is that the method has access to all fields inside passed objects and all elements of passed arrays. It would be possible to iterate through each field and acquire taint separately, but this would be complicated for private fields and could prove extremely slow. Instead, instructions assigning to instance fields are instrumented to propagate taint to the containing object, so that the combined taint can be created only by acquiring its taint tag. Internal fields also have separate taint storage to store their own subset of object taint, but external ones do not because their value could be overwritten by untrackable code which would not update the taint anyway.
+External call tainting policy also relies on combining taint of all data accessible to the method, even through multiple references. It is possible to recursively traverse all its fields, but this would prove extremely slow for private fields which would require reflection. Instead, instructions assigning to instance fields are instrumented to propagate taint to the containing object, so that it combines the taint of all its fields. Internal fields also have separate taint storage to store their own subset of object taint, but external ones do not because their value could be overwritten by untrackable code which would not update the taint anyway.
+
+This logic also contains a loophole which could lead to unidentified leakage. The problem is that taint does not propagate all the way to the root object in multi-level data structures. Current sinks cannot be exploited this way but serialization can. Apart from structure traversal, one could again use taint unification to solve this issue.
 
 \subsection{Data Sources}
 
@@ -806,13 +808,13 @@ while (cursor.moveToNext()) {
 
 \subsection{Data Sinks}
 
-The aim of sink instrumentation is to check whether specific API methods, which are known to transfer data out of the application, are called with tainted arguments. Sinks were divided into two groups based on the required approach.
+The aim of sink instrumentation is to check whether framework methods known to transfer data out of the application are called with tainted arguments. Sinks were divided into two groups based on the required approach.
 
-In the following code examples, the \verb$TAINT_SOURCE$ and \verb$TAINT_SINK$ constants will be used. These are bit masks that correspond to the regions of taint tags reserved for source and sink flags (see table~\ref{table:TaintTagStorage_BitMeaning}).
+In the following code examples, the \verb$TAINT_SOURCE$ and \verb$TAINT_SINK$ constants will be used. These are bit masks that correspond to the regions of tag representation reserved for source and sink flags as defined in Table~\ref{table:TaintTagStorage_BitMeaning}.
 
 \subsubsection{Always-leaking API Calls}
 
-Most tracked API calls are easy to handle, because they always leak the data passed to them. Those that were implemented are listed in table~\ref{table:Sinks_AlwaysLeaking}, but more could easily be added.
+Most tracked API calls are easy to handle, because they always leak the data they get. Sinks implemented this way are listed in table~\ref{table:Sinks_AlwaysLeaking}, and more could easily be added.
 
 \begin{table}[h]
 	\begin{center}
@@ -830,7 +832,7 @@ Most tracked API calls are easy to handle, because they always leak the data pas
 	\label{table:Sinks_AlwaysLeaking}
 \end{table}
 
-Listing~\ref{listing:Sink_ApacheHTTPClient} shows a piece of code that sends data to a remote server using the Apache HTTP Client, which is included in the Android framework. Thanks to taint propagation rules, \verb$post$ inherits the taint of \verb$data$, and thus, once the \verb$execute$ method is called, all that is left to do is to check whether its tag is non-zero, in which case the user needs to be warned.
+Listing~\ref{listing:Sink_ApacheHTTPClient} shows a piece of code that sends data to a remote server using the Apache HTTP Client included in the framework. Thanks to taint propagation, \verb$post$ inherits the tag of \verb$data$, which is checked when it is passed to \verb$execute$.
 
 \begin{figure}[h]
 	\centering
