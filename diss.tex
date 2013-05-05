@@ -1043,11 +1043,9 @@ It is worth pointing out that array types are implicitly defined as classes exte
 
 \section{Instrumentation}
 
-Once the executable is parsed and converted, the modifications laid out in the preparation chapter can be applied to it. This is when all the effort put into converting the DEX to an intermediate data structure pays off, because the code for application of the instrumentation rules becomes simple and elegant. 
+Once the executable is parsed and converted, the modifications laid out in the Preparation chapter can be applied on it. This is when all the effort put into designing and generating the IR truly pays off because the source code of instrumentation becomes simple and elegant. 
 
-Instrumentation of individual elements is carried out by their respective data structures, e.g.\ an instance of class \verb$DexField$ that represents an internal field of primitive type creates a new field of type \verb$int$ inside the same class to hold its taint tag, making sure that its name will not conflict with a name of an existing field. 
-
-The process of instrumentation starts by calling the \verb$instrument$ method of the root \verb$Dex$ object, which sets up the environment and delegates the work to its \verb$DexClass$ children. The children pass around an instance of \verb$DexInstrumentationCache$ through which they share common information, like the names of the introduced taint fields.
+Every node of the IR is responsible for instrumenting itself, so for example a node representing a primitive internal field creates a new field of type \verb$int$ to hold its taint tag, and gives it a name that will not be in conflict with other fields in the class. Shared data, like the names of taint fields, are stored inside an object that the nodes pass around.
 
 \subsection{Auxiliary Classes}
 
