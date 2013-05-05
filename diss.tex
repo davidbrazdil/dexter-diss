@@ -1005,9 +1005,9 @@ Given the APK, DexLib extracts the executable and parses it. The data structure 
 
 \section{Runtime Class Hierarchy}
 
-The motivation for constructing the complete runtime class hierarchy was being able to reason about the nature of method call destinations, necessary for choosing the correct type of their instrumentation. But class hierarchy is useful in other situations as well, e.g.\ sources and sinks use it to identify their tracked methods even if the invoking instruction does not reference the expected class but one of its children. Code shown in listing~\ref{listing:Sink_ApacheHTTPClient_CanBeApplied} was taken from a method that returns \verb$true$ iff given method call should be instrumented as an Apache HTTP Client sink. The tracked \verb$execute$ method is defined in the \verb$HttpClient$ interface, and therefore it can be invoked either using the \verb$invoke-interface$ instruction, referencing the interface as the object type, or using the other two virtual calls, \verb$invoke-virtual$ and \verb$invoke-super$, referencing some class that implements the interface. Information about these relations is provided by the class hierarchy. 
+Section~\ref{section:TaintPropagation_DestDecision} described why it was necessary to be able to argue about the nature of method call destinations and how in most cases analysis of the \emph{complete} class hierarchy available at runtime, i.e.\ including the classes provided by the framework, can do this statically. But having this data is useful in other situations as well. For example, Listing~\ref{listing:Sink_ApacheHTTPClient_CanBeApplied} was taken from a method that returns \verb$true$ iff given method call should be instrumented as an Apache HTTP Client sink. As you can see on the highlighted line, it relies on knowing whether the referenced class, probably external, implements the \verb$HttpClient$ interface, and this is the type of information that class hierarchy can provide.
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
@@ -1035,30 +1035,11 @@ return invokedMethodName.equals("execute") &&
 	\end{lstlisting}
 \end{figure}
 
-Dexter builds the hierarchy by scanning the application's executable, plus a set of provided framework files. These are all DEX files obtained from the device's \verb$/system/framework$ folder, which form the runtime environment. The framework changes with every new release of Android, and therefore a version compatible with the application must be used. This is why Dexter does not ship with a fixed version of the framework, but rather lets the user provide their own. Currently, Dexter also supports scanning JAR files to allow SDK packages to be included in the framework, for example for instrumentation of applications dependent on Google Maps API. 
+As was already mentioned, the hierarchy provides a complete picture of the environment the application is executed in, and building it obviously requires obtaining class definitions of the Android runtime framework. Since the framework changes with every new release of Android, Dexter does not ship with these and rather expects the user to provide a set compatible with the application. With an access to the device the APK was downloaded from, one can retrieve these files in DEX form from the \verb$/system/framework$ folder, or alternatively provide a compatible \emph{android.jar} file that applications are compiled against from the SDK. 
 
-The class hierarchy is a standard rooted tree and is implemented as such. Each node contains:
-\begin{inparaenum}[(i)]
-\item name of superclass,
-\item set of children
-\item set of implemented interfaces,
-\item set of defined methods,
-\item set of defined fields,
-\item access flags and annotations.
-\end{inparaenum}
+The data structure used for its representation is again a standard rooted tree. Compared to the IR it holds far less information about its nodes, but spans across the whole runtime environment. Dexter generates it by scanning the DEX and JAR files using DexLib and BCEL\weblink{https://commons.apache.org/proper/commons-bcel/} respectively. Once data are collected, nodes are connected accordingly, and overall consistency is checked.
 
-All DEX files are parsed by DexLib, its data structures then read and relevant pieces of information passed to the class hierarchy object. Same is done for JAR files, only these are parsed by the BCEL\weblink{https://commons.apache.org/proper/commons-bcel/} library. Once all of the files have been scanned, it is ensured that:
-\begin{inparaenum}[(i)]
-\item parent of every class is present,
-\item interfaces implemented by classes are present,
-\item interfaces extend \verb$Object$,
-\item classes do not implement other classes,
-\end{inparaenum}
-and links between nodes created. Loop-introducing nodes are rejected during the file-scanning phase.
-
-Class hierarchy provides methods that return data stored directly in its nodes, or methods that perform simple tree traversal, like returning the set of all ancestors of a class. Since these are trivial, details of their implementation are omitted. The only non-trivial method inside this class is the destination-deciding algorithm for method calls, which was already discussed in section~\ref{section:TaintPropagation_DestDecision}. 
-
-It is worth mentioning that method calls can be performed not only on class types but also on arrays. Their superclass is always \verb$Object$, i.e.\ they inherit methods like \verb$equals$ and \verb$hashCode$, and they are not allowed to override them or define any new methods. Hence they are simply treated as \verb$Object$ classes. 
+It is worth pointing out that array types are implicitly defined as classes extending \verb$Object$, i.e.\ they inherit methods like \verb$equals$ and \verb$hashCode$, and method calls can be performed on their instances. As there is no mechanism of extending their interface or overriding the inherited methods, class hierarchy simply treats them as the \verb$Object$ class.
 
 \section{Instrumentation}
 
