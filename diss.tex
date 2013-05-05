@@ -1382,7 +1382,7 @@ Dexter discovered multiple HTTP requests leaking the contents of the phonebook a
 
 \section{Performance Overhead}
 
-The extra work done by taint tracking instructions naturally has negative effect on the overall performance of the application. Similar systems tend to incur 2-20 times slowdown {[}REF], but this is usually acceptable because these techniques are generally used with applications that mostly wait for user's input and perform very little computation. 
+The extra work done by taint tracking instructions naturally has negative effect on the overall performance of the application. Similar systems tend to incur 2-20 times slowdown\cite{Yin:2007:PCS:1315245.1315261, Chow:2004:UDL:1251375.1251397}, but this is usually acceptable because these techniques are generally used with applications that mostly wait for user's input and perform very little computation. 
 
 Nevertheless, the overhead of Dexter's instrumentation was assessed and the results are presented in this section. All experiments were conducted on Google Nexus One running Android 2.3. 
 
