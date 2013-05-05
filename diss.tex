@@ -990,9 +990,9 @@ At the same time, macros are used as inline functions that simplify implementati
 	}
 Similar macros were created for common operations like debug logging.
 
-\subsection{Generation of IR}
+\subsection{Generation Process}
 
-The process of turning the input APK file into intermediate representation is mostly trivial. It is the vast number of DEX elements that need to be converted which makes it a tedious task. 
+The conversion of the input APK file into intermediate representation is mostly trivial. It is the vast number of DEX elements that need to be supported which makes it a tedious task. 
 
 Given the APK, DexLib extracts the executable and parses it. The data structure it produces is recursively traversed and IR nodes generated from the definitions inside. Encountered pointers are followed into the constant pools of type identifiers, annotations, etc.\ to store data directly in the nodes. During bytecode conversion, introduced markers are stored separately at first and inserted between the instructions once the full instruction list has been created.
 
