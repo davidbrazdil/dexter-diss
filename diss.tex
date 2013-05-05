@@ -1150,22 +1150,15 @@ The graph in question is called a \emph{Clash Graph}. Its nodes represent variab
 
 Figure~\ref{fig:Implementation_GraphColouring} shows a commonly used greedy graph-colouring algorithm, which Dexter adopts with slight modifications explained later on. The heuristic colours the nodes in order given by how constrained they are, starting with the most constrained one and always picking a colour not taken by the neighbours. It runs in linear time and usually yields satisfactory results.
 
-\subsubsection{Building a Clash Graph}
+\subsubsection{Building Clash Graph}
 
-Clash Graph is built by comparing the liveness intervals of individual variables. This information can be acquired by performing a so-called \emph{Live Variable Analysis} of the program, which requires it to be represented in the form of a \emph{Control Flow Graph}. We will now explain how the CFG of a method is generated and how it is analyzed.
+Clash Graph is built by comparing the liveness intervals of individual variables, which can be established by performing so-called \emph{Live Variable Analysis} on the \emph{Control Flow Graph} of the method code. 
 
-No jumping
+CFG is a graph with nodes representing maximal sequences of non-jumping instructions, called basic blocks, and nodes $A$ and $B$ being connected by a directed edge iff the execution of last instruction in $A$ can be followed by the execution of first instruction in $B$. For example, an \verb$if$ instruction always ends its basic block as it can either proceed to the next instruction or jump to a marker. Two special nodes, \verb$START$ and \verb$EXIT$, represent the entry and exit points of the method and are connected accordingly.
 
-In CFG, each standard node represents a maximal sequence of instructions, called basic blocks, such that:
-\begin{inparaenum}[(i)]
-\item each instruction, except possibly the first one, has exactly one predecessor,
-\item each instruction, except possibly the last one, has exactly one successor.
-\end{inparaenum}
-Execution of instructions within a basic block is therefore always strictly linear. Nodes $A$ and $B$ are connected by a directed edge iff the execution of last instruction in $A$ can be followed by the execution of first instruction in $B$. For example, an \verb$if$ instruction would always end a basic block which would have two successors, since the instruction can either proceed to the next instruction or jump to a target marker. There are also two special nodes, \verb$START$ and \verb$EXIT$, that represent the entry and exit points of the method and are connected to other nodes accordingly.
+The principle of CFG generation is not complicated. Code elements specify whether they start/end basic block (labels, \verb$if$), or exit the method (\verb$return$), and also provide the complete list of their successors. One linear pass over the instruction list is then sufficient to split it into blocks, and one more iteration over the created blocks enough to create the edges.
 
-The principle of CFG generation is not complicated. Each element of the executable code, i.e.\ both instructions and markers, can specify whether it starts or ends a basic block, whether it can exit the method, and also the complete list of its successors. If it has more than two, it is automatically assumed it ends a block. Code is scanned linearly, instructions put in the current basic block, and new block is created whenever an instruction starting or ending a block is encountered. Blocks are then connected according to the lists of successors of their respective last instructions.
-
-Completeness of the CFG is crucial in order to produce correct liveness intervals of variables and not miss any clashes. A lot of effort therefore had to be invested into reading the (often incomplete) Dalvik documentation to make sure \emph{every} instruction provided a complete list of its successors, reflecting all aspects of the execution semantics, even including the catch blocks the program can jump to if exceptions of various types are thrown. Similarly, instructions throwing exceptions not caught by the surrounding try block must return \verb$true$ when asked whether they can exit the method.
+Crucial property of the CFG is its completeness, or else incorrect liveness intervals can be produced and clashes missed. A lot of effort was therefore invested into reading the (often incomplete) Dalvik documentation to make sure the properties of code elements correctly reflect all aspects of the execution semantics. This sometimes requires a simple analysis of the code, like finding the catch block program will jump to if an exception of given type is thrown by particular instruction. 
 
 The general idea behind Live Variable Analysis is the propagation of information that an instruction reads from a variable to its predecessors. The analysis starts by assigning an empty list of variables to every instruction in every node. A loop then iterates through the nodes, always combining the lists of first instructions of all its successors and backwards-propagating the full list through its instructions. A variable is removed from the list if the instruction writes to it, and added if it is referenced. The loop carries on until no more changes are made. An example is shown in figure~\ref{fig:Implementation_LVA}.
 
