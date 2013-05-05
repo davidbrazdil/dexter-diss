@@ -1058,10 +1058,9 @@ While the majority of inserted code is generated based on the content of the fil
 \item methods analyzing arguments of source API calls.
 \end{inparaenum}
 
-These classes could be generated the same way as the rest of the instrumentation, directly as intermediate code, but for better clarity they were written in regular Java. Their source files are compiled using the standard toolchain into a single DEX file that is distributed with Dexter. During instrumentation, this file is converted into IR and the two data structures are merged, effectively statically linking the two files, and again making sure that names of classes do not conflict with each other.
+These classes could be generated the same way as the rest of the instrumentation, directly as intermediate code, but for better clarity they were written in regular Java. Their source files are compiled using the standard toolchain into a single DEX file that is distributed with Dexter. During instrumentation, this file is converted into IR and the two data structures are merged, effectively statically linking the two files, and again renames classes so that they do not conflict.
 
 \subsection{Bytecode Instrumentation}
-
 The method code level is where the most notable instrumentation work is done. The \verb$DexCode.instrument$ method begins by replacing all instructions that need to be grouped as they cannot be instrumented independently (\verb$invoke$ or \verb$filled-new-array$ + \verb$move-result$) with their respective macros. 
 
 With the code prepared, each instruction or macro is asked to generate its instrumentation and place the extra instructions into the code. Implementation of these generators exactly follows the rules of taint propagation logic in section~\ref{section:DataFlowAnalysis}, and therefore will not be discussed any further. Once these are instrumented, the taint register initializing code (see section~\ref{section:TaintPropagation_MethodCalls_Internal}) is inserted in front of the \verb$START$ marker, and macros are expanded.
