@@ -950,7 +950,7 @@ Instrumentation will also necessarily introduce new constants and classes, and s
 
 \subsection{File Structure}
 
-Logical organization of DEX creates a simple hierarchical arrangement, where the root contains a list of defined classes, those in turn link to methods and fields, etc. DexLib of course implements such data structure but it could not be utilized since it is not flexible enough for the purposes of Dexter. Equivalent representation was therefore built but with ease of element addition in mind.
+Logical organization of DEX creates a simple hierarchical arrangement, where the root contains a list of defined classes, those in turn link to methods and fields, etc. DexLib of course implements such data structure but it could not be utilized since it is not flexible enough for the purposes of Dexter. Equivalent representation was therefore built with ease of element addition in mind.
 
 The only part of the file that currently cannot be modified are the values of annotations, simply because this feature was not needed. Values of existing annotations are copied over, but only annotations without values can be added.
 
@@ -960,20 +960,20 @@ Methods containing bytecode store it as a stream of instructions addressed via r
 
 \subsubsection{Instructions}
 
-Intermediate instructions group together Dalvik instructions with identical instrumentation. They use intermediate register objects instead of numerical identifiers and links to code markers in order to overcome addressing limits, and likewise replace pointers to type information and constants with references to the respective intermediate objects. They also split Dalvik opcodes into semantic equivalance classes and hence allow for conversion to different Dalvik variants if necessary.
+Intermediate instructions group together Dalvik instructions with identical instrumentation. They use intermediate register object references and links to code markers in order to overcome addressing limits of register identifiers and address offsets, and likewise replace pointers to type information and constants with references to the respective intermediate objects. They also split Dalvik opcodes into semantic equivalance classes and hence allow for conversion between instruction variants.
 
-The instruction interface specifies a list of methods that provide information about them to algorithms working with the bytecode. These are for instance lists of registers read from and written to, types of arguments and result, and instructions which might be executed afterwards.
+The instruction interface specifies a list of methods that provide information about them to algorithms working with the bytecode. These are for instance lists of registers read from and written to, or argument and result types.
 
 \subsubsection{Markers}
 
 Markers specify points inside the bytecode that can be referred to either by instructions or by try-block definitions. Supported markers are:
 \begin{itemize}
 \item \textbf{labels} \\
-Labels mark the targets of jumping and branching instructions. They do not carry any special information.
+Labels mark the targets of jumping and branching instructions. They do not carry any additional information.
 \item \textbf{try/catch blocks} \\
-Try blocks in DEX are stored separately from the bytecode, and defined as non-overlapping intervals of instructions, which are replaced with linked \verb$TryBlockStart$ and \verb$TryBlockEnd$ markers. Each block supplies a list of class type and absolute offset pairs that represent its exception handlers. \verb$Catch$ markers are inserted at these points and the list is stored in the start marker. Blocks can also specify an optimized \emph{catch-all} handler used when the exception type does not match any of those on the list.
+Try blocks in DEX are stored separately from the bytecode, and defined as non-overlapping intervals of instructions, which we replace with linked \verb$TryBlockStart$ and \verb$TryBlockEnd$ markers. Each block supplies a list of class type and address pairs that represent its exception handlers. \verb$Catch$ markers are inserted at these points and the list is stored in the start marker. Blocks can also specify an optimized \emph{catch-all} handler used when the exception type does not match any of those on the list.
 \item \textbf{method beginning} \\
-\verb$CodeStart$ is a marker inserted at the beginning of each method and used as reference point for some instrumentation rules.
+\verb$CodeStart$ is a marker inserted at the beginning of each method and used as a reference point for some instrumentation rules.
 \end{itemize}
 
 By using markers inside the code, both absolute and relative addresses of these points can be recomputed at the assembly stage, and inserting extra instructions into the code or replacing existing instructions with their different-sized variants does not break any relations.
@@ -981,7 +981,7 @@ By using markers inside the code, both absolute and relative addresses of these 
 \subsubsection{Macros}
 \label{section:Code_Macros}
 
-Macros provide a way of grouping several instructions into one code element. They were introduced because method calls in Dalvik consist of two separate instructions: an invocation that jumps into the called method, and an optional \verb$move-result$ instruction that stores the returned value into a given register. But since the latter does not contain information about the call, they cannot be instrumented separately. Method calls are therefore replaced with these before instrumentation begins and expanded afterwards. Same approach is necessary for the \verb$filled-new-array$ instruction.
+Macros provide a way of grouping several instructions into one code element. They were introduced because method calls in Dalvik consist of two separate instructions: an invocation that jumps into the called method, and an optional \verb$move-result$ instruction that stores the returned value into a given register. But since the latter does not contain information about the call, they cannot be instrumented separately. Method calls are therefore replaced with macros before instrumentation begins and expanded afterwards. Same approach is necessary for the \verb$filled-new-array$ instruction.
 
 At the same time, macros are used as inline functions that simplify implementation of some instrumentation rules. We already saw an example of the \verb$taint-get$ macro which expands to:
 	\centerbox{
