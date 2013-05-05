@@ -960,7 +960,7 @@ Methods containing bytecode store it as a stream of instructions addressed via r
 
 \subsubsection{Instructions}
 
-Intermediate instructions group together Dalvik instructions with identical instrumentation. They use intermediate register object references and links to code markers in order to overcome addressing limits of register identifiers and address offsets, and likewise replace pointers to type information and constants with references to the respective intermediate objects. They also split Dalvik opcodes into semantic equivalance classes and hence allow for conversion between instruction variants.
+Intermediate instructions group together Dalvik instructions with identical instrumentation. They use intermediate register object references and links to code markers in order to overcome space limits of register identifiers and address offsets, and likewise replace pointers to type information and constants with references to the respective intermediate objects. They also split Dalvik opcodes into semantic equivalance classes and hence allow for conversion between instruction variants.
 
 The instruction interface specifies a list of methods that provide information about them to algorithms working with the bytecode. These are for instance lists of registers read from and written to, or argument and result types.
 
@@ -1122,11 +1122,11 @@ When imminent data leakage is identified, the instrumented application should id
 
 \section{Reassembling}
 
-The algorithms used in parsing and instrumentation are rather elementary and the only difficulty arises from the number of instruction types or file structure elements that need to be dealt with individually. This is not the case for the assembling phase, when the intermediate code is converted back to DexLib's data structures. DexLib will automatically generate constant sections of the file and will replace references to their elements by addresses within the file, but it is up to Dexter to generate bytecode that satisfies all the constraints imposed on it by Dalvik. 
+In the context of Dexter, reassembling is the process of converting IR back to DexLib data structures. Conversion of most of the nodes is straightforward and methods provided by DexLib automatically generate the dreaded pointers, but it is up to Dexter to generate Dalvik bytecode with correct offsets and register identifiers that fit the space limits of its instructions while preserving behaviour. 
 
-The conversion process mostly comes down to allocating register identifiers in such way that each intermediate instruction will be able to generate a valid Dalvik equivalent. Unfortunately, this is a rather complicated task since instrumentation essentially doubles the number of registers used in the computation and some frequently used Dalvik instructions only allow 4-bit register identifiers and do not have any less optimized variants. Occasionally, the insertion of extra instructions will also result in instructions performing a jump not being able to address their target because its offset will simply be too large. In these situations, Dexter must be ready to resolve these issues.
+Both of these constraints might have been broken by the instrumentation. With offsets, the target can become unaddressable by inserting too many instructions between it and the jumping point, and the fact that number of used intermediate registers more than doubles due to tainting is almost guaranteed to result in instructions not being able to store their identifiers as the frequently used ones can only address the first sixteen.
 
-The complexity of this problem unfortunately led to the necessity to build a nearly full-fledged compiler, which in itself is a very challenging task difficult to achieve within the given time frame of the project.  The algorithms used here are mostly taken from the \emph{Modern Compiler Implementation in Java}\cite{Appel:2003:MCI:599718} textbook, and hence their implementation details will be omitted, except their Dalvik-specific modifications. Since the goal of the project was not to build an efficient Dalvik compiler, basic algorithms with simple heuristics were selected, regardless of the performance of the generated code. 
+Offset computation will be discussed at the end of this section, and we will now look at the more complicated problem of register allocation. It unfortunately required building a nearly full-fledged compiler, a task itself difficult to achieve within the given time frame. The algorithms used here are mostly taken from the \emph{Modern Compiler Implementation in Java}\cite{Appel:2003:MCI:599718} textbook, hence their details will be ommitted and focus put on their Dalvik-specific modifications. Since the goal of the project was not to build an efficient Dalvik compiler, basic algorithms with simple heuristics were selected, regardless of the performance of the generated code or their time complexity.
 
 \subsection{Generic Register Allocation}
 
@@ -1144,7 +1144,7 @@ A commonly used greedy graph-colouring algorithm, which Dexter adopts with sligh
 	\centerline{	
 		\includegraphics[width=0.9\textwidth]{figs/fig_implementation_gc.png}
 	}
-	\caption{Flow chart of commonly used greedy graph-colouring algorithm.}
+	\caption{Flow chart of commonly used greedy graph-colouring heuristic.}
 	\label{fig:Implementation_GraphColouring}
 \end{figure}
 
