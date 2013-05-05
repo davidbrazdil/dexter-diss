@@ -1315,7 +1315,7 @@ Last step Dexter has to make is replacing the executable file in the original AP
 
 \subsection{Android/GoneSixty}
 
-Gone in 60 Seconds is a spyware which the author claims was written for educational purposes only. Initially available on the Google Play market, users would download the application and then watch it swiftly send their sensitive data to a remote server immediately after first launch. Even though GoneSixty is virtually harmless and its methods of distribution and data collection unsophisticated, it nicely demonstrates how various data sources are accessed, and also propagates the data to a sink in a nontrivial way. Security report by AVG, with more details on how GoneSixty works, can be found in appendix~\ref{chapter:Report_Gone60}.
+Gone in 60 Seconds is a spyware which the author claims was written for educational purposes only. Initially available on the Google Play market, users would download the application and then watch it swiftly send their sensitive data to a remote server immediately after first launch. Even though GoneSixty is virtually harmless and its methods of distribution and data collection unsophisticated, it nicely demonstrates how various data sources are accessed, and also propagates the data to a sink in a nontrivial way. Security report by AVG, with more details on how GoneSixty works, can be found in Appendix~\ref{chapter:Report_Gone60}.
 
 \begin{figure}[t]
 	\scriptsize
@@ -1340,7 +1340,7 @@ Manual inspection of the bytecode showed that GoneSixty runs five threads. First
 \item recent calls,
 \item browser history,
 \end{inparaenum}
-and store the data into commonly accessible class fields. The fifth thread waits for the other four to finish and combines the data into a single JSON structure, converting them to base64 first. They are then sent to to a remote server as an HTTP POST request using the Apache client. Output of the instrumented application in figure~\ref{figure:Evaluation_GoneSixty} shows that Dexter correctly identified access to all four of these sources, successfully propagated the taint tags all the way to the HTTP request execution and printed a leakage warning. 
+and store the data into commonly accessible class fields. The fifth thread waits for the other four to finish and combines the data into a single JSON structure, converting them to base64 first. They are then sent to to a remote server as an HTTP POST request using the Apache client. Output of the instrumented application in Figure~\ref{figure:Evaluation_GoneSixty} shows that Dexter correctly identified access to all four of these sources, successfully propagated the taint tags all the way to the HTTP request execution and printed a leakage warning. 
 
 \subsection{Android/BgServ}
 
@@ -1370,7 +1370,7 @@ D/FlurryAgent(  712): Ending session
 	\label{figure:Evaluation_BgServ}
 \end{figure}
 
-Unlike GoneSixty which steals personal data, BgServ is interested in information that can identify the device: phone number, IMEI, version of the system, etc. These are accessed through system service managers and from the output in figure~\ref{figure:Evaluation_BgServ} we see that Dexter recognized access to location and phone service managers, and that the data are again being leaked via HTTP. This is consistent with findings made by the TaintDroid team, who analyzed it as well.
+Unlike GoneSixty which steals personal data, BgServ is interested in information that can identify the device: phone number, IMEI, version of the system, etc. These are accessed through system service managers and from the output in Figure~\ref{figure:Evaluation_BgServ} we see that Dexter recognized access to location and phone service managers, and that the data are again being leaked via HTTP. This is consistent with findings made by the TaintDroid team, who analyzed it as well.
 
 As one can also see from the output, Bgserv requests access to few other system services and reads network settings from the database. These are not being tracked at the moment, but support could easily be added. Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses \verb$XmlSerializer$\weblink{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}, which is currently not a recognized sink.
 
