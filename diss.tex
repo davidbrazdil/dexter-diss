@@ -1130,15 +1130,15 @@ Offset computation will be discussed at the end of this section, and we will now
 
 \subsection{Generic Register Allocation}
 
-Register allocation is an optimization problem of assigning a large number of source code variables to a small number of CPU registers. Same register can be used to hold the value of multiple variables, as long as the variables are not \emph{live} at the same time, i.e.\ the intervals between storing a value and the last point of reading it back do not overlap. If a solution cannot be found, storage in memory is created for some of the variables and load/store instructions that move the value to/from a designated temporary register are inserted in the program, in order to reduce the number of values that need to be held in CPU registers at the same time. This is called \emph{register spilling}.
+Register allocation is an optimization problem of assigning a large number of source code variables to a small number of CPU registers. Same register can be used to hold the value of multiple variables as long as the variables are not \emph{live} at the same time, i.e.\ the intervals between storing a value and the last point of reading it back do not overlap. 
+
+If a solution cannot be found, memory storage is created for some of the variables and load/store instructions moving the value to/from designated temporary registers are inserted, so that the algorithm can be restarted with reduced number of variables held in CPU registers at the same time. This is called \emph{variable spilling}.
 
 \subsubsection{Allocation by Graph Colouring}
 
-Typical compiler reduces register allocation to an isometric problem of graph colouring, proven to be NP-complete, and solves it using a heuristic that balances time complexity of the algorithm with quality of the generated code. 
+Typical compiler reduces register allocation to an isometric problem of graph colouring, which is proven to be NP-complete, and solves it using a heuristic that balances time complexity of the algorithm with quality of the generated code. 
 
-The graph in question is called a \emph{Clash Graph}. Its nodes represent variables, and two nodes are connected by an edge iff the two respective variables cannot be allocated to the same register. If this graph can be coloured with a number of colours less than or equal to the number of available CPU registers, a solution has been found. Otherwise, some registers need to be spilled.
-
-A commonly used greedy graph-colouring algorithm, which Dexter adopts with slight modifications explained later on, uses a simple heuristic to choose a sensible order in which nodes should be coloured. How it works is described by the flow chart in figure~\ref{fig:Implementation_GraphColouring}. Even though it runs in linear time, it usually yields satisfactory results. The algorithm fails if the number of used colours exceeds the number of available registers, in which case a set of variables to be spilled must be selected. An algorithm for this selection is not presented as Dexter simply chooses a random variable and runs the algorithm again. Compilers use more sophisticated analyses to select an optimal set of variables to spill, usually ones that are least used, and do not require the colouring algorithm to run multiple times.
+The graph in question is called a \emph{Clash Graph}. Its nodes represent variables, and two nodes are connected by an edge iff the two respective variables cannot be allocated to the same register. If this graph can be coloured with a number of colours less than or equal to the number of available CPU registers, a solution has been found. 
 
 \begin{figure}
 	\centerline{	
@@ -1147,6 +1147,8 @@ A commonly used greedy graph-colouring algorithm, which Dexter adopts with sligh
 	\caption{Flow chart of commonly used greedy graph-colouring heuristic.}
 	\label{fig:Implementation_GraphColouring}
 \end{figure}
+
+Figure~\ref{fig:Implementation_GraphColouring} shows a commonly used greedy graph-colouring algorithm, which Dexter adopts with slight modifications explained later on. The heuristic colours the nodes in order given by how constrained they are, starting with the most constrained one and always picking a colour not taken by the neighbours. It runs in linear time and usually yields satisfactory results.
 
 \subsubsection{Building a Clash Graph}
 
