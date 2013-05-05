@@ -1045,20 +1045,20 @@ It is worth pointing out that array types are implicitly defined as classes exte
 
 Once the executable is parsed and converted, the modifications laid out in the Preparation chapter can be applied on it. This is when all the effort put into designing and generating the IR truly pays off because the source code of instrumentation becomes simple and elegant. 
 
-Every node of the IR is responsible for instrumenting itself, so for example a node representing a primitive internal field creates a new field of type \verb$int$ to hold its taint tag, and gives it a name that will not be in conflict with other fields in the class. Shared data, like the names of taint fields, are stored inside an object that the nodes pass around.
+Every node of the IR is responsible for instrumenting itself, so for example a node representing a primitive internal field creates a new field of type \verb$int$ to hold its taint tag, and gives it a name that will not be in conflict with other fields in the class. Shared data, like these names of taint fields, are stored inside an object that the nodes pass around.
 
 \subsection{Auxiliary Classes}
 
-While a majority of the inserted code is generated based on the content of the file, some of it is always the same. This common code includes:
+While the majority of inserted code is generated based on the content of the file, a small part of it is always the same. This common code includes:
 \begin{inparaenum}[(i)]
 \item the object taint map,
 \item the global array and variable for internal method call taint propagation,
 \item internality-marking annotations,
 \item taint flag constants,
-\item methods analyzing arguments of tracked methods of sources.
+\item methods analyzing arguments of source API calls.
 \end{inparaenum}
 
-These classes could be generated the same way as the rest of the instrumentation, directly as intermediate code, but for better clarity, they were implemented in regular Java. Their source files are compiled and converted into a single DEX file that is distributed with Dexter. During instrumentation, this file is converted into IR and the two data structures are merged, effectively statically linking the two files. Again, it is made sure that the names of the linked classes are not in conflict with the preexisting ones, and copies of the object references are stored in the root where they can be found by the code-generating methods.
+These classes could be generated the same way as the rest of the instrumentation, directly as intermediate code, but for better clarity they were written in regular Java. Their source files are compiled using the standard toolchain into a single DEX file that is distributed with Dexter. During instrumentation, this file is converted into IR and the two data structures are merged, effectively statically linking the two files, and again making sure that names of classes do not conflict with each other.
 
 \subsection{Bytecode Instrumentation}
 
