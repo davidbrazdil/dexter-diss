@@ -1118,7 +1118,7 @@ In its current implementation, the hash table is initialized with 1024 slots and
 
 \subsection{User Interaction}
 
-When imminent data leakage is identified, the instrumented application should ideally display a dialog, providing information about the event, and offering either to continue or to terminate it. However, the standard Android programming model does not provide any form of execution pausing mechanism which could be used to show a modal window without the application being killed by the operating system as non-responsive. In addition, background-running threads are not even allowed access to the UI. Implementation of this feature therefore proved extremely complicated, requiring deeper access to the system message loop. In its current state, Dexter merely prints warnings into the system log.
+When imminent data leakage is identified, the instrumented application should ideally display a dialog, providing information about the event and offering either to continue or to terminate itself. However, the standard Android programming model does not provide any form of execution pausing mechanism which could be used to show a modal window without the application being killed by the operating system for non-responsiveness. In addition, background-running threads are not even allowed access to the UI. Implementation of this feature therefore proved extremely complicated, requiring deeper access to the system message loop, and Dexter currently only prints its warnings into the system log.
 
 \section{Reassembling}
 
