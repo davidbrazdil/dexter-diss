@@ -1062,12 +1062,11 @@ These classes could be generated the same way as the rest of the instrumentation
 
 \subsection{Bytecode Instrumentation}
 
-Instrumentaiton
-The method code level is where the most notable instrumentation work is done. The \verb$DexCode.instrument$ method begins by replacing all instructions that need to be grouped as they cannot be instrumented independently (\verb$invoke$ or \verb$filled-new-array$ + \verb$move-result$) with their respective macros. 
+Method code level is where each instruction finally generates the analysis-performing instrumentation we are after and places these new instructions into the code. Implementation of the generators exactly follows the principles of taint propagation explained in section~\ref{section:DataFlowAnalysis} and therefore will not be discussed further. Likewise, the IR code node is responsible for inserting the taint register initialization we saw in section~\ref{section:TaintPropagation_MethodCalls_Internal} at the beginning of the instruction list.
 
-With the code prepared, each instruction or macro is asked to generate its instrumentation and place the extra instructions into the code. Implementation of these generators exactly follows the rules of taint propagation logic in section~\ref{section:DataFlowAnalysis}, and therefore will not be discussed any further. Once these are instrumented, the taint register initializing code (see section~\ref{section:TaintPropagation_MethodCalls_Internal}) is inserted in front of the \verb$START$ marker, and macros are expanded.
+Unfortunately, the instrumented code might not be valid because instructions which throw exceptions wrap themselves in a try block, like we saw in Figure\ref{figure:TaintPropagation_ThrowingInstructions}. Had some of these already been in one, the code would now contain two nested try blocks which is an illegal construct. So as to keep the instrumentation rules simple, we let instructions generate such code but fix it afterwards.
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	\begin{minipage}{0.140\textwidth}
 	\begin{footnotesize}
@@ -1101,7 +1100,7 @@ With the code prepared, each instruction or macro is asked to generate its instr
 	\label{figure:Instrumentation_TryBlockSplitting}
 \end{figure}
 
-This fully instrumented code, however, might not be valid, since throwing instructions would also have wrapped themselves in a try block. Had such instruction already been inside one, the code would now contain two nested try blocks, an illegal construct in Dalvik. The solution adopted by Dexter is shown in figure~\ref{figure:Instrumentation_TryBlockSplitting}. The outer try block is split into two smaller blocks that cover the code not covered by the inner block. Comparing this against the example instrumentation of the division instruction in figure~\ref{figure:TaintPropagation_ThrowingInstructions}, we see that the \verb$CATCH_ABC$ marker and the instructions following it end up inside the second part of the split outer block. Thus, if the original instructions throws an exception, it is tainted, rethrown and caught by the try block the instruction was original in, preserving the behaviour of the application. On the other hand, the inner try block must handle \emph{all exceptions} the instruction might throw, otherwise they would not get caught despite the outer block defining a matching handler. Catch-all handlers should therefore be used by default.
+The situation and its solution are shown in Figure~\ref{figure:Instrumentation_TryBlockSplitting}. By splitting the outer block into two parts that cover code not covered by the inner block, it becomes valid. Comparing this against the division example referenced earlier, we see that the exception handler ends up inside the second part of the split outer block, and hence rethrowing the exception preserves the original behaviour. However, since Dexter currently does not merge the handler specifications, throwing an exception inside the inner block, originally handled by the outer but now not by the inner, would change it. For this reason, catch-all handlers are used by the instrumentation rules by default. 
 
 \label{section:Code_MethodEntering}
 
