@@ -972,10 +972,8 @@ Markers specify points inside the bytecode that can be referred to either by ins
 Labels mark the targets of jumping and branching instructions. They do not carry any special information.
 \item \textbf{try/catch blocks} \\
 Try blocks in DEX are stored separately from the bytecode, and defined as non-overlapping intervals of instructions, which are replaced with linked \verb$TryBlockStart$ and \verb$TryBlockEnd$ markers. Each block supplies a list of class type and absolute offset pairs that represent its exception handlers. \verb$Catch$ markers are inserted at these points and the list is stored in the start marker. Blocks can also specify an optimized \emph{catch-all} handler used when the exception type does not match any of those on the list.
-
-% \item \textbf{method beginning} \\
-% \verb$DexCodeStart$ is a special marker that is inserted at the beginning of each method when parsed. It is used for correct placement of method entering instrumentation (see sections~\ref{section:Code_ParamRegMapping} and~\ref{section:Code_MethodEntering}).
-
+\item \textbf{method beginning} \\
+\verb$CodeStart$ is a marker inserted at the beginning of each method and used as reference point for some instrumentation rules.
 \end{itemize}
 
 By using markers inside the code, both absolute and relative addresses of these points can be recomputed at the assembly stage, and inserting extra instructions into the code or replacing existing instructions with their different-sized variants does not break any relations.
