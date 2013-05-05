@@ -1182,6 +1182,8 @@ A commonly used greedy graph-colouring algorithm, which Dexter adopts with sligh
 
 Clash Graph is built by comparing the liveness intervals of individual variables. This information can be acquired by performing a so-called \emph{Live Variable Analysis} of the program, which requires it to be represented in the form of a \emph{Control Flow Graph}. We will now explain how the CFG of a method is generated and how it is analyzed.
 
+No jumping
+
 In CFG, each standard node represents a maximal sequence of instructions, called basic blocks, such that:
 \begin{inparaenum}[(i)]
 \item each instruction, except possibly the first one, has exactly one predecessor,
@@ -1293,6 +1295,8 @@ Since this is another textbook algorithm, details will be omitted. We will only 
 Actual implementation of SSA is not complicated, but requires a lot of platform-specific extensions. For example, we already saw that \texttt{move} instructions are typed, and thus a full type-inference algorithm is required to insert the correct ones. A complete SSA transformation was implemented in Dexter and was shown to work on small programs that would not be possible to assemble without it. However, it would require more time to make it production-ready, as it still has some bugs that cause it to produce invalid code on more complicated inputs. Applications shown in Evaluation were therefore instrumented without it. 
 
 \subsection{DexLib Structure Generation}
+
+Least fixed point
 
 With register identifiers assigned, intermediate representation is almost ready to be converted into DexLib's data structures. Most parts of the process are completely straightforward, simply passing the data to the respective constructors. 
 
