@@ -40,18 +40,34 @@
 \clubpenalty1000%
 \widowpenalty1000%
 
-\addtolength{\oddsidemargin}{6mm}       % adjust margins
-\addtolength{\evensidemargin}{-8mm}
-
-\renewcommand{\baselinestretch}{1.1}    % adjust line spacing to make
-                                        % more readable
-                                        
 \newcommand{\strAuthor}{David Brazdil}
 \newcommand{\strCollege}{Trinity Hall}
 \newcommand{\strTitle}{Taint-based Data Flow Analysis on Android}
 \newcommand{\strExamination}{Computer Science Tripos, Part II}
 \newcommand{\strYear}{June 2013}
 \newcommand{\strSupervisor}{Dr A. Beresford}
+
+\addtolength{\oddsidemargin}{6mm}       % adjust margins
+\addtolength{\evensidemargin}{-8mm}
+
+\renewcommand{\baselinestretch}{1.1}    % adjust line spacing to make
+                                        % more readable
+                                        
+
+\newbox\subfigbox % Create a box to hold the subfigure.
+\makeatletter
+\newenvironment{subfloat}% % Create the new environment.
+{\def\caption##1{\gdef\subcapsave{\relax##1}}%
+\let\subcapsave=\@empty % Save the subcaption text.
+\let\sf@oldlabel=\label
+\def\label##1{\xdef\sublabsave{\noexpand\label{##1}}}%
+\let\sublabsave\relax % Save the label key.
+\setbox\subfigbox\hbox
+\bgroup}% % Open the box...
+{\egroup % ... close the box and call \subfigure.
+\let\label=\sf@oldlabel
+\subfigure[\subcapsave]{\box\subfigbox}}%
+\makeatother
 
 \newcommand{\centerbox}[1] {
 	\begin{center}
@@ -1190,11 +1206,12 @@ IR instructions reference all intermediate registers explicitly and provide thei
 
 The order generator still picks the node of the lowest degree but now finds the node run it belongs to, pushes the run on the stack and removes all its nodes from the graph, defining an order of colouring runs instead of individual nodes. The colouring loop pops a run, finds a non-conflicting colour for its first node and checks whether the other nodes can be assigned the following colours. This is repeated until either a valid colouring of run is found or all initial node colours have been tried.
 
-\subsubsection{Register Spilling}
+\subsubsection{Variable Spilling}
 
-As was mentioned previously, register spilling reduces the number of values simultaneously stored in CPU registers by creating stack storage for some of the variables and inserting load/store instructions that move that values to/from the CPU registers. Since Dalvik programs do not have access to the memory, the equivalent of register spilling is the insertion of \verb$move$ instructions, which transfer data between the spilled register and new temporary registers, before and after every instruction that uses it, in order to remove some of the constraints originally imposed on the spilled register. Note that because of the consecutive-identifier constraints other nodes in the respective node run need to be spilled as well.
+We already mentioned that if a colouring cannot be found the compiler spills some variables into external memory so that fewer variables need to be allocated to registers. However, this concept does not directly apply to Dalvik since it only provides the notion of 65k virtual registers, some mapped to physical registers and rest stored on the stack. The equivalent operation is therefore a transformation of the IR code which creates new temporary registers and inserts \verb$move$ instructions before and after every instruction that uses the spilled ones. Note that we always need to spill whole node runs because of consecutive-identifier constraints.
 
 \begin{figure}
+\subfigure{
 	\centering
 	\begin{minipage}{0.325\textwidth}
 	\begin{footnotesize}
@@ -1218,13 +1235,57 @@ As was mentioned previously, register spilling reduces the number of values simu
 		\asm{move-wide rA2 | rA3, pTemp3 | pTemp4}
 	\end{footnotesize}
 	\end{minipage}
-	\caption{Removing nested try blocks by splitting the outer block.}
-	\label{figure:Reassembling_RegisterSpilling}
+}
+
+\subfigure{
+	\centering
+	\begin{minipage}{0.35\textwidth}
+	\begin{footnotesize}
+	\begin{tabular}{|c|c|}
+		\firsthline
+		\textbf{Variable} & \textbf{Constraint} \\
+		\hline
+		\texttt{rA1} & 4-bit identifier \\
+		\texttt{rA2} & following \texttt{rA1} \\
+		\texttt{rA2} & 4-bit identifier \\
+		\texttt{rA3} & following \texttt{rA2} \\
+		\lasthline
+	\end{tabular}
+	\end{footnotesize}
+	\end{minipage}
+	\begin{minipage}{0.09\textwidth}
+	\centering
+	$\Rightarrow$
+	\end{minipage}
+	\begin{minipage}{0.4\textwidth}
+	\begin{footnotesize}
+	\begin{tabular}{|c|c|}
+		\firsthline
+		\textbf{Variable} & \textbf{Constraint} \\
+		\hline
+		\texttt{rA1} & 16-bit identifier \\
+		\texttt{rA2} & following \texttt{rA1} \\
+		\texttt{rA2} & 16-bit identifier \\
+		\texttt{rA3} & following \texttt{rA2} \\
+		\texttt{pTemp1} & 4-bit identifier \\
+		\texttt{pTemp2} & following \texttt{pTemp1} \\
+		\texttt{pTemp3} & 4-bit identifier \\
+		\texttt{pTemp4} & following \texttt{pTemp3} \\
+		\lasthline
+	\end{tabular}
+	\end{footnotesize}
+	\end{minipage}
+}
+
+	\caption{Example of variable spilling transformation and change in constraints.}
+	\label{figure:Reassembling_VariableSpilling}
 \end{figure}
 
-In the example in figure~\ref{figure:Reassembling_RegisterSpilling}, the first instruction requires \verb$rA1$ to be allocated to range 0-15 and \verb$rA2$ to be in the next register, and the second requires the same for \verb$rA2$ and \verb$rA3$. This results in a three-element node run with first two elements confined to the 4-bit range. If register allocation fails, the node run can be spilled, which results in three independent runs. The original run \verb$[rA1, rA2, rA3]$ can now be stored in the full 16-bit range, and the added \verb$[pTemp1, pTemp2]$ and \verb$[pTemp3, pTemp4]$ runs allocate more easily because they are short, with only first elements restricted to the 4-bit range, and have a short liveness interval.
+The idea is demonstrated on an example in Figure~\ref{figure:Reassembling_VariableSpilling}. In the original form we see a three-element node run with its first two nodes confined to the 4-bit range. On the other hand, by spilling the run these three nodes can be stored in the full 16-bit range and we get two two-element runs in the 4-bit range which can be allocated the same identifiers as their liveness intervals do not overlap.
 
-When colouring fails, Dexter needs to pick a node run to spill. For the sake of simplicity, it chooses a random one in the range that filled up and caused the colouring to fail. However, at the moment not all runs can be spilled. Since registers can hold a value of any type and different \verb$move$ instructions need to be used to move them, a type inference algorithm would have to be implemented. Currently, instructions simply return the expected types of their arguments, but there are four instructions that cannot do this - \emph{if (not) equal (zero)}. Because they can be used with both primitives and references, Dexter cannot decide whether to use \verb$move$ or \verb$move-object$, and thus cannot spill any node run which contains a register referenced by these.
+Choosing the optimal subset of variables to spill is an entirely different topic, so for the sake of simplicity, a random node run is chosen from the range that filled up and caused the colouring to fail, and colouring restarted.
+
+However, not all node runs can be spilled this way because \texttt{move} instructions are typed, distinguishing between single-/double-width primitives and objects, and this is checked by the preload verifier. Types are decidable from semantics of the transformed instruction, with the exception of \emph{if (not) equal (zero)} statements which can compare both single-width primitives and references. Spilling node runs appearing in these would therefore require more sophisticated type inference.
 
 \subsection{Static Single-Assignment Form}
 
