@@ -1362,7 +1362,9 @@ If it fails, the jumping instruction is asked to instrument itself in order to f
 
 \section{APK Repackaging}
 
-With DexLib having generated the final executable, Dexter has to substite it for the original \emph{classes.dex} inside the APK. Since APKs are mere ZIP files, Zip4j\weblink{http://www.lingala.net/zip4j/} library was used to replace the file and also to remove the \verb$META-INF$ folder containing now invalid digital signature. The last step of the lengthy process of instrumentation is therefore calling tools from the \emph{Java Development Kit} that generate a random key and sign the package with it.
+With DexLib having generated the final executable, Dexter has to substite it for the original \emph{classes.dex} inside the APK. 
+
+Since APKs are mere ZIP files, Zip4j\weblink{http://www.lingala.net/zip4j/} library was used to replace the file and also to remove the \verb$META-INF$ folder containing now invalid digital signature. The last step of the lengthy process of instrumentation is therefore calling tools from the \emph{Java Development Kit} that generate a random key and sign the package with it.
 
 \cleardoublepage
 \chapter{Evaluation}
