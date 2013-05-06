@@ -1336,8 +1336,7 @@ The algorithm starts by creating a list of sizes initially set to one, passing i
 	\begin{footnotesize}
 		\asm{if-eq rA, rB, LTarget} \\
 		\asm{...} \\
-		\asm{LTarget:} \\
-		\asm{...}
+		\asm{LTarget:}
 	\end{footnotesize}
 	\end{minipage}
 	\begin{minipage}{0.09\textwidth}
@@ -1352,8 +1351,7 @@ The algorithm starts by creating a list of sizes initially set to one, passing i
 		\asmExtra{goto LTarget~~~~~~~} \\
 		\asmExtra{LSuccessor:~~~~~~~~} \\
 		\asm{...} \\
-		\asm{LTarget:} \\
-		\asm{...}
+		\asm{LTarget:}
 	\end{footnotesize}
 	\end{minipage}
 	\caption{Example of an \texttt{if} instruction fixing unreachable target.}
@@ -1364,7 +1362,7 @@ If it fails, the jumping instruction is asked to instrument itself in order to f
 
 \section{APK Repackaging}
 
-Last step Dexter has to make is replacing the executable file in the original APK. Since APKs are mere ZIP files, Zip4j\weblink{http://www.lingala.net/zip4j/} library is used to do this. The file is first copied to a temporary file, executable is replaced and the \verb$META-INF$ folder removed. This folder contains the digital signature of the publisher, which becomes invalid when the executable is replaced and needs to be regenerated. Any key could be used to do this, but Dexter currently calls the \verb$keytool$ from the JDK to create a random key, and passes it to the \verb$jarsigner$ command that signs the APK. Temporary file is renamed to the given output file name and that concludes the lengthy process of instrumentation.
+With DexLib having generated the final executable, Dexter has to substite it for the original \emph{classes.dex} inside the APK. Since APKs are mere ZIP files, Zip4j\weblink{http://www.lingala.net/zip4j/} library was used to replace the file and also to remove the \verb$META-INF$ folder containing now invalid digital signature. The last step of the lengthy process of instrumentation is therefore calling tools from the \emph{Java Development Kit} that generate a random key and sign the package with it.
 
 \cleardoublepage
 \chapter{Evaluation}
