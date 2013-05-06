@@ -1324,15 +1324,13 @@ These rely on further analysis of the code. For instance, the points of definiti
 
 The principles behind SSA transformation are not complicated but its implementation for specific platform requires adapting it to its programming model, e.g.\ with Dalvik by propagating type information to insert valid \texttt{move}s. The transformation was fully implemented and shown to work on small methods otherwise impossible to allocate, but it would require more time to make it production-ready. Applications presented in Evaluation were instrumented without it.
 
-\subsection{DexLib Structure Generation}
+\subsection{Offset Computation}
 
-Least fixed point
+Coming back to generation of Dalvik bytecode, intermediate instructions still cannot be asked to produce their Dalvik counterparts as we have not yet computed offsets to the markers they reference. But to compute the offsets we need to know the sizes of the Dalvik instructions, and so the problem is solved iteratively.
 
-With register identifiers assigned, intermediate representation is almost ready to be converted into DexLib's data structures. Most parts of the process are completely straightforward, simply passing the data to the respective constructors. 
+The algorithm starts by creating a list of sizes initially set to one, passing it together with register allocation to the instructions and letting them generate their most optimized Dalvik variants. Instruction sizes are updated and previous steps repeated until convergence is reached. The algorithm is guaranteed to terminate since instructions can only grow in size because offsets overflowling the space reserved in the current variant forces generation of a bigger one, or causes failure if such variant does not exist.
 
-Only parts of the file structure that require more work are methods and their bytecode. Each instruction is asked to produce the most optimized Dalvik variant it can given the register allocation and offsets of other code elements. The offsets list gets updated using the size of the newly generated Dalvik instruction and this is repeated until no more changes are made,  since change of offsets might result in some instructions having to produce a different variant. These offsets are then used to generate a list of try blocks and the addresses of catch markers.
-
-\begin{figure}[h]
+\begin{figure}[t]
 	\centering
 	\begin{minipage}{0.28\textwidth}
 	\begin{footnotesize}
@@ -1362,7 +1360,7 @@ Only parts of the file structure that require more work are methods and their by
 	\label{figure:Reassembling_FixLongJump}
 \end{figure}
 
-Just like with register identifiers, the space for offsets inside instructions is limited, and thus inserting tainting instructions between these and their targets might render some of them not being able to store these bigger offsets. Each such instruction therefore needs to implement a \verb$fixLongJump$ method, in which it generates instrumentation that deals with this, just like the example in figure~\ref{figure:Reassembling_FixLongJump} shows. An \verb$if$ instruction uses \verb$goto$ to do the jump for it, as it can store up to 32-bit long offsets and hence reach any point in the bytecode. 
+If it fails, the jumping instruction is asked to instrument itself in order to fix this problem. As one can see in Figure~\ref{figure:Reassembling_FixLongJump}, \verb$goto$ is used to do the jump for the instruction because its least optimized variant can store safe 32-bit offsets.
 
 \section{APK Repackaging}
 
