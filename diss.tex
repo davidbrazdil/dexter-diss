@@ -1434,9 +1434,11 @@ As one can also see from the output, Bgserv requests access to few other system 
 
 \subsection{Find\&Call}
 
-Find\&Call is a contact organizer, whose iOS version became known as the first malware for iOS, approved by Apple and distributed through App Store. Likewise, it briefly appeared on the open Google Play before it was removed in July 2012. While logging into user's online account, Find\&Call leaks contact list and phone number which are used by the server to send spam via text messages that seem to have been sent by the user. A blog entry\cite{report:FindAndCall} by a Kaspersky Lab expert provides more information.
+Find\&Call is a contact organizer, whose iOS version became known as the first malware for the platform, approved by Apple and distributed through App Store. Likewise, it briefly appeared on the open Google Play before it was removed in July 2012. While logging into user's online account, Find\&Call leaks contact list and phone number which are used by the server to send spam via text messages that seem to have been sent by the user. A blog entry\cite{report:FindAndCall} by a Kaspersky Lab expert provides more information.
 
-Dexter discovered multiple HTTP requests leaking the contents of the phonebook and user's location. Access to the service providing phone number information was also identified, but tagged data never reached the sink, which might indicate a bug in the implementation or they simply were not leaked. Since the application is complex and its bytecode had been obfuscated, further investigation of this problem was not successful. Output also shows that sensitive data are being shared between application's components (activities) through IPC calls, which propagate taint without any extra instrumentation necessary.
+Dexter discovered multiple HTTP requests leaking the contents of the phonebook and user's location. Access to the service providing phone number information was also identified, but tagged data never reached the sink, which might indicate a bug in the implementation or they simply were not leaked. Since the application is complex and its bytecode had been obfuscated, further investigation of this problem was not successful. 
+
+On the other hand, output also shows that sensitive data are being shared between application's components (activities) through IPC calls, and that these correctly propagate taint without any extra instrumentation necessary.
 
 \section{Performance Overhead}
 
@@ -1456,11 +1458,11 @@ Nevertheless, the overhead of Dexter's instrumentation was assessed and the resu
 
 To measure the overhead of heavily processor-bound computation, a benchmark application was downloaded from the official market, instrumented and results compared with the original. Unfortunately, benchmarks commonly used by the community, like AnTuTu or Quadrant, run their tests in native code which is not instrumented. A lesser known QuickBenchmark therefore had to be chosen instead. Results are summarized in Figure~\ref{figure:Evalutaion_QuickBench}. 
 
-First two tests simply run a loop in which they perform integer and float computation respectively. Even though for each such instruction, the instrumentation adds an OR of the taint tags, the difference was less than 2\% and well within the margin of error in both cases. The reason probably lies in the fact that the original computation and taint tracking have zero data dependencies between each other, which allows the superscalar CPU to run them in parallel.
+First two tests simply run a loop in which they perform integer and float computation respectively. Even though for each such instruction, the instrumentation adds an OR of the taint tags, the difference was less than 2\% and well within the margin of error in both cases. The reason probably lies in the fact that the original computation and taint tracking have zero data dependencies between each other, which allows the superscalar CPU to execute them out of order and hence fill pipeline stalls.
 
 Third test draws 2D shapes on the screen, animates them and measures the frame rate. Similarly to the first two, it runs a loop with some floating point computation, but also calls external drawing methods. Since it operates only with primitives, with no dependencies whatsoever, and instrumentation of external calls is cheap, we still do not see a speed drop. On average, the benchmark actually awarded slightly more points to the instrumented version, but the results are still within one standard deviation of each other. 
 
-It is the last test that finally shows how expensive taint tracking can be. It draws two rotating cubes in 3D with OpenGL, which would make it equivalent to the 2D test, but now represents each cube as an independent instance of a cube class. The additional use of expensive internal calls (see section~\ref{section:TaintPropagation_MethodCalls_Internal}) results in a 65\% performance drop.
+It is the last test that finally shows how expensive taint tracking can be. It draws two rotating cubes in 3D with OpenGL, which would make it equivalent to the 2D test, but now represents each cube as an independent instance of a cube class. The additional use of expensive internal calls results in a 65\% performance drop.
 
 \subsection{Source Access}
 
@@ -1472,7 +1474,7 @@ It is the last test that finally shows how expensive taint tracking can be. It d
 	\label{figure:Evalutaion_TestAppBench}
 \end{figure}
 
-Since the benchmark works nearly exclusively with primitives and does not access any sensitive data, further experiments were conducted on an in-house testing application. Measured operations are equivalent to those assessed under TaintDroid for comparison. 
+Since the benchmark works nearly exclusively with primitives and does not access any sensitive data, further experiments were conducted on an in-house testing application. Measured operations are equivalent to those assessed under TaintDroid for comparison. Graph in Figure~\ref{figure:Evalutaion_TestAppBench} shows the results.
 
 Load time of the application was hardly affected by the instrumentation, slowing down from 70ms to 72ms and exactly matching TaintDroid. 
 
@@ -1502,7 +1504,7 @@ Looking at the data in Figure~\ref{figure:Evalutaion_FileSize}, one can see that
 	\label{figure:Evalutaion_CodeBloat}
 \end{figure}
 
-The change in distribution of opcodes is substantial. Figure~\ref{figure:Evalutaion_CodeBloat} shows some selected intermediate instruction types and how many times they appeared in the parsed, instrumented and pre-assembly representation of the GoneSixty spyware. We see instructions that are virtually unaffected, like \verb$BinaryOpLiteral$ and \verb$ReturnVoid$ that are only added with the linked auxiliary classes, and that there are slightly more \emph{if} statements, mostly used for decisions during method calls and source/sink identification. On the other hand, increase in number of instructions directly involved in tainting is radical, especially looking at \verb$invoke$ opcodes that jumped from 400 to more than 3000 occurrences. These are nearly exclusively \verb$taint-get$ and \verb$taint-set$ calls, which go hand in hand with insertion of \verb$BinaryOp$ \emph{OR} instructions to combine tags. Also notice that \verb$move$s are added during the assembly phase as a result of register spilling.
+The change in distribution of opcodes is substantial. Figure~\ref{figure:Evalutaion_CodeBloat} shows some selected intermediate instruction types and how many times they appeared in the parsed, instrumented and post-assembly representation of the GoneSixty spyware. We see instructions that are virtually unaffected, like \verb$BinaryOpLiteral$ and \verb$ReturnVoid$ that are only added with the linked auxiliary classes, and that there are slightly more \emph{if} statements, mostly used for decisions during method calls and source/sink identification. On the other hand, increase in number of instructions directly involved in tainting is radical, especially looking at \verb$invoke$ opcodes that jumped from 400 to more than 3000 occurrences. These are nearly exclusively \verb$taint-get$ and \verb$taint-set$ calls, which go hand in hand with insertion of \verb$BinaryOp$ \emph{OR} instructions to combine tags. Also notice that \verb$move$s are added during the assembly phase as a result of register spilling.
 
 \section{Limitations}
 
@@ -1539,11 +1541,11 @@ During testing, the greatest limiting factor of the actual implementation turned
       
 	\item \textbf{Criterion 6} \emph{Advantages and limitations of system-level integration versus per-application bytecode instrumentation for the purpose of taint-based flow analysis must be appraised.}
 
-	FINISH !!!
+	Both approaches were thoroughly analyzed and their merits and limits explained.
 
 	\item \textbf{Criterion 7} \emph{Performance must be compared to TaintDroid and overhead measured against the original code.}
 
-	Overhead of individual operations was measured on the testing application. Benchmark downloaded from the application market was used for processor-bound performance measurements. Results were compared to those presented in the TaintDroid paper.
+	Overhead of individual operations was measured on the testing application. Benchmark downloaded from the application market was used for processor-bound performance measurements. Results were contrasted against those presented in the TaintDroid paper.
 \end{description}
 
 \cleardoublepage
