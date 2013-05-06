@@ -1188,9 +1188,7 @@ The algorithm also needs to deal with Dalvik instructions which reference regist
 
 IR instructions reference all intermediate registers explicitly and provide their allocation constraints. These are collected, checked for conflict, and so-called \emph{node runs} built. These are maximal sequences of CG nodes required to be assigned consecutive identifiers. 
 
-The order generator still picks the node of the lowest degree but now finds the node run it belongs to, pushes the run on the stack and removes all its nodes from the graph, defining an order of colouring runs instead of individual nodes.
-
-The colouring loop pops a run, finds a non-conflicting colour for its first node and checks whether the other nodes can be assigned the following colours. This is repeated either until a valid colouring of run is found, or until all initial node colours have been tried.
+The order generator still picks the node of the lowest degree but now finds the node run it belongs to, pushes the run on the stack and removes all its nodes from the graph, defining an order of colouring runs instead of individual nodes. The colouring loop pops a run, finds a non-conflicting colour for its first node and checks whether the other nodes can be assigned the following colours. This is repeated until either a valid colouring of run is found or all initial node colours have been tried.
 
 \subsubsection{Register Spilling}
 
