@@ -1178,11 +1178,12 @@ It is easy to see how the generic register allocation fits into the reassembling
 
 \subsubsection{Register-Addressing Limits}
 
-First distinction is that Dalvik does not distinguish between CPU registers and external memory. Methods can use up to 65k virtual registers stored on the stack, yet most instruction formats only have space to address 4- or 8-bit identifiers. Hence colouring is not limited to a fixed number of colours as each node has its own upper identifier limit given by bit representations of the least optimized variants of instructions that use the corresponding intermediate register.
+First distinction is that colouring is not limited to a fixed number of colours, since Dalvik instruction formats differ in the amount of space to store register identifiers. Hence each node has its own upper identifier limit given by bit representations of the least optimized variants of instructions that use the corresponding intermediate register.
 
-The way heuristic assigns colours is changed to reflect this difference. As not to pollute smaller ranges, colours are preferentially assigned from the higher parts of the spectrum. So for instance, for node restricted to the \mbox{0-255} range a colour in \mbox{16-255} will be sought first. The spectrum is compacted before result is returned.
+The way the heuristic chooses colours is changed to reflect this. As not to pollute smaller ranges, colours are preferentially picked from the higher parts of the spectrum. So for instance, for node restricted to the \mbox{0-255} range a colour in \mbox{16-255} will be sought first. The spectrum is compacted before result is returned.
 
 \subsubsection{Consecutive-Identifier Constraints}
+
 
 For code density reasons, some Dalvik instructions reference part of their registers implicitly, e.g.\ instructions operating with 64-bit values store these in register pairs and require them to have consecutive identifiers because they explicitly address only the first register of each pair. There are also \verb$/range$ variants of the \verb$invoke$ instructions which are used to call methods with more than five arguments. These address consecutive registers by specifying the identifier of the first one and their count.
 
