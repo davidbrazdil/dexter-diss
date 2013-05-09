@@ -293,16 +293,16 @@ Another large set of projects, including TaintDroid, puts effort into enhancing 
 
 Dalvik is an open-source virtual machine and an essential component of the Android operating system. It was developed specifically for use on mobile devices and its design was optimized for running on battery-powered systems with low-performance processor and limited memory. 
 
-Built around the Apache Harmony project, Dalvik runs programs that make use of a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file~\cite{web:DalvikDex} using tools in the Android SDK. With release 2.2, Dalvik introduced Just-In-Time compilation which significantly increased its performance and efficiency~\cite{web:DalvikJit}.
+Built around the Apache Harmony project, Dalvik runs programs that make use of a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of Java Virtual Machine (JVM) bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file~\cite{web:DalvikDex} using tools in the Android SDK. With release 2.2, Dalvik introduced Just-In-Time compilation which significantly increased its performance and efficiency~\cite{web:DalvikJit}.
 
 \subsection{Application Package Files}
 
-Applications for Android are distributed in Application Package files (APK). These are ZIP files signed by the publisher, which contain:
+Applications are distributed in Android Package (APK) files. These are ZIP files signed by the publisher, which contain:
 \begin{inparaenum}[(i)]
 \item \emph{classes.dex} executable file,
 \item application resources (images, UI layouts, ...),
-\item native code binaries,
-\item manifest.
+\item native code binaries, and
+\item a manifest.
 \end{inparaenum}
 
 The manifest contains essential information about the application to the operating system. Among other things, this includes its unique package name, list of permissions requested by the application, and a list of all its entry points.
@@ -311,7 +311,7 @@ APKs are stored on the device when applications are downloaded from the market o
 
 \subsection{Bytecode}
 
-Dalvik bytecode is very similar to that of JVM in the sense that they both have a large set of rather high-level instructions~\cite{web:DalvikBytecode, web:JavaBytecode}, making the assembly very similar to the source code unless obfuscation tools like ProGuard\weblink{https://developer.android.com/tools/help/proguard.html} are used. This makes analysis and reverse-engineering of applications significantly easier, and is also the reason why we will freely interchange examples in assembly and Java.
+Dalvik bytecode is very similar to that of the JVM in the sense that they both have a large set of rather high-level instructions~\cite{web:DalvikBytecode, web:JavaBytecode}, making it more readable and more easily modified than traditional instruction sets, unless obfuscation tools like ProGuard\weblink{https://developer.android.com/tools/help/proguard.html} are used. This makes analysis and reverse-engineering of applications significantly easier, and is also the reason why we will freely interchange examples in assembly and Java.
 
 \subsubsection{Registers}
 
@@ -321,17 +321,17 @@ Each method can use up to 65,536 virtual registers mapped either to hardware reg
 % On a typical Android device, the first 16 virtual registers would map to the 16 registers available in the ARM instruction set, and rest would be stored in memory. 
 Instructions can address either the first 16, 256, or all 65k virtual registers based on their length. If an instruction needs to address a register out of the available range, the register contents are expected to get moved to a lower register first.
 
-Dalvik also has a very powerful preload class verifier~\cite{web:DalvikVerifier, web:DalvikDexopt}. It infers types of values in registers for every point of computation, and uses these to identify illegal access to resources, pointer arithmetic and other invalid operations. A~class containing such instructions is rejected and the application terminated.
+Dalvik also has a very powerful preload class verifier~\cite{web:DalvikVerifier, web:DalvikDexopt}. It infers types of values in registers at every point in computation, and uses these to identify illegal access to resources, pointer arithmetic and other invalid operations. A~class containing such instructions is rejected and the application terminated.
 
 \subsubsection{Syntax of Assembly}
 
-Assembly syntax used in this dissertation is mostly based on the official Dalvik assembly~\cite{web:DalvikBytecode}. It follows the \emph{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g.\ the instruction
+The assembly language syntax used in this dissertation is based on the official Dalvik one~\cite{web:DalvikBytecode}. It follows the \emph{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g.\ the instruction
 		\centerbox{
 			\asm{add-int/lit16 v2, v8, \#1234}
 		}
-adds 1234 to the value of register 8, and stores the result into register 2. 
+adds 1234 to the value stored in register 8, and stores the result into register 2. 
 
-Since actual numerical register identifiers are irrelevant to the propagation logic we will treat them as variables. For example the following piece of code retrieves an element of an array pointed to by \verb$vArray$, and multiplies it by three.
+Since actual numerical register identifiers are irrelevant to the propagation logic we will treat them as variables. For example the following piece of code retrieves an element of an array pointed to by \verb$vArray$, and multiplies it by three:
 	\begin{figure}[H]
 		\centerbox{
 			\asm{aget-int vElement, vArray, vIndex} \\
@@ -339,9 +339,9 @@ Since actual numerical register identifiers are irrelevant to the propagation lo
 		}
 	\end{figure}
 
-For better clarity, the first letters of register names will represent their origin. Names of registers used in the original code will start with \verb$r$, registers added for tainting with \verb$t$, and other with \verb$p$.
+For clarity, the first letters of register names will represent their origin. Names of registers used in the original code will start with \verb$r$, registers added for tainting with \verb$t$, and auxiliary registers with \verb$p$.
 
-Register pairs forming a wide argument will be separated by a bar.
+Register pairs forming a wide argument will be separated by a bar:
 	\begin{figure}[H]
 		\centerbox{
 			\asm{move-wide rTo1 | rTo2, rFrom1 | rFrom2}
@@ -350,18 +350,18 @@ Register pairs forming a wide argument will be separated by a bar.
 
 \subsubsection{Instruction Variants}
 
-To achieve higher code density, some Dalvik instructions come in several variants~\cite{web:DalvikBytecode}. They are semantically equivalent but they differ in size. A good example of this is the \verb$const$ instruction. Its variant \verb$const/16$ stores a 16-bit constant into a register addressed by an 8-bit number, fitting into 4 bytes. On the other hand, \verb$const/4$ fits into 2 bytes, but can only address registers in the 4-bit range and carry a 4-bit constant.
+To achieve higher code density, some Dalvik instructions come in several variants~\cite{web:DalvikBytecode}. They are semantically equivalent but they differ in size. A good example of this is the \verb$const$ instruction. Its variant \verb$const/16$ stores a 16-bit constant into a register addressed by an 8-bit number, and therefore the whole instruction fits into 4 bytes. On the other hand, \verb$const/4$ fits into 2 bytes, but can only address registers in the 4-bit range and carry a 4-bit constant.
 
-All variants of semantically equivalent instructions are parsed as the same instruction type in Dexter, and thus will be referred to by the same name. During the reassembly phase, Dexter automatically outputs the most optimized variant of the instruction possible.
+All variants of semantically equivalent instructions are parsed as the same instruction type in Dexter, and thus will be referred to by the same name. During the reassembly phase, Dexter automatically outputs the most optimized variant of the instruction.
 
 \section{Data Flow Analysis}
 \label{section:DataFlowAnalysis}
 
 \subsection{Taint Tags}
 
-Different tainting systems choose different ways of representing tags. This fundamental choice has large effect on the overall design of the system, its capabilities and limits, as well as performance and memory overhead. The authors of TaintDroid decided to store them as 32-bit integers where each bit represents one source of sensitive data. This is a very efficient and compact format, sufficient for the purposes of TaintDroid, but quickly reaches its limits as the functionality is extended. One of the challenges faced by the CleanOS project~\cite{Tang:2012:CLM:2387880.2387888}, which builds on TaintDroid, was the necessity to potentially track millions of taint sources. Their solution alters TaintDroid to store taint as a 32-bit pointer into an SQL database, which increases the number of trackable sources, but significantly impedes performance at the same time. 
+Different tainting systems choose different ways of representing tags. This fundamental choice has large effect on the overall design of the system, its capabilities and limits, as well as performance and memory overhead. The authors of TaintDroid decided to store them as 32-bit integers where each bit represents one source of sensitive data. This is a very efficient and compact format, sufficient for the purposes of TaintDroid, but quickly reaches its limits as the functionality is extended. One of the challenges faced by the CleanOS project~\cite{Tang:2012:CLM:2387880.2387888}, which builds on TaintDroid, was the necessity to potentially track millions of taint sources. Their solution alters TaintDroid to store taint as a 32-bit pointer into an SQL database, which increases the number of trackable sources, but significantly impedes performance. 
 
-For the sake of simplicity, Dexter adopts the same tag representation as TaintDroid, with one slight modification. As will be demonstrated later, identification of some sinks relies on distinguishing how certain objects were created. Hence upper bits of the tags are reserved to represent the potential of an object to create a particular type of sink. Meaning of bits being set is summarized in Table~\ref{table:TaintTagStorage_BitMeaning}.
+Dexter adopts the same tag representation as TaintDroid, with one modification. As will be demonstrated later, the type of sink formed by some API calls is given by the way their containing object was created. Tags therefore have flags reserved to carry this information. The flags in taint as used in Dexter are summarized in Table~\ref{table:TaintTagStorage_BitMeaning}.
 
 \begin{table}
 	\begin{center}
@@ -388,7 +388,7 @@ For the sake of simplicity, Dexter adopts the same tag representation as TaintDr
 
 \subsection{Tag Storage}
 
-To store and propagate taint tags, Dexter must build an attribute system inside the application, so that every piece of data accessible by internal code can carry one. The way these are stored differs for objects and primitives. The distinction is that when a primitive is copied, operations on one of the copies do not effect the other, which means that there has to be a tag storage for every copy, while when a reference to an object is copied, operations on one of the copies are visible by dereferencing any of them, and so there should only be one tag per object, not per every copy of its reference. 
+To store and propagate taint tags, Dexter must build an attribute system inside the application, so that every piece of data accessible by internal code can carry one. The way these are stored differs for objects and primitives. The distinction is that when a primitive is copied, operations on one of the copies do not effect the other, which means that there has to be a tag stored for every copy, while when a reference to an object is copied, operations on one of the copies are visible by dereferencing any of them, and so there should only be one tag per object, not for every copy of its reference. 
 
 \subsubsection{Objects}
 \label{section:TaintTagStorage_Objects}
