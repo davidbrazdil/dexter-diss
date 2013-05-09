@@ -209,7 +209,7 @@ area of the Laboratory's website.
 \section*{Acknowledgments}
 
 This document owes much to an earlier version written by Simon Moore
-\cite{moore95}.  His help, encouragement and advice was greatly 
+~\cite{moore95}.  His help, encouragement and advice was greatly 
 appreciated.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -224,14 +224,14 @@ appreciated.
 
 \chapter{Introduction}
 
-Smartphones have grown to become very popular over the past few years as universal, always connected and increasingly affordable personal devices that users carry with them at all times. But by integrating into many facets of their lives, the users started entrusting smartphones with more and more sensitive data, which made them attractive to marketing companies and malware developers. According to a Bitdefender security specialist, nowadays one in three free applications on Android collects private data without the user's consent\cite{web:HuffingtonOneInThree}. This dissertation presents one possible approach to building a system that monitors selected applications and warns the user when they attempt to leak private data. \emph{Dexter} modifies their executable code to dynamically track data flow using a taint-based analysis.
+Smartphones have grown to become very popular over the past few years as universal, always connected and increasingly affordable personal devices that users carry with them at all times. But by integrating into many facets of their lives, the users started entrusting smartphones with more and more sensitive data, which made them attractive to marketing companies and malware developers. According to a Bitdefender security specialist, nowadays one in three free applications on Android collects private data without the user's consent~\cite{web:HuffingtonOneInThree}. This dissertation presents one possible approach to building a system that monitors selected applications and warns the user when they attempt to leak private data. \emph{Dexter} modifies their executable code to dynamically track data flow using a taint-based analysis.
 
 \section{Problem Statement}
 
-Applications for smartphones can have the use of a startling amount of personal information which is often highly beneficial to the user. They can access the contact list, calendar, call log, browser history or even the current location of the user, and combine these in novel ways that render everyday tasks simpler. But as studies have shown\cite{web:Appthority, web:HuffingtonOneInThree}, applications can and \emph{do} misuse the permissions they were given in good faith, and leak collected data to remote servers where user has no control over them. These fall into three categories:
+Applications for smartphones can have the use of a startling amount of personal information which is often highly beneficial to the user. They can access the contact list, calendar, call log, browser history or even the current location of the user, and combine these in novel ways that render everyday tasks simpler. But as studies have shown~\cite{web:Appthority, web:HuffingtonOneInThree}, applications can and \emph{do} misuse the permissions they were given in good faith, and leak collected data to remote servers where user has no control over them. These fall into three categories:
 \begin{description}
 \item \textbf{Data Stealing} \\
-Due to Android's openness, it is not uncommon for programs to contain some form of malicious code. Usually these masquerade as legitimate applications but run a background trojan that sends premium text messages, logs keystrokes and sends its authors data useful for spamming or identity theft. Malware is present mainly on alternative markets and in illegal pirated software\cite{Zhou:2012:DRS:2133601.2133640}, but from time to time appears even on the official store\cite{web:LookoutPlayRemoval}.
+Due to Android's openness, it is not uncommon for programs to contain some form of malicious code. Usually these masquerade as legitimate applications but run a background trojan that sends premium text messages, logs keystrokes and sends its authors data useful for spamming or identity theft. Malware is present mainly on alternative markets and in illegal pirated software~\cite{Zhou:2012:DRS:2133601.2133640}, but from time to time appears even on the official store~\cite{web:LookoutPlayRemoval}.
 
 \item \textbf{Mismatch of Expectations} \\
 Behaviour that is not deliberately malicious but might pose security risks defines a group of applications referred to as \emph{grayware}. These are typically advertising libraries which collect private data in order to uniquely identify the person and to show tailored ads, all without an adequate warning.
@@ -240,13 +240,13 @@ Behaviour that is not deliberately malicious but might pose security risks defin
 Sometimes applications by mistake request access to more resources than they need. A cautious user might want to do preventive monitoring. 
 \end{description}
 
-Current state of the art in smartphone data protection lags behind the practices described above. Android developers can freely publish their applications on the official store, but they might be removed if red-flagged by the automatic Bouncer\cite{web:Bouncer} or by third parties\cite{web:LookoutPlayRemoval}. Amid installation the user is merely shown a list of requested permissions, without any justification of their necessity. Situation is slightly better on the rivalling iOS, where each application must pass a manual approval process before being published. Users also grant per-resource access when requested for the first time, at least giving them the context in which data are needed.
+Current state of the art in smartphone data protection lags behind the practices described above. Android developers can freely publish their applications on the official store, but they might be removed if red-flagged by the automatic Bouncer~\cite{web:Bouncer} or by third parties~\cite{web:LookoutPlayRemoval}. Amid installation the user is merely shown a list of requested permissions, without any justification of their necessity. Situation is slightly better on the rivalling iOS, where each application must pass a manual approval process before being published. Users also grant per-resource access when requested for the first time, at least giving them the context in which data are needed.
 
 Nevertheless, both of these policies fail to protect against applications that have a legitimate initial reason to read private data but secretly leak them too, since once granted the access to a resource is completely unrestricted.
 
 \section{Project Overview}
 
-Taint-based dynamic data flow analysis is a popular technique of providing deeper insight into the runtime behaviour of applications, capable of monitoring access to resources and identifying data paths between them. It was previously successfully implemented on other platforms\cite{Zhu:2011:TPS:1945023.1945039}, and recently ported to Android in the TaintDroid project\cite{web:TaintDroid, Enck:2010:TIT:1924943.1924971}, a joint study by Intel Labs, Penn State, and Duke University. However, their solution involves changes to the operating system and its virtual machine, limiting its usage to experts in possession of one of few supported devices. The goal of this project was therefore to assess the limits of implementing the analysis within the bounds of the stock version of Android.
+Taint-based dynamic data flow analysis is a popular technique of providing deeper insight into the runtime behaviour of applications, capable of monitoring access to resources and identifying data paths between them. It was previously successfully implemented on other platforms~\cite{Zhu:2011:TPS:1945023.1945039}, and recently ported to Android in the TaintDroid project~\cite{web:TaintDroid, Enck:2010:TIT:1924943.1924971}, a joint study by Intel Labs, Penn State, and Duke University. However, their solution involves changes to the operating system and its virtual machine, limiting its usage to experts in possession of one of few supported devices. The goal of this project was therefore to assess the limits of implementing the analysis within the bounds of the stock version of Android.
 
 \subsection{Data Flow Analysis}
 
@@ -262,7 +262,7 @@ Dynamic taint analysis relies on the ability to assign attributes, called \emph{
 
 The approach adopted by TaintDroid monitors sources and sinks at kernel level and modifications to the VM and the file-system propagate taint. This allows it to track data flow throughout all of interpreted code, even between applications. Limited by the boundaries of the VM, Dexter performs the analysis only within a single application by instrumenting its executable file, which we call the \emph{internal code}. Resources are monitored at the points of respective API calls, which form the border between tracked and untracked code. Stages of the analysis are summarized in Figure~\ref{fig:Introduction_TaintingOverview}. 
 
-Of course tainting brings complications as well. Most notably, it often struggles to avoid \emph{taint explosion}, an uncontrollable spread of taint due to too conservative propagation logic resulting in false positives. Nearly all such systems also entirely ignore \emph{implicit data flows}, i.e.\ propagation of data through control flow demonstrated by the loop \verb$while (x--) y++;$. Attempts have been made to identify such constructs through static analysis\cite{Nair:2008:VMB:1346355.1346524}, but these are even more prone to taint explosion. Further details about tainting can be found in \cite{Schwartz:2010:YEW:1849417.1849981, Ermolinskiy:EECS-2010-92}.
+Of course tainting brings complications as well. Most notably, it often struggles to avoid \emph{taint explosion}, an uncontrollable spread of taint due to too conservative propagation logic resulting in false positives. Nearly all such systems also entirely ignore \emph{implicit data flows}, i.e.\ propagation of data through control flow demonstrated by the loop \verb$while (x--) y++;$. Attempts have been made to identify such constructs through static analysis~\cite{Nair:2008:VMB:1346355.1346524}, but these are even more prone to taint explosion. Further details about tainting can be found in ~\cite{Schwartz:2010:YEW:1849417.1849981, Ermolinskiy:EECS-2010-92}.
 
 \subsection{Usage of Dexter}
 
@@ -276,15 +276,15 @@ Of course tainting brings complications as well. Most notably, it often struggle
 
 From the user's perspective, the process of application protection enhancement is simple. Smartphone is connected to a PC running Dexter, and the user is presented with a list of applications installed on the device. The selected one is downloaded into the computer, instrumented, repackaged and uploaded back to the device where it replaces its original counterpart. This application then runs the taint analysis in the background and warns the user when tainted data reach a monitored sink.
 
-Even though the aim of Dexter is to make TaintDroid functionality available on every Android device, it is still a tool that only security experts and cautious power users would use. Its biggest potential however lies in the enterprise sector, protecting corporate data on personal phones of the employees, much like increasingly popular \emph{app wrapping}\cite{web:AppWrapping}. With some modifications it could also replace TaintDroid as the flow tracking component inside CleanOS\cite{Tang:2012:CLM:2387880.2387888}, another security-enhancing project that prevents data theft.
+Even though the aim of Dexter is to make TaintDroid functionality available on every Android device, it is still a tool that only security experts and cautious power users would use. Its biggest potential however lies in the enterprise sector, protecting corporate data on personal phones of the employees, much like increasingly popular \emph{app wrapping}~\cite{web:AppWrapping}. With some modifications it could also replace TaintDroid as the flow tracking component inside CleanOS~\cite{Tang:2012:CLM:2387880.2387888}, another security-enhancing project that prevents data theft.
 
 \section{Related Work}
 
-The community around Android has built an entire ecosystem of tools that help security experts analyze and reverse-engineer applications, and grouped them into the HoneyNet project\weblink{http://www.honeynet.org/}. The core of these tools is usually formed by the Smali\weblink{https://code.google.com/p/smali/} (dis)assembler and the Androguard\weblink{https://code.google.com/p/androguard/} static analysis framework. Of particular significance to professionals are APKInspector\weblink{https://github.com/honeynet/apkinspector}, which provides useful behavioural information through static taint analysis\cite{2012kim_scandal}, and DroidBox\weblink{https://code.google.com/p/droidbox/}, a sandboxed emulator environment with resource monitoring. 
+The community around Android has built an entire ecosystem of tools that help security experts analyze and reverse-engineer applications, and grouped them into the HoneyNet project\weblink{http://www.honeynet.org/}. The core of these tools is usually formed by the Smali\weblink{https://code.google.com/p/smali/} (dis)assembler and the Androguard\weblink{https://code.google.com/p/androguard/} static analysis framework. Of particular significance to professionals are APKInspector\weblink{https://github.com/honeynet/apkinspector}, which provides useful behavioural information through static taint analysis~\cite{2012kim_scandal}, and DroidBox\weblink{https://code.google.com/p/droidbox/}, a sandboxed emulator environment with resource monitoring. 
 
-In terms of techniques, a lot of attention has been paid to automated malware detection, in order to instantly prevent its distribution through both the official and alternative market stores. Projects like RiskRanker\cite{Grace:2012:RSA:2307636.2307663} and DroidRanger\cite{Yajin:12NDSS} look for behavioural patterns common to known spyware and malware, while for example DroidMoss\cite{Zhou:2012:DRS:2133601.2133640} focuses on identifying repackaged applications that could have been trojanized. 
+In terms of techniques, a lot of attention has been paid to automated malware detection, in order to instantly prevent its distribution through both the official and alternative market stores. Projects like RiskRanker~\cite{Grace:2012:RSA:2307636.2307663} and DroidRanger~\cite{Yajin:12NDSS} look for behavioural patterns common to known spyware and malware, while for example DroidMoss~\cite{Zhou:2012:DRS:2133601.2133640} focuses on identifying repackaged applications that could have been trojanized. 
 
-Another large set of projects, including TaintDroid, puts effort into enhancing the runtime privacy policies of the platform. For instance, MockDroid\cite{Beresford:2011:MTP:2184489.2184500} allows fine-grained permission removal through resource mocking, and Aurasium \cite{Xu:2012:APP:2362793.2362820} can intercept and prevent interactions of applications with the OS by repackaging them in order to insert its monitor between the kernel and the VM. In the enterprise sector, virtualization\cite{web:Virtualization} and app wrapping\cite{web:AppWrapping} are gaining popularity as ways of creating a separate corporate workspace on personal devices.
+Another large set of projects, including TaintDroid, puts effort into enhancing the runtime privacy policies of the platform. For instance, MockDroid~\cite{Beresford:2011:MTP:2184489.2184500} allows fine-grained permission removal through resource mocking, and Aurasium ~\cite{Xu:2012:APP:2362793.2362820} can intercept and prevent interactions of applications with the OS by repackaging them in order to insert its monitor between the kernel and the VM. In the enterprise sector, virtualization~\cite{web:Virtualization} and app wrapping~\cite{web:AppWrapping} are gaining popularity as ways of creating a separate corporate workspace on personal devices.
 
 \cleardoublepage
 \chapter{Preparation}
@@ -293,7 +293,7 @@ Another large set of projects, including TaintDroid, puts effort into enhancing 
 
 Dalvik is an open-source virtual machine and an essential component of the Android operating system. It was developed specifically for use on mobile devices and its design was optimized for running on battery-powered systems with low-performance processor and limited memory. 
 
-Built around the Apache Harmony project, Dalvik runs programs that make use of a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file\cite{web:DalvikDex} using tools in the Android SDK. With release 2.2, Dalvik introduced Just-In-Time compilation which significantly increased its performance and efficiency\cite{web:DalvikJit}.
+Built around the Apache Harmony project, Dalvik runs programs that make use of a subset of the Java runtime framework. Applications for Dalvik are therefore typically written in Java, compiled to a set of JVM bytecode \emph{.class} files, and then converted to a single Dalvik-compatible \emph{.dex} file~\cite{web:DalvikDex} using tools in the Android SDK. With release 2.2, Dalvik introduced Just-In-Time compilation which significantly increased its performance and efficiency~\cite{web:DalvikJit}.
 
 \subsection{Application Package Files}
 
@@ -311,21 +311,21 @@ APKs are stored on the device when applications are downloaded from the market o
 
 \subsection{Bytecode}
 
-Dalvik bytecode is very similar to that of JVM in the sense that they both have a large set of rather high-level instructions\cite{web:DalvikBytecode, web:JavaBytecode}, making the assembly very similar to the source code unless obfuscation tools like ProGuard\weblink{https://developer.android.com/tools/help/proguard.html} are used. This makes analysis and reverse-engineering of applications significantly easier, and is also the reason why we will freely interchange examples in assembly and Java.
+Dalvik bytecode is very similar to that of JVM in the sense that they both have a large set of rather high-level instructions~\cite{web:DalvikBytecode, web:JavaBytecode}, making the assembly very similar to the source code unless obfuscation tools like ProGuard\weblink{https://developer.android.com/tools/help/proguard.html} are used. This makes analysis and reverse-engineering of applications significantly easier, and is also the reason why we will freely interchange examples in assembly and Java.
 
 \subsubsection{Registers}
 
-Unlike the stack-based JVM, Dalvik uses a register-based programming model with 32-bit register width and variable-length instructions\cite{web:DalvikInsnFormat}. 64-bit values are stored in two adjacent registers.
+Unlike the stack-based JVM, Dalvik uses a register-based programming model with 32-bit register width and variable-length instructions~\cite{web:DalvikInsnFormat}. 64-bit values are stored in two adjacent registers.
 
 Each method can use up to 65,536 virtual registers mapped either to hardware registers or stack memory depending on the underlying architecture. 
 % On a typical Android device, the first 16 virtual registers would map to the 16 registers available in the ARM instruction set, and rest would be stored in memory. 
 Instructions can address either the first 16, 256, or all 65k virtual registers based on their length. If an instruction needs to address a register out of the available range, the register contents are expected to get moved to a lower register first.
 
-Dalvik also has a very powerful preload class verifier\cite{web:DalvikVerifier, web:DalvikDexopt}. It infers types of values in registers for every point of computation, and uses these to identify illegal access to resources, pointer arithmetic and other invalid operations. A~class containing such instructions is rejected and the application terminated.
+Dalvik also has a very powerful preload class verifier~\cite{web:DalvikVerifier, web:DalvikDexopt}. It infers types of values in registers for every point of computation, and uses these to identify illegal access to resources, pointer arithmetic and other invalid operations. A~class containing such instructions is rejected and the application terminated.
 
 \subsubsection{Syntax of Assembly}
 
-Assembly syntax used in this dissertation is mostly based on the official Dalvik assembly\cite{web:DalvikBytecode}. It follows the \emph{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g.\ the instruction
+Assembly syntax used in this dissertation is mostly based on the official Dalvik assembly~\cite{web:DalvikBytecode}. It follows the \emph{dest-then-source} ordering of arguments, and instructions can contain immediate values, e.g.\ the instruction
 		\centerbox{
 			\asm{add-int/lit16 v2, v8, \#1234}
 		}
@@ -350,7 +350,7 @@ Register pairs forming a wide argument will be separated by a bar.
 
 \subsubsection{Instruction Variants}
 
-To achieve higher code density, some Dalvik instructions come in several variants\cite{web:DalvikBytecode}. They are semantically equivalent but they differ in size. A good example of this is the \verb$const$ instruction. Its variant \verb$const/16$ stores a 16-bit constant into a register addressed by an 8-bit number, fitting into 4 bytes. On the other hand, \verb$const/4$ fits into 2 bytes, but can only address registers in the 4-bit range and carry a 4-bit constant.
+To achieve higher code density, some Dalvik instructions come in several variants~\cite{web:DalvikBytecode}. They are semantically equivalent but they differ in size. A good example of this is the \verb$const$ instruction. Its variant \verb$const/16$ stores a 16-bit constant into a register addressed by an 8-bit number, fitting into 4 bytes. On the other hand, \verb$const/4$ fits into 2 bytes, but can only address registers in the 4-bit range and carry a 4-bit constant.
 
 All variants of semantically equivalent instructions are parsed as the same instruction type in Dexter, and thus will be referred to by the same name. During the reassembly phase, Dexter automatically outputs the most optimized variant of the instruction possible.
 
@@ -359,7 +359,7 @@ All variants of semantically equivalent instructions are parsed as the same inst
 
 \subsection{Taint Tags}
 
-Different tainting systems choose different ways of representing tags. This fundamental choice has large effect on the overall design of the system, its capabilities and limits, as well as performance and memory overhead. The authors of TaintDroid decided to store them as 32-bit integers where each bit represents one source of sensitive data. This is a very efficient and compact format, sufficient for the purposes of TaintDroid, but quickly reaches its limits as the functionality is extended. One of the challenges faced by the CleanOS project\cite{Tang:2012:CLM:2387880.2387888}, which builds on TaintDroid, was the necessity to potentially track millions of taint sources. Their solution alters TaintDroid to store taint as a 32-bit pointer into an SQL database, which increases the number of trackable sources, but significantly impedes performance at the same time. 
+Different tainting systems choose different ways of representing tags. This fundamental choice has large effect on the overall design of the system, its capabilities and limits, as well as performance and memory overhead. The authors of TaintDroid decided to store them as 32-bit integers where each bit represents one source of sensitive data. This is a very efficient and compact format, sufficient for the purposes of TaintDroid, but quickly reaches its limits as the functionality is extended. One of the challenges faced by the CleanOS project~\cite{Tang:2012:CLM:2387880.2387888}, which builds on TaintDroid, was the necessity to potentially track millions of taint sources. Their solution alters TaintDroid to store taint as a 32-bit pointer into an SQL database, which increases the number of trackable sources, but significantly impedes performance at the same time. 
 
 For the sake of simplicity, Dexter adopts the same tag representation as TaintDroid, with one slight modification. As will be demonstrated later, identification of some sinks relies on distinguishing how certain objects were created. Hence upper bits of the tags are reserved to represent the potential of an object to create a particular type of sink. Meaning of bits being set is summarized in Table~\ref{table:TaintTagStorage_BitMeaning}.
 
@@ -1140,7 +1140,7 @@ In the context of Dexter, reassembling is the process of converting IR back to D
 
 Both of these constraints might have been broken by the instrumentation. With offsets, the target can become unaddressable by inserting too many instructions between it and the jumping point, and the fact that number of used intermediate registers more than doubles due to tainting is almost guaranteed to result in instructions not being able to store their identifiers as the frequently used ones can only address the first sixteen.
 
-Offset computation will be discussed at the end of this section, and we will now look at the more complicated problem of register allocation. It unfortunately required building a nearly full-fledged compiler, a task itself difficult to achieve within the given time frame. The algorithms used here are mostly taken from the \emph{Modern Compiler Implementation in Java}\cite{Appel:2003:MCI:599718} textbook, hence their details will be omitted and focus put on their Dalvik-specific modifications. Since the goal of the project was not to build an efficient Dalvik compiler, basic algorithms with simple heuristics were selected, regardless of the performance of the generated code or their time complexity.
+Offset computation will be discussed at the end of this section, and we will now look at the more complicated problem of register allocation. It unfortunately required building a nearly full-fledged compiler, a task itself difficult to achieve within the given time frame. The algorithms used here are mostly taken from the \emph{Modern Compiler Implementation in Java}~\cite{Appel:2003:MCI:599718} textbook, hence their details will be omitted and focus put on their Dalvik-specific modifications. Since the goal of the project was not to build an efficient Dalvik compiler, basic algorithms with simple heuristics were selected, regardless of the performance of the generated code or their time complexity.
 
 \subsection{Generic Register Allocation}
 
@@ -1318,7 +1318,7 @@ Transformation to SSA is done in three steps:
 \item $\Phi$ functions are converted to \texttt{move}s inside predecessor blocks,
 \item redundant \texttt{move}s are removed.
 \end{inparaenum}
-These rely on further analysis of the code. For instance, the points of definition conflict are found by converting CFG to \emph{Dominator Tree} and performing \emph{Dominance Frontier Analysis} on it. Complete details of SSA can be found in the textbook\cite{Appel:2003:MCI:599718}.
+These rely on further analysis of the code. For instance, the points of definition conflict are found by converting CFG to \emph{Dominator Tree} and performing \emph{Dominance Frontier Analysis} on it. Complete details of SSA can be found in the textbook~\cite{Appel:2003:MCI:599718}.
 
 The principles behind SSA transformation are not complicated but its implementation for specific platform requires adapting it to its programming model, e.g.\ with Dalvik by propagating type information to insert valid \texttt{move}s. The transformation was fully implemented and shown to work on small methods otherwise impossible to allocate, but it would require more time to make it production-ready. Applications presented in Evaluation were instrumented without it.
 
@@ -1432,7 +1432,7 @@ As one can also see from the output, Bgserv requests access to few other system 
 
 \subsection{Find\&Call}
 
-Find\&Call is a contact organizer, whose iOS version became known as the first malware for the platform, approved by Apple and distributed through App Store. Likewise, it briefly appeared on the open Google Play before it was removed in July 2012. While logging into user's online account, Find\&Call leaks contact list and phone number which are used by the server to send spam via text messages that seem to have been sent by the user. A blog entry\cite{report:FindAndCall} by a Kaspersky Lab expert provides more information.
+Find\&Call is a contact organizer, whose iOS version became known as the first malware for the platform, approved by Apple and distributed through App Store. Likewise, it briefly appeared on the open Google Play before it was removed in July 2012. While logging into user's online account, Find\&Call leaks contact list and phone number which are used by the server to send spam via text messages that seem to have been sent by the user. A blog entry~\cite{report:FindAndCall} by a Kaspersky Lab expert provides more information.
 
 Dexter discovered multiple HTTP requests leaking the contents of the phonebook and user's location. Access to the service providing phone number information was also identified, but tagged data never reached the sink, which might indicate a bug in the implementation or they simply were not leaked. Since the application is complex and its bytecode had been obfuscated, further investigation of this problem was not successful. 
 
@@ -1440,7 +1440,7 @@ On the other hand, output also shows that sensitive data are being shared betwee
 
 \section{Performance Overhead}
 
-The extra work done by taint tracking instructions naturally has negative effect on the overall performance of the application. Similar systems tend to incur 2-20 times slowdown\cite{Yin:2007:PCS:1315245.1315261, Chow:2004:UDL:1251375.1251397}, but this is usually acceptable because these techniques are generally used with applications that mostly wait for user's input and perform very little computation. 
+The extra work done by taint tracking instructions naturally has negative effect on the overall performance of the application. Similar systems tend to incur 2-20 times slowdown~\cite{Yin:2007:PCS:1315245.1315261, Chow:2004:UDL:1251375.1251397}, but this is usually acceptable because these techniques are generally used with applications that mostly wait for user's input and perform very little computation. 
 
 Nevertheless, the overhead of Dexter's instrumentation was assessed and the results are presented in this section. All experiments were conducted on Google Nexus One running Android 2.3. 
 
