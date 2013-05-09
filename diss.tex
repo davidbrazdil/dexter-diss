@@ -576,6 +576,57 @@ Code could be further analyzed to narrow down the number of callable implementat
 
 One last thing to note is that if an implementation is marked native, it should be considered external regardless of the internality of the containing class.
 
+\subsection{External Method Calls}
+\label{section:TaintPropagation_MethodCalls_External}
+
+External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters is combined and assigned to the result and all \emph{mutable} parameters. The assumptions made here are that the method can access only data passed to it, and that it can return them or move them into any mutable parameter. If this proves to cause problematic over-tainting in some cases, Dexter offers a way of defining custom policies.
+
+Unfortunately, these assumptions are not safe as we can see in Listing~\ref{listing:ExternalMethodCalls_LogicHole}. The logic hole depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. However, it could be abused by serializing the object and leaking the untainted byte array. A solution to this problem would be to unify taints of interacting objects, so that tainting \verb$objB$ would automatically taint \verb$objA$ because they interacted on the previous line. But this could easily result in taint explosion.
+
+\begin{figure}[H]
+	\centering
+	\begin{tabular}{c}
+	\begin{lstlisting}
+ClassA objA = new ClassA();     // external class
+ClassB objB = new ClassB();     // internal class
+objA.setX(objB);                // store B inside A
+objB.setY(getSensitiveData());  // taint B
+objA.useX();                    // use B inside
+	\end{lstlisting}
+	\end{tabular}
+	\begin{lstlisting}[caption={Example of a propagation logic hole},
+	                   label={listing:ExternalMethodCalls_LogicHole}]
+	\end{lstlisting}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\begin{tabular}{c}
+	\begin{lstlisting}
+// method definition
+public int externalMethod (Object rArg1, int rArg2, String rArg3);
+
+// method call
+`\hl{int taintCombined = TaintMap.get(obj);~~~}`
+`\hl{taintCombined |= TaintMap.get(rArg1);~~~~}`
+`\hl{taintCombined |= tArg2;~~~~~~~~~~~~~~~~~~}`
+`\hl{taintCombined |= TaintMap.get(rArg3);~~~~}`
+`\hl{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{try \{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{~~TaintMap.set(taintCombined, rArg1);~~~~}`
+	rResult = obj.externalMethod(rArg1, rArg2, rArg3);
+`\hl{~~tResult = taintCombined;~~~~~~~~~~~~~~~}`
+`\hl{\} catch-all (rException) \{~~~~~~~~~~~~~~~}`
+`\hl{	TaintMap.set(taintCombined, rException);}`
+`\hl{	throw rException;~~~~~~~~~~~~~~~~~~~~~~~}`
+`\hl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+	\end{lstlisting}
+	\end{tabular}
+	\begin{lstlisting}[caption={Instrumentation of external method calls. The second and third arguments do not inherit combined taint because they are immutable.},
+	                   label={listing:TaintPropagation_ExternalMethodCall}]
+	\end{lstlisting}
+\end{figure}
+
 \subsection{Internal Method Calls}
 \label{section:TaintPropagation_MethodCalls_Internal}
 
@@ -662,57 +713,6 @@ manager.requestLocationUpdates(
 	\end{tabular}
 	\begin{lstlisting}[caption={Example of a location-updating callback class},
 	                   label={listing:Source_Location_Listener}]
-	\end{lstlisting}
-\end{figure}
-
-\subsection{External Method Calls}
-\label{section:TaintPropagation_MethodCalls_External}
-
-External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters is combined and assigned to the result and all \emph{mutable} parameters. The assumptions made here are that the method can access only data passed to it, and that it can return them or move them into any mutable parameter. If this proves to cause problematic over-tainting in some cases, Dexter offers a way of defining custom policies.
-
-Unfortunately, these assumptions are not safe as we can see in Listing~\ref{listing:ExternalMethodCalls_LogicHole}. The logic hole depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. However, it could be abused by serializing the object and leaking the untainted byte array. A solution to this problem would be to unify taints of interacting objects, so that tainting \verb$objB$ would automatically taint \verb$objA$ because they interacted on the previous line. But this could easily result in taint explosion.
-
-\begin{figure}[H]
-	\centering
-	\begin{tabular}{c}
-	\begin{lstlisting}
-ClassA objA = new ClassA();     // external class
-ClassB objB = new ClassB();     // internal class
-objA.setX(objB);                // store B inside A
-objB.setY(getSensitiveData());  // taint B
-objA.useX();                    // use B inside
-	\end{lstlisting}
-	\end{tabular}
-	\begin{lstlisting}[caption={Example of a propagation logic hole},
-	                   label={listing:ExternalMethodCalls_LogicHole}]
-	\end{lstlisting}
-\end{figure}
-
-\begin{figure}
-	\centering
-	\begin{tabular}{c}
-	\begin{lstlisting}
-// method definition
-public int externalMethod (Object rArg1, int rArg2, String rArg3);
-
-// method call
-`\hl{int taintCombined = TaintMap.get(obj);~~~}`
-`\hl{taintCombined |= TaintMap.get(rArg1);~~~~}`
-`\hl{taintCombined |= tArg2;~~~~~~~~~~~~~~~~~~}`
-`\hl{taintCombined |= TaintMap.get(rArg3);~~~~}`
-`\hl{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{try \{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{~~TaintMap.set(taintCombined, rArg1);~~~~}`
-	rResult = obj.externalMethod(rArg1, rArg2, rArg3);
-`\hl{~~tResult = taintCombined;~~~~~~~~~~~~~~~}`
-`\hl{\} catch-all (rException) \{~~~~~~~~~~~~~~~}`
-`\hl{	TaintMap.set(taintCombined, rException);}`
-`\hl{	throw rException;~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-	\end{lstlisting}
-	\end{tabular}
-	\begin{lstlisting}[caption={Instrumentation of external method calls. The second and third arguments do not inherit combined taint because they are immutable.},
-	                   label={listing:TaintPropagation_ExternalMethodCall}]
 	\end{lstlisting}
 \end{figure}
 
