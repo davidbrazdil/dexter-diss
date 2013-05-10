@@ -439,7 +439,6 @@ Primitive array elements are considered equivalent to external instance fields u
 
 \end{itemize}
 
-
 \subsection{Principles of Taint Propagation}
 
 Once taint storage is created, Dexter can insert extra instructions that will propagate taint as data are used. Dalvik supports 217 opcodes, but these can be split into groups sharing the same propagation logic. The general rule of thumb is that for every instruction, taint of all its inputs should be acquired from their respective storage spaces, combined and assigned to the outputs. Therefore, only a handful of examples will be presented here to illustrate the principle and to explain some of the subtleties.
@@ -503,9 +502,8 @@ Some of Dalvik instructions can throw exceptions depending on the values of argu
 \subsection{Method Call Destination Decidability}
 \label{section:TaintPropagation_DestDecision}
 
-While the previous examples only dealt with tainting within one method, now we will focus on taint propagation when method calls are involved. 
-
-The five types of method invocation supported by Dalvik are listed in Table~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each varies in slight details, but for tainting it is more important to know whether the target method lies inside the DEX file, in which case taint should be propagated into it, or whether it jumps into external, untrackable code and the instrumentation should therefore assign taint conservatively, assuming the worst, i.e.\ the method will spread taint everywhere it can.
+The five types of method invocation supported by Dalvik are listed in Table~\ref{table:TaintPropagation_MethodCallTypes}. Instrumentation of each varies in detail
+, but for tainting it is more important to know whether the target method lies inside the DEX file, in which case taint should be propagated into it, or whether it jumps into external, untrackable code and the instrumentation should therefore assign taint conservatively, assuming the worst, i.e.\ the method will spread taint everywhere it can.
 
 \begin{table}[h]
 	\begin{center}
@@ -530,15 +528,15 @@ The five types of method invocation supported by Dalvik are listed in Table~\ref
 	\centerline{	
 		\includegraphics[width=0.7\textwidth]{figs/fig_virtual_call_tree.png}
 	}
-	\caption[Example class hierarchy]{Example class hierarchy. Invoked class: $G$, classes implementing method: $B$, $E$, $F$, $H$}
+	\caption{Example class hierarchy for a method call.}
 	\label{fig:TaintPropagation_DestDecision_ClassHierarchy}
 \end{figure}
 
-Deciding the destination of a method call is trivial for \verb$invoke-direct$. The method signature, instruction's argument, always contains the name of the class implementing the method. Thus, it will perform an internal jump iff the referenced class is internal.
+Determining the destination of a method call is trivial for \verb$invoke-direct$. The method signature always contains the name of the class implementing the method. Thus, it will perform an internal jump iff the referenced class is internal.
 
-Only slightly more complicated is the case of \verb$invoke-static$ calls. The reason being that the method might not be implemented directly in the referenced class, but inherited from a parent, rendering the referenced class internality check insufficient. Dexter must check whether the class indeed implements the method and recursively explore parents if not.
+Only slightly more complicated is the case of \verb$invoke-static$ calls. The reason being that the method might not be implemented directly in the referenced class, but inherited from a parent, which renders the referenced class internality check insufficient. Dexter must check whether the class indeed implements the method and recursively explore parents if not.
 
-All the other calls rely on dynamic dispatch, and since they are similar in principle, only the \verb$invoke-virtual$ case is discussed here. Looking at Figure~\ref{fig:TaintPropagation_DestDecision_ClassHierarchy}, we see that the invoked method is declared either in the referenced class or in one of its parents, and implemented in any of the children of the declaring class. But not all the implementations of the method can be called by the instruction. Those are only implementations in the referenced class, any of its children, and the closest parent, that is $E$ and $H$ in the example. If these classes are all internal or all external, the destination type is decidable statically. 
+All the other calls rely on dynamic dispatch, and since they are similar in principle, only the \verb$invoke-virtual$ case is discussed here. Imagine class hierarchy like the one in Figure~\ref{fig:TaintPropagation_DestDecision_ClassHierarchy}. The instruction calls a method defined in class $B$ and overridden in the yellow classes, on objects of type $G$ or its children. By the nature of virtual calls, the only implementations of the method that can be called are either in the closest parent that provides one or in the expected class and its children, that is $E$ and $H$ in the example. If these classes are all internal or all external, the destination type is decidable statically. 
 
 \begin{figure}
 	\centering
@@ -572,9 +570,9 @@ if (a == null) {
 	\end{lstlisting}
 \end{figure}
 
-Code could be further analyzed to narrow down the number of callable implementations, e.g.\ by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflection. Slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in Listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation of public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is nonetheless obvious that these are both very expensive operations. 
+Code could be further analyzed to narrow down the number of callable implementations, e.g.\ by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds a special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflection. A slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in Listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation of public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is nonetheless obvious that these are both very expensive operations. 
 
-One last thing to note is that if an implementation is marked native, it should be considered external regardless of the internality of the containing class.
+A native method is always marked as an external call.
 
 \subsection{External Method Calls}
 \label{section:TaintPropagation_MethodCalls_External}
@@ -684,11 +682,11 @@ rResult = obj.internalMethod(rArg1, rArg2, rArg3);
 
 Method calls identified as internal ought to propagate their arguments' taint into the invoked methods, and taint of their results back to the callers. Only the primitive arguments and results requires further instrumentation as objects store their taint globally. 
 
-Unfortunately, adding extra parameters to hold the taint of primitives is not an option as the method prototype could be given by an external interface. A global integer array is therefore created for this purpose, plus one more global variable for the taint of result. Thread-safety is guaranteed by semaphores, but a lock-free solution could be achieved by using thread-local storage, with the downside of slightly more complicated instrumentation.
+Unfortunately, adding extra parameters to hold the taint of primitives is not an option as the method prototype could be given by an external interface. A global integer array is therefore created for this purpose, plus one more global variable for the taint of the result. In Dexter, thread-safety is guaranteed by semaphores, but a lock-free solution could be achieved by using thread-local storage, with the downside of slightly more complicated instrumentation.
 
-Inside the called method, tags are copied from the array to taint registers of the primitive arguments. But if a method is not static or direct it may also be called from external code, in which case the array would not have been locked and filled, and taint should be initialized to zero. Every virtual method must therefore be able to recognize the location of its caller, and handle each case accordingly. Since Java programs can read the stack, the name of the caller is easily accessible and the origin internality decidable using reflection. We could check the method annotation like before, but since the stack gives the implementing class, one reflexive call was saved by checking whether it contains another annotation that Dexter assigns to all internal classes.
+Inside the called method, tags are copied from the array to taint registers of the primitive arguments. But if a method is not static or direct it may also be called from external code, in which case the array would not have been locked and filled, and taint should be initialized to zero. Every virtual method must therefore recognize the location of its caller, and handle each case accordingly. Since Java programs can read the stack, the name of the caller is accessible and the origin decidable using reflection. We could check the method annotation like before, but since the stack gives the implementing class, one reflexive call was saved by checking whether it contains another annotation that Dexter assigns to all internal classes.
 
-In the external origin case, instrumentation should also assign the taint of \verb$this$ to all parameters including the reference-based ones, provided the method is not static or a constructor. This is useful especially for propagating taint into callbacks, for instance in situations like GPS updates shown in Listing~\ref{listing:Source_Location_Listener}. Skipping ahead, \verb$locationManager$ carries location taint and \verb$locationListener$ inherits it when passed to the \verb$requestLocationUpdates$ external method. But once its own \verb$onLocationChanged$ method is later called by the service, taint is correctly assigned to its parameter.
+In the external origin case, instrumentation should also assign the taint of \verb$this$ to all parameters including reference-based ones, provided the method is not static or a constructor. This is useful especially for propagating taint into callbacks, for instance in situations like GPS updates shown in Listing~\ref{listing:Source_Location_Listener}, where the parameter of the \verb$onLocationChanged$ method inherits taint this way.
 
 \begin{figure}
 	\centering
