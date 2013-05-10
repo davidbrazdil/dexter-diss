@@ -1134,7 +1134,7 @@ In the context of Dexter, reassembling is the process of converting IR back to D
 
 Both of these constraints might have been broken by the instrumentation. With offsets, the target can become unaddressable by inserting too many instructions between it and the jumping point, and the fact that number of used intermediate registers more than doubles due to tainting is almost guaranteed to result in instructions not being able to store their identifiers as the frequently used ones can only address the first sixteen.
 
-Offset computation will be discussed at the end of this section, and we will now look at the more complicated problem of register allocation. It unfortunately required building a nearly full-fledged compiler, a task itself difficult to achieve within the given time frame. The algorithms used here are mostly taken from the \emph{Modern Compiler Implementation in Java}~\cite{Appel:2003:MCI:599718} textbook, hence their details will be omitted and focus put on their Dalvik-specific modifications. Since the goal of the project was not to build an efficient Dalvik compiler, basic algorithms with simple heuristics were selected, regardless of the performance of the generated code or their time complexity.
+Offset computation will be discussed at the end of this section, and we will now look at the more complicated problem of register allocation. It unfortunately required building a nearly full-fledged compiler, a task itself difficult to achieve within the given time frame. The algorithms used here are mostly taken from~\cite{Appel:2003:MCI:599718}, hence their details will be omitted and focus put on their Dalvik-specific modifications. Since the goal of the project was not to build an efficient Dalvik compiler, basic algorithms with simple heuristics were selected, regardless of the performance of the generated code or their time complexity.
 
 \subsection{Generic Register Allocation}
 
@@ -1144,9 +1144,9 @@ If a solution cannot be found, memory storage is created for some of the variabl
 
 \subsubsection{Allocation by Graph Colouring}
 
-Typical compiler reduces register allocation to an isometric problem of graph colouring, which is proven to be NP-complete, and solves it using a heuristic that balances time complexity of the algorithm with quality of the generated code. 
+A compiler reduces the register allocation to the isomorphic problem of graph colouring, which is proven to be NP-complete, and solves it using a heuristic that balances time complexity of the algorithm with quality of the generated code. 
 
-The graph in question is called a \emph{Clash Graph}. Its nodes represent variables, and two nodes are connected by an edge iff the two respective variables cannot be allocated to the same register. If this graph can be coloured with a number of colours less than or equal to the number of available CPU registers, a solution has been found. 
+The graph in question is called a Clash Graph (CG). Its nodes represent variables, and two nodes are connected by an edge iff the two respective variables cannot be allocated to the same register. If this graph can be coloured with a number of colours less than or equal to the number of available CPU registers, a solution has been found. 
 
 \begin{figure}
 	\centerline{	
@@ -1156,31 +1156,31 @@ The graph in question is called a \emph{Clash Graph}. Its nodes represent variab
 	\label{fig:Implementation_GraphColouring}
 \end{figure}
 
-Figure~\ref{fig:Implementation_GraphColouring} shows a commonly used greedy graph-colouring algorithm, which Dexter adopts with slight modifications explained later on. The heuristic colours the nodes in order given by how constrained they are, starting with the most constrained one and always picking a colour not taken by the neighbours. It runs in linear time and usually yields satisfactory results.
+Figure~\ref{fig:Implementation_GraphColouring} shows a commonly used greedy graph-colouring algorithm, which Dexter adopts with slight modifications explained later. The heuristic colours the nodes, ordered by the number of constraints, starting with the most constrained one and always picking a colour not taken by the neighbours. It runs in linear time and usually yields satisfactory results.
 
 \subsubsection{Building Clash Graph}
 
-Clash Graph is built by comparing the liveness intervals of individual variables, which can be established by performing so-called \emph{Live Variable Analysis} on the \emph{Control Flow Graph} of the method code. Two variables simultaneously live at any point should be connected by an edge.
+The CG is built by comparing the liveness of individual variables, which can be established by performing so-called Live Variable Analysis (LVA) on the Control Flow Graph (CFG) of the method code. Two variables simultaneously live at any point should be connected by an edge.
 
-CFG is a graph with nodes representing maximal sequences of non-jumping instructions, called basic blocks, and nodes $A$ and $B$ being connected by a directed edge iff the execution of last instruction in $A$ can be followed by the execution of first instruction in $B$. For example, an \verb$if$ instruction always ends its basic block as it can either proceed to the next instruction or jump to a marker. Two special nodes, \verb$START$ and \verb$EXIT$, represent the entry and exit points of the method and are connected accordingly.
+The CFG is a graph with nodes representing maximal sequences of non-jumping instructions, called basic blocks, and nodes $A$ and $B$ being connected by a directed edge iff the execution of last instruction in $A$ can be followed by the execution of first instruction in $B$. For example, an \verb$if$ instruction always ends its basic block as it can either proceed to the next instruction or jump to a marker. Two special nodes, \verb$START$ and \verb$EXIT$, represent the entry and exit points of the method and are connected accordingly.
 
 The principle of CFG generation is not complicated. Code elements specify whether they start/end basic block (labels, \verb$if$), or exit the method (\verb$return$), and also provide the complete list of their successors. One linear pass over the instruction list is then sufficient to split it into blocks, and one more iteration over the blocks enough to create the edges.
 
-Crucial property of the CFG is its completeness, or else incorrect liveness intervals can be produced and clashes missed. A lot of effort was therefore invested into reading the Dalvik documentation to ensure the properties of code elements correctly reflect all aspects of the execution semantics. This sometimes requires a simple code analysis, like finding the catch block program will jump to if an exception of given type is thrown by particular instruction. 
+Crucial property of the CFG is its completeness, or else incorrect liveness intervals can be produced and clashes missed. A lot of effort was therefore invested into reading the Dalvik documentation to ensure the properties of code elements correctly reflect all aspects of the execution semantics. This sometimes requires a simple code analysis, like finding the catch block the program will jump to if an exception of given type is thrown by a particular instruction. 
 
 \begin{figure}
 	\centerline{	
 		\includegraphics[height=0.42\textheight]{figs/fig_implementation_lva.png}
 	}
-	\caption{Example of Live Variable Analysis performed on a simple program represented as a Control Flow Graph.}
+	\caption{Example of Live Variable Analysis performed on a simple program represented as a Control Flow Graph. Live variables at each execution point are in brackets.}
 	\label{fig:Implementation_LVA}
 \end{figure}
 
 The idea behind LVA is propagation of lists of variables that are to be read from against the control flow, so that it is known which values might be needed in the future for each point of computation. A loop iterates through the instructions, always combining the variable lists of its successors, removing variables it writes to and adding those it reads from. Being defined as least fixed point, the loop carries on until no more changes are made. An example is shown in Figure~\ref{fig:Implementation_LVA}.
 
-Each variable list generated by LVA then specifies variables that cannot be allocated to the same register because at that state of computation their values are simultaneously waiting to be read. An edge in Clash Graph is therefore generated for each pair of variables that appear together in some variable list.
+Each variable list generated by LVA then specifies variables that cannot be allocated to the same register because their values are simultaneously waiting to be read. An edge in clash graph is therefore generated for each pair of variables that appear together in some variable list.
 
-\subsection{Dalvik Register Allocation Specifics}
+\subsection{Dalvik Register Allocation}
 
 It is easy to see how the generic register allocation fits into the reassembling procedure in Dexter. Register objects inside intermediate code can be thought of as untyped variables, and these need to be mapped on Dalvik's virtual registers. But due to constraints imposed on the identifiers, the graph-colouring heuristic requires small alterations.
 
