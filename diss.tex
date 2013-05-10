@@ -1059,6 +1059,50 @@ Once the executable is parsed and converted, the modifications laid out in the P
 
 Every node of the IR is responsible for instrumenting itself, so for example a node representing a primitive internal field creates a new field of type \verb$int$ to hold its taint tag, and gives it a name that will not be in conflict with other fields in the class. Shared data, like these names of taint fields, are stored inside an object that the nodes pass around.
 
+\subsection{Bytecode Instrumentation}
+
+Method body IR nodes generate the analysis-performing instrumentation we are after, and place these new instructions into the code. Implementation of the generators exactly follows the principles of taint propagation explained in section~\ref{section:DataFlowAnalysis} and therefore will not be discussed further. Likewise, the node is responsible for inserting the taint register initialization we saw in section~\ref{section:TaintPropagation_MethodCalls_Internal} at the beginning of the instruction list.
+
+However, the instrumented code might not be valid because instructions which throw exceptions wrap themselves in a try block, like we saw in Figure~\ref{figure:TaintPropagation_ThrowingInstructions}. Had some of these already been in one, the code would now contain two nested try blocks which is an illegal construct. To keep the instrumentation rules simple, we let instructions generate such code and fix it afterwards.
+
+% \begin{figure}[h]
+% 	\centering
+% 	\begin{minipage}{0.140\textwidth}
+% 	\begin{footnotesize}
+% 		\asm{TRY\_START\_1} \\
+% 		\asm{...} \\
+% 		\asm{TRY\_START\_2} \\
+% 		\asm{...} \\
+% 		\asm{TRY\_END\_2} \\
+% 		\asm{...} \\
+% 		\asm{TRY\_END\_1}
+% 	\end{footnotesize}
+% 	\end{minipage}
+% 	\begin{minipage}{0.09\textwidth}
+% 	\centering
+% 	$\Rightarrow$
+% 	\end{minipage}
+% 	\begin{minipage}{0.150\textwidth}
+% 	\begin{footnotesize}
+% 		\asm{TRY\_START\_1A} \\
+% 		\asm{...} \\
+% 		\asm{TRY\_END\_1A} \\
+% 		\asm{TRY\_START\_2} \\
+% 		\asm{...} \\
+% 		\asm{TRY\_END\_2} \\
+% 		\asm{TRY\_START\_1B} \\
+% 		\asm{...} \\
+% 		\asm{TRY\_END\_1B}
+% 	\end{footnotesize}
+% 	\end{minipage}
+% 	\caption{Removing nested try blocks by splitting the outer block.}
+% 	\label{figure:Instrumentation_TryBlockSplitting}
+% \end{figure}
+
+% The situation and its solution are shown in Figure~\ref{figure:Instrumentation_TryBlockSplitting}. By splitting the outer block into two parts that cover code not covered by the inner block, it becomes valid. Comparing this against the division example referenced earlier, we see that the exception handler ends up inside the second part of the split outer block, and hence re-throwing the exception preserves the original behaviour. However, since Dexter currently does not merge the handler specifications, throwing an exception inside the inner block, originally handled by the outer but now not by the inner, would change it. For this reason, catch-all handlers are used by the instrumentation rules by default. 
+
+\label{section:Code_MethodEntering}
+
 \subsection{Auxiliary Classes}
 
 While the majority of inserted code is generated based on the content of the file, a small part of it is always the same. This common code includes:
@@ -1071,50 +1115,6 @@ While the majority of inserted code is generated based on the content of the fil
 \end{inparaenum}
 
 These classes could be generated in the same way as the rest of the instrumentation, directly as intermediate code, but for clarity they were written in regular Java. Their source files are compiled using the standard toolchain into a single DEX file that is distributed with Dexter. During instrumentation, this file is converted into IR and the two data structures are merged, effectively statically linking the two files, ensuring the names of classes do not conflict.
-
-\subsection{Bytecode Instrumentation}
-
-Method code level is where each instruction finally generates the analysis-performing instrumentation we are after and places these new instructions into the code. Implementation of the generators exactly follows the principles of taint propagation explained in section~\ref{section:DataFlowAnalysis} and therefore will not be discussed further. Likewise, the IR code node is responsible for inserting the taint register initialization we saw in section~\ref{section:TaintPropagation_MethodCalls_Internal} at the beginning of the instruction list.
-
-Unfortunately, the instrumented code might not be valid because instructions which throw exceptions wrap themselves in a try block, like we saw in Figure\ref{figure:TaintPropagation_ThrowingInstructions}. Had some of these already been in one, the code would now contain two nested try blocks which is an illegal construct. So as to keep the instrumentation rules simple, we let instructions generate such code but fix it afterwards.
-
-\begin{figure}[h]
-	\centering
-	\begin{minipage}{0.140\textwidth}
-	\begin{footnotesize}
-		\asm{TRY\_START\_1} \\
-		\asm{...} \\
-		\asm{TRY\_START\_2} \\
-		\asm{...} \\
-		\asm{TRY\_END\_2} \\
-		\asm{...} \\
-		\asm{TRY\_END\_1}
-	\end{footnotesize}
-	\end{minipage}
-	\begin{minipage}{0.09\textwidth}
-	\centering
-	$\Rightarrow$
-	\end{minipage}
-	\begin{minipage}{0.150\textwidth}
-	\begin{footnotesize}
-		\asm{TRY\_START\_1A} \\
-		\asm{...} \\
-		\asm{TRY\_END\_1A} \\
-		\asm{TRY\_START\_2} \\
-		\asm{...} \\
-		\asm{TRY\_END\_2} \\
-		\asm{TRY\_START\_1B} \\
-		\asm{...} \\
-		\asm{TRY\_END\_1B}
-	\end{footnotesize}
-	\end{minipage}
-	\caption{Removing nested try blocks by splitting the outer block.}
-	\label{figure:Instrumentation_TryBlockSplitting}
-\end{figure}
-
-The situation and its solution are shown in Figure~\ref{figure:Instrumentation_TryBlockSplitting}. By splitting the outer block into two parts that cover code not covered by the inner block, it becomes valid. Comparing this against the division example referenced earlier, we see that the exception handler ends up inside the second part of the split outer block, and hence re-throwing the exception preserves the original behaviour. However, since Dexter currently does not merge the handler specifications, throwing an exception inside the inner block, originally handled by the outer but now not by the inner, would change it. For this reason, catch-all handlers are used by the instrumentation rules by default. 
-
-\label{section:Code_MethodEntering}
 
 \subsection{Object Taint Map}
 
