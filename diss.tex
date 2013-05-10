@@ -1130,11 +1130,13 @@ In its current implementation, the hash table is initialized with 1024 slots and
 
 \section{Reassembling}
 
-In the context of Dexter, reassembling is the process of converting IR back to DexLib data structures. Conversion of most of the nodes is straightforward and methods provided by DexLib automatically generate the dreaded pointers, but it is up to Dexter to generate Dalvik bytecode with correct offsets and register identifiers that fit the space limits of its instructions while preserving behaviour. 
+In the context of Dexter, reassembling is the process of converting IR back to DexLib data structures. Conversion of most nodes is straightforward as DexLib automatically assembles constant pools, class/method/field definitions, etc., and replaces references to them with numerical pointers. 
 
-Both of these constraints might have been broken by the instrumentation. With offsets, the target can become unaddressable by inserting too many instructions between it and the jumping point, and the fact that number of used intermediate registers more than doubles due to tainting is almost guaranteed to result in instructions not being able to store their identifiers as the frequently used ones can only address the first sixteen.
+But it is up to Dexter to generate Dalvik bytecode with register identifiers and jumping offsets that fit the space limits of its instructions. Instrumentation more than doubled the number of used intermediate registers, and the offsets increased as instructions were inserted between the jumping instructions and their targets. For instructions that can only carry 4-bit register identifiers or offsets, this becomes a problem.
 
-Offset computation will be discussed at the end of this section, and we will now look at the more complicated problem of register allocation. It unfortunately required building a nearly full-fledged compiler, a task itself difficult to achieve within the given time frame. The algorithms used here are mostly taken from~\cite{Appel:2003:MCI:599718}, hence their details will be omitted and focus put on their Dalvik-specific modifications. Since the goal of the project was not to build an efficient Dalvik compiler, basic algorithms with simple heuristics were selected, regardless of the performance of the generated code or their time complexity.
+The following sections will explain how intermediate registers are assigned new identifiers that fit these constraints. Since offset computation relies on the knowledge of the register identifiers, it is discussed at the end.
+
+Similar procedures form the core of the compilation process of any programming language, and therefore a full-fledged compiler capable of generating Dalvik bytecode from Dexter IR had to be implemented. The compiler was built according to~\cite{Appel:2003:MCI:599718}, and hence the details of generic algorithms will be omitted and focus will be put on the specifics of Dalvik. Building a compiler is itself a task difficult to achieve within the given project time frame. On that account, basic algorithms with simple heuristics were selected, regardless of the performance of the generated code or their own time complexity.
 
 \subsection{Generic Register Allocation}
 
