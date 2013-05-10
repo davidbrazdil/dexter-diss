@@ -577,9 +577,9 @@ A native method is always marked as an external call.
 \subsection{External Method Calls}
 \label{section:TaintPropagation_MethodCalls_External}
 
-External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for everything that the untrackable code could do. The approach adopted by Dexter is simple - taint of all parameters is combined and assigned to the result and all \emph{mutable} parameters. The assumptions made here are that the method can access only data passed to it, and that it can return them or move them into any mutable parameter. If this proves to cause problematic over-tainting in some cases, Dexter offers a way of defining custom policies.
+External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for every possible action that the untrackable code could do. The approach adopted by Dexter is simple: the taint of all parameters is combined and assigned to the result and all \emph{mutable} parameters. The assumptions made here are that the method can access only data passed to it, and that it can return them or move them into any mutable parameter. If this proves to cause problematic over-tainting in some cases, Dexter offers a way of defining custom policies.
 
-Unfortunately, these assumptions are not safe as we can see in Listing~\ref{listing:ExternalMethodCalls_LogicHole}. The logic hole depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. However, it could be abused by serializing the object and leaking the untainted byte array. A solution to this problem would be to unify taints of interacting objects, so that tainting \verb$objB$ would automatically taint \verb$objA$ because they interacted on the previous line. But this could easily result in taint explosion.
+Unfortunately, these assumptions are not safe, as we can see in Listing~\ref{listing:ExternalMethodCalls_LogicHole}. The logic hole depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. However, it could be abused by serializing the object and leaking the untainted byte array. A solution to this problem would be to unify taints of interacting objects, so that tainting \verb$objB$ would automatically taint \verb$objA$ because they interacted on the previous line. But this could easily result in taint explosion.
 
 \begin{figure}[H]
 	\centering
@@ -716,7 +716,7 @@ manager.requestLocationUpdates(
 
 \subsection{Propagation Logic for Instance Fields}
 
-External call tainting relies on combining taint of all data accessible to the method, even through multiple dereferences. It is possible to recursively traverse all fields of all data structures, but this would prove extremely slow as non-public fields are accessible only through reflection. Instructions storing to instance fields are instead instrumented to propagate taint to the containing object, so that it combines taint. Internal fields also have separate taint storage to store their own subset of it, but external ones do not because their value could be overwritten by untrackable code which would not update the taint anyway.
+External call tainting relies on combining the taint of all data accessible to the method, even through multiple dereferences. It is possible to recursively traverse all fields of all data structures, but this would prove extremely slow as non-public fields are accessible only through reflection. Instructions storing data in instance fields are instead instrumented to propagate taint to the containing object, so that it combines taint. Internal fields also have separate taint storage to store their own subset of it, but external ones do not because their value could be overwritten by untrackable code which would not update the taint anyway.
 
 This logic also contains a loophole which could lead to unidentified leakage. The problem is that taint does not propagate to all parents in multi-level data structures. Current sinks cannot be exploited this way but serialization can. Apart from deep traversal, one could again use taint unification to solve this issue.
 
@@ -726,7 +726,7 @@ With the taint-propagating infrastructure ready, we can have a look at how acces
 
 \subsubsection{Database Queries}
 
-First group uses SQL-like queries to access the contact list, recent calls, text messages and other data available through the interface. Programs call the \verb$ContentResolver.query$ method, passing it a resource identifier (URI) and projection, selection and sorting criteria. It returns an instance of the \verb$Cursor$ class, an iterator through the query output rows. 
+The first group uses SQL-like queries to access the contact list, recent calls, text messages and other data available through the interface. Programs call the \verb$ContentResolver.query$ method, passing it a resource identifier (URI) and projection, selection and sorting criteria. It returns an instance of the \verb$Cursor$ class, an iterator through the query output rows. 
 
 The type of the source is given entirely by the URI argument, which is merely a textual address. Hence, Dexter only needs to insert a series of \verb$if$ statements that compare the URI against a list of recognized URIs, and assign the right taint tag to \verb$Cursor$ if a match is found.
 
@@ -767,7 +767,7 @@ while (c.moveToNext()) {
 
 Information about the operating system and access to hardware is provided through the \verb$Context.getSystemService$ method which returns a manager object being given the name of the service. Their complete list can be found in the documentation\footnote{\url{https://developer.android.com/reference/android/content/Context.html\#getSystemService(java.lang.String)}}.
 
-Instrumentation for system services is very similar to that of database queries. Name of the service is analyzed and the returned object tainted if necessary. Consequently, every piece of data retrieved from the manager will get tainted by the propagation logic. 
+Instrumentation for system services is very similar to that of database queries. The name of the service is analyzed and the returned object tainted as necessary. Consequently, every piece of data retrieved from the manager will get tainted by the propagation logic. 
 
 \begin{figure}[h]
 	\centering
@@ -797,7 +797,7 @@ Location location =
 
 \subsubsection{Static Methods}
 
-Last category of sources had to be created because of the way browser data are accessed. Even though they are read from a \verb$Cursor$ object, it is not created by the \verb$ContentResolver$, but rather by static methods inside class \verb$Browser$. Instrumentation is trivial - insert taint assignment after every such method call.
+The last category of sources had to be created because of the way browser data are accessed. Even though they are read from a \verb$Cursor$ object, it is not created by the \verb$ContentResolver$, but rather by static methods inside class \verb$Browser$. Instrumentation is trivial: insert taint assignment after every such method call.
 
 \begin{figure}[h]
 	\centering
@@ -868,7 +868,7 @@ client.execute(post);
 
 \subsubsection{I/O Writers}
 
-Situation is more complicated for sinks build around the \verb$Writer$ class used for I/O. Listing~\ref{listing:Sink_Socket} shows its typical usage for network communication. The tracked method is \verb$PrintWriter.println$, but checking only the taint of the argument is insufficient. In Listing~\ref{listing:Sink_ByteArray} \verb$Writer$ created with \verb$ByteArrayOutputStream$ does not form a sink, and we merely want the taint to propagate into \verb$array$. 
+The situation is more complicated for sinks build around the \verb$Writer$ class used for I/O. Listing~\ref{listing:Sink_Socket} shows its typical usage for network communication. The tracked method is \verb$PrintWriter.println$, but checking only the taint of the argument is insufficient. In Listing~\ref{listing:Sink_ByteArray} \verb$Writer$ created with \verb$ByteArrayOutputStream$ does not form a sink, and we merely want the taint to propagate into \verb$array$. 
 
 We handle this by labelling the \verb$Socket$ object when it is initialized, i.e.\ making the \verb$Socket.<init>$ method a source of \verb$TAINT_SINK_SOCKET$ data. This taint propagates into the output stream and eventually into the \verb$Writer$ object. Code inserted for the \verb$println$ method then checks whether its object carries a sink taint and only proceeds to checking the argument taint if it does.
 
@@ -927,11 +927,11 @@ byte[] array = baos.toByteArray();
 
 \section{Software Engineering and Toolchain}
 
-Existing reverse-engineering tools for Android provide API for simple implementation of custom static analyses, but they do not offer means of instrumenting and recompiling the bytecode as was described in this section. Hence an entirely new tool designed specifically for this purpose was built.
+Existing reverse-engineering tools for Android provide an API for simple implementation of custom static analyses, but they do not offer means of instrumenting and recompiling the bytecode as was described in this section. Hence an entirely new tool designed specifically for this purpose was built.
 
 Java was chosen as the programming language, as opposed to Python used by the existing tools, in order to utilize DexLib, a DEX-manipulating library built as the core of the Smali assembler. Strict use of Java could also potentially allow Dexter to integrate with the official compilation toolchain, or to run directly on the device. Project Lombok\weblink{http://projectlombok.org/}, a tool extending the features of the language, was incorporated, and source code was managed by the Git\weblink{https://git.kernel.org/} revision control system, in a repository hosted at the GitHub\weblink{https://github.com/} cloud storage.
 
-Implementation of internal algorithms followed the Test-Driven Development philosophy by building a set of JUnit tests. The rules of taint propagation, main subject of research, were tested on small programs, written in Java or assembly, each focusing on an individual feature of the bytecode. In the end, the final solution was applied on a series of real applications downloaded directly from the official market, and on samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
+Implementation of internal algorithms followed the Test-Driven Development philosophy by building a set of JUnit tests. The rules of taint propagation, the main subject of research, were tested on small programs, written in Java or assembly, each focusing on an individual feature of the bytecode. In the end, the final solution was applied on a series of real applications downloaded directly from the official market, and on samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
 
 \cleardoublepage
 \chapter{Implementation}
