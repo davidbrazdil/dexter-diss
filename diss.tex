@@ -72,14 +72,21 @@
 \newcommand{\centerbox}[1] {
 	\begin{center}
 	\begin{footnotesize}
-	\begin{tabular}{l}
-		#1
-	\end{tabular}
 	\end{footnotesize}
 	\end{center}
 }
+
+\definecolor{lightOrange}{HTML}{FBD2AF}
+\sethlcolor{lightOrange}
+\definecolor{lightGreen}{HTML}{E3FFD5}
+\sethlcolor{lightGreen}
+
+\newcommand{\highlight}[1]{\colorbox{lightOrange}{\strut #1}}
+\setlength{\fboxsep}{0pt}
+\newcommand{\lsthl}[1] {\ttfamily\scriptsize\highlight{#1}}
+
 \newcommand{\asm}[1] {\texttt{#1}}
-\newcommand{\asmExtra}[1] {\texttt{\hl{#1}}}
+\newcommand{\asmExtra}[1] {\texttt{\highlight{#1}}}
 
 \newcommand{\tick}{$\checkmark$}
 \newcommand{\cross}{$\times$}
@@ -88,8 +95,6 @@
 
 \setlength{\intextsep}{10pt}
 
-\definecolor{lightGreen}{HTML}{E3FFD5}
-\sethlcolor{lightGreen}
 
 \title{\strTitle}
 \author{\strAuthor}
@@ -452,7 +457,7 @@ Constants are not tainted, and so zero is stored in the appropriate taint regist
 	\begin{figure}[H]
 		\centerbox{
 			\asm{const rTo, \#num} \\
-			\asmExtra{const tTo, \#0~~}
+			\asmExtra{const tTo, \#0}
 		}
 	\end{figure}
 
@@ -462,8 +467,8 @@ Arithmetic instructions are the simplest example of taint tag combination. Tags 
 
 	\begin{figure}[H]
 		\centerbox{
-			\asm{add-int rResult, rOpA, rOpB} \\
-			\asmExtra{or-int tResult, tOpA, tOpB}
+			\asm{add-int~rResult, rOpA, rOpB} \\
+			\asmExtra{or-int~~tResult, tOpA, tOpB}
 		}
 	\end{figure}
 
@@ -474,7 +479,7 @@ Taint of 64-bit primitives is stored only in the taint register of the higher of
 	\begin{figure}[H]
 		\centerbox{
 			\asm{add-long rResult1 | rResult2, rOpA1 | rOpA2, rOpB1 | rOpB2} \\
-			\asmExtra{or-int tResult1, tOpA1, tOpB1}
+			\asmExtra{or-int~~~tResult1, tOpA1, tOpB1}
 		}
 	\end{figure}
 
@@ -605,19 +610,19 @@ objA.useX();                    // use B inside
 public int externalMethod (Object rArg1, int rArg2, String rArg3);
 
 // method call
-`\hl{int taintCombined = TaintMap.get(obj);~~~}`
-`\hl{taintCombined |= TaintMap.get(rArg1);~~~~}`
-`\hl{taintCombined |= tArg2;~~~~~~~~~~~~~~~~~~}`
-`\hl{taintCombined |= TaintMap.get(rArg3);~~~~}`
-`\hl{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{try \{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{~~TaintMap.set(taintCombined, rArg1);~~~~}`
+`\lsthl{int taintCombined = TaintMap.get(obj);~~~}`
+`\lsthl{taintCombined |= TaintMap.get(rArg1);~~~~}`
+`\lsthl{taintCombined |= tArg2;~~~~~~~~~~~~~~~~~~}`
+`\lsthl{taintCombined |= TaintMap.get(rArg3);~~~~}`
+`\lsthl{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{try \{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{~~TaintMap.set(taintCombined, rArg1);~~~~}`
 	rResult = obj.externalMethod(rArg1, rArg2, rArg3);
-`\hl{~~tResult = taintCombined;~~~~~~~~~~~~~~~}`
-`\hl{\} catch-all (rException) \{~~~~~~~~~~~~~~~}`
-`\hl{	TaintMap.set(taintCombined, rException);}`
-`\hl{	throw rException;~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{~~tResult = taintCombined;~~~~~~~~~~~~~~~}`
+`\lsthl{\} catch-all (rException) \{~~~~~~~~~~~~~~~}`
+`\lsthl{	TaintMap.set(taintCombined, rException);}`
+`\lsthl{	throw rException;~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 	\end{lstlisting}
 	\end{tabular}
 	\begin{lstlisting}[caption={Instrumentation of external method calls. The second and third arguments do not inherit combined taint because they are immutable.},
@@ -659,20 +664,20 @@ public int internalMethod (Object rArg1, float rArg2, short rArg3) {
 
 	// original method body
 	... 
-	`\hl{if (internalOrigin) \{~~~~~~~~~~~~~~~}`
-	`\hl{	InternalMethodCall.S\_RES.acquire();}`
-	`\hl{	InternalMethodCall.RES = tResult;~~}`
-	`\hl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+	`\lsthl{if (internalOrigin) \{~~~~~~~~~~~~~~~}`
+	`\lsthl{	InternalMethodCall.S\_RES.acquire();}`
+	`\lsthl{	InternalMethodCall.RES = tResult;~~}`
+	`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 	return rResult;
 }
 
 // method call
-`\hl{InternalMethodCall.S\_ARG.acquire();}`
-`\hl{InternalMethodCall.ARG{[}0] = tArg2;~}`
-`\hl{InternalMethodCall.ARG{[}1] = tArg3;~}`
+`\lsthl{InternalMethodCall.S\_ARG.acquire();}`
+`\lsthl{InternalMethodCall.ARG{[}0] = tArg2;~}`
+`\lsthl{InternalMethodCall.ARG{[}1] = tArg3;~}`
 rResult = obj.internalMethod(rArg1, rArg2, rArg3);
-`\hl{tResult = InternalMethodCall.RES;~~}`
-`\hl{InternalMethodCall.S\_RES.release();}`
+`\lsthl{tResult = InternalMethodCall.RES;~~}`
+`\lsthl{InternalMethodCall.S\_RES.release();}`
 	\end{lstlisting}
 	\end{tabular}
 	\begin{lstlisting}[caption={Instrumentation of internal method calls and origin-deciding logic.},
@@ -737,18 +742,18 @@ The type of the source is given entirely by the URI argument, which is merely a 
 ContentResolver cr = context.getContentResolver();
 URI uri = ContactsContract.Contacts.CONTENT_URI;
 
-`\hl{String uriString = uri.toString();~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{int uriTaint;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{if (uriString.startsWith("content://com.android.contacts/"))}`
-`\hl{~~uriTaint = TAINT\_SOURCE\_CONTACTS;~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{else if (uriString.startsWith("content://sms/"))~~~~~~~~~~~~}`
-`\hl{~~uriTaint = TAINT\_SOURCE\_SMS;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{else if (uriString.startsWith("content://call\_log/"))~~~~~~~}`
-`\hl{~~uriTaint = TAINT\_SOURCE\_CALL\_LOG;~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{else~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{~~uriTaint = 0;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{String uriString = uri.toString();~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{int uriTaint;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{if (uriString.startsWith("content://com.android.contacts/"))}`
+`\lsthl{~~uriTaint = TAINT\_SOURCE\_CONTACTS;~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{else if (uriString.startsWith("content://sms/"))~~~~~~~~~~~~}`
+`\lsthl{~~uriTaint = TAINT\_SOURCE\_SMS;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{else if (uriString.startsWith("content://call\_log/"))~~~~~~~}`
+`\lsthl{~~uriTaint = TAINT\_SOURCE\_CALL\_LOG;~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{else~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{~~uriTaint = 0;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 Cursor cursor = cr.query(uri, null, null, null, null);
-`\hl{TaintMap.set(uriTaint, cursor);~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{TaintMap.set(uriTaint, cursor);~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 
 int colName = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
 
@@ -775,15 +780,15 @@ Instrumentation for system services is very similar to that of database queries.
 	\begin{lstlisting}
 String serviceName = Context.LOCATION_SERVICE;
 
-`\hl{int managerTaint;~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{if (serviceName.equals("location"))~~~~~}`
-`\hl{~~managerTaint = TAINT\_SOURCE\_LOCATION;~}`
-`\hl{else if (serviceName.equals("phone"))~~~}`
-`\hl{~~managerTaint = TAINT\_SOURCE\_DEVICE\_ID;}`
-`\hl{else~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{~~managerTaint = 0;~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{int managerTaint;~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{if (serviceName.equals("location"))~~~~~}`
+`\lsthl{~~managerTaint = TAINT\_SOURCE\_LOCATION;~}`
+`\lsthl{else if (serviceName.equals("phone"))~~~}`
+`\lsthl{~~managerTaint = TAINT\_SOURCE\_DEVICE\_ID;}`
+`\lsthl{else~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{~~managerTaint = 0;~~~~~~~~~~~~~~~~~~~~~}`
 Object manager = this.getSystemService(serviceName);
-`\hl{TaintMap.set(managerTaint, manager);~~~~}`
+`\lsthl{TaintMap.set(managerTaint, manager);~~~~}`
 
 LocationManager locationManager = (LocationManager) manager;
 Location location = 
@@ -806,7 +811,7 @@ The last category of sources had to be created because of the way browser data a
 ContentResolver cr = context.getContentResolver();
 
 Cursor cursor = Browser.getAllBookmarks(cr);
-`\hl{TaintMap.set(TAINT\_SOURCE\_BROWSER, cursor);}`
+`\lsthl{TaintMap.set(TAINT\_SOURCE\_BROWSER, cursor);}`
 
 while (cursor.moveToNext()) {
   ...
@@ -855,9 +860,9 @@ HttpPost post = new HttpPost("http://www.hackers.com/");
 post.setEntity(postData);
 DefaultHttpClient client = new DefaultHttpClient();
 
-`\hl{if ((TaintMap.get(post) \& TAINT\_SOURCE) != 0) \{}`
-`\hl{ // warn the user~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{if ((TaintMap.get(post) \& TAINT\_SOURCE) != 0) \{}`
+`\lsthl{ // warn the user~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 client.execute(post);
 	\end{lstlisting}
 	\end{tabular}
@@ -881,16 +886,16 @@ The example uses the \verb$TAINT_SOURCE$ and \verb$TAINT_SINK$ constants. These 
 String data = getSomeData();
 
 Socket socket = new Socket("hackers.com", 1234);
-`\hl{TaintMap.set(TAINT\_SINK\_SOCKET, socket);}`
+`\lsthl{TaintMap.set(TAINT\_SINK\_SOCKET, socket);}`
 
 OutputStream sos = socket.getOutputStream();
 PrintWriter writer = new PrintWriter(sos);
 
-`\hl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0) \{~~~}`
-`\hl{~~if ((TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{~}`
-`\hl{~~~~// warn the user~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{~~\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0) \{~~~}`
+`\lsthl{~~if ((TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{~}`
+`\lsthl{~~~~// warn the user~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{~~\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 writer.println(data);
 
 writer.close();
@@ -909,11 +914,11 @@ String data = getSomeData();
 ByteArrayOutputStream baos = new ByteArrayOutputStream();
 PrintWriter writer = new PrintWriter(baos);
 
-`\hl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0) \{~~~}`
-`\hl{~~if ((TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{~}`
-`\hl{~~~~// warn the user~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{~~\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\hl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0) \{~~~}`
+`\lsthl{~~if ((TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{~}`
+`\lsthl{~~~~// warn the user~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{~~\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 writer.println(data);
 
 writer.close();
@@ -1037,7 +1042,7 @@ return invokedMethodName.equals("execute") &&
          ) || (
            (callType == Opcode_Invoke.Virtual || 
            	callType == Opcode_Invoke.Super) && 
-           `\hl{classHierarchy.implementsInterface(invokedClass, typeHttpClient)}`
+           `\lsthl{classHierarchy.implementsInterface(invokedClass, typeHttpClient)}`
          )
        );
 	\end{lstlisting}
@@ -1285,7 +1290,7 @@ However, not all node runs can be spilled this way because \texttt{move} instruc
 
 The described algorithm successfully allocates most methods, yet it is not uncommon for an application to contain one on which it fails. Through a mixture of wide register operations and \texttt{/range} method calls, such code typically defines an unspillable node run of 20 or even 30 intermediate registers, completely polluting the 4-bit range, leaving no room for the taint registers, and consequently preventing Dexter from generating the instrumented executable. Static Single-Assignment (SSA) form, a result of another intermediate code transformation, breaks node runs into the smallest possible pieces.
 
-SSA form is defined as one where each variable is written to only once and created by variable renaming. Looking back on the spilling example in Figure~\ref{figure:Reassembling_VariableSpilling}, both of the instructions wrote to \texttt{rA2} which created the three-element run. By renaming the variables we can get runs \texttt{{[}rA1$_1$, rA2$_1$]} and \texttt{{[}rA2$_2$, rA3$_1$]} without changing the behaviour and yet be able to allocate them more easily.
+SSA form is defined as one where each variable is written to only once, and is created by renaming variables. Looking back on the spilling example in Figure~\ref{figure:Reassembling_VariableSpilling}, both of the instructions wrote to \texttt{rA2} which created the three-element run. By renaming the variables we get two smaller, more easily allocatable runs \texttt{{[}rA1$_1$, rA2$_1$]} and \texttt{{[}rA2$_2$, rA3$_1$]} without changing the behaviour.
 
 \begin{figure}
   \centering
@@ -1328,9 +1333,11 @@ The algorithm starts by creating a list of sizes initially set to one, passing i
 	\centering
 	\begin{minipage}{0.28\textwidth}
 	\begin{footnotesize}
+	\begin{tabular}{l}
 		\asm{if-eq rA, rB, LTarget} \\
 		\asm{...} \\
 		\asm{LTarget:}
+	\end{tabular}
 	\end{footnotesize}
 	\end{minipage}
 	\begin{minipage}{0.09\textwidth}
@@ -1339,6 +1346,7 @@ The algorithm starts by creating a list of sizes initially set to one, passing i
 	\end{minipage}
 	\begin{minipage}{0.25\textwidth}
 	\begin{footnotesize}
+	\begin{tabular}{l}
 		\asm{if-eq rA, rB, LJump} \\
 		\asmExtra{goto LSuccessor~~~~} \\
 		\asmExtra{LJump:~~~~~~~~~~~~~} \\
@@ -1346,6 +1354,7 @@ The algorithm starts by creating a list of sizes initially set to one, passing i
 		\asmExtra{LSuccessor:~~~~~~~~} \\
 		\asm{...} \\
 		\asm{LTarget:}
+	\end{tabular}
 	\end{footnotesize}
 	\end{minipage}
 	\caption{Example of an \texttt{if} instruction fixing unreachable target.}
