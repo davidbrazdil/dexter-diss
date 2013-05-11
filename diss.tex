@@ -1529,7 +1529,7 @@ In terms of flow analysis, Dexter is by design restricted to tracking taint only
 
 As we saw in the BgServ case study, correct identification of sources and sinks requires information about \emph{all} framework methods that provide access to them. These definitions can be created very easily, but unfortunately this does not scale well. Covering all exotic ways of leaking data is therefore unrealistic in the light of the sheer size of the framework and its frequent updates. On the other hand, taint tracking systems are never perfectly leak-proof since there always exists a way of bypassing the taint propagation, for example through implicit data flow.
 
-During testing, the greatest limiting factor of the actual implementation turned out to be the register allocating algorithm, which was incapable of dealing with very constrained methods. Even though SSA was implemented to solve this problem, conversion of IR to the internal representation of the standard JVM-DEX compiler, and making use of its existing advanced allocation and optimization techniques, would be a better solution but beyond the time frame of the project.
+During testing, the greatest limiting factor of the implementation turned out to be the register allocating algorithm, which was incapable of dealing with very constrained methods. Even though SSA was implemented to solve this problem, conversion of IR to the internal representation of the official JVM-DEX compiler, and making use of its existing advanced allocation and optimization techniques, would be a better solution but beyond the time frame of the project.
 
 \section{Success Criteria}
 
@@ -1566,9 +1566,21 @@ During testing, the greatest limiting factor of the actual implementation turned
 \cleardoublepage
 \chapter{Conclusion}
 
+\section{Achievements}
+
 This project was a success. It met all the success criteria.
 
 \section{Future Work}
+
+In its current state, Dexter is very near being ready for deployment. With the implementation of SSA finished, it would be capable of instrumenting any available application. Future development could focus on:
+\begin{description}
+\item \textbf{Android Toolchain Integration} \\
+The official Dalvik compiler implements many advanced optimization techniques. Even though it was designed to convert JVM bytecode to DEX, further efforts could be made towards utilizing parts of its pipeline to generate more efficient code.
+
+\item \textbf{User Interface} \\
+
+\item \textbf{On-device Instrumentation} \\
+\end{description}
 
 \cleardoublepage
 
