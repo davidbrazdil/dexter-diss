@@ -1542,11 +1542,11 @@ During testing, the greatest limiting factor of the actual implementation turned
 
 	\item \textbf{Criterion 4} \emph{Instrumentation of DEX files for both explicit and implicit flow analysis needs to be designed, implemented and shown to propagate taint correctly.}
 
-	Instrumented applications perform full dynamic explicit flow analysis, support for implicit flows is limited to exception throwing due to spending more time than expected on the assembling process. Both were tested on tailored code snippets.
+	Instrumented applications perform full explicit flow analysis. Support for implicit flows was demonstrated through exception-throwing instructions.
 
 	\item \textbf{Criterion 5} \emph{Capabilities of the information-flow analysis must be demonstrated on examples of real applications.}
 
-	Three applications known to spy on users were instrumented and shown to successfully identify data leakage. 
+	Five small applications known to spy on users were instrumented and Dexter successfully identified data leakage in all cases. Unfinished SSA prevented the instrumentation of larger apps.
       
 	\item \textbf{Criterion 6} \emph{Advantages and limitations of system-level integration versus per-application bytecode instrumentation for the purpose of taint-based flow analysis must be appraised.}
 
