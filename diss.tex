@@ -159,8 +159,8 @@ Project Originator: & \strSupervisor \\
 Supervisor:         & \strSupervisor \\ 
 \end{tabular}
 }
-\footnotetext[1]{This word count was computed
-by {\tt detex -n diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
+\footnotetext[1]{Computed
+by: {\tt detex -n diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
 }
 \stepcounter{footnote}
 
@@ -228,14 +228,16 @@ appreciated.
 
 \chapter{Introduction}
 
-Smartphones have grown to become very popular over the past few years as universal, always connected and increasingly affordable personal devices that users carry with them at all times. By integrating into many facets of our lives, we now trust smartphones with more and more sensitive data, making them attractive to criminals and marketing companies. According to a Bitdefender security specialist, nowadays one in three free applications on Android collects private data without user consent~\cite{web:HuffingtonOneInThree}. This dissertation presents one possible approach to building a system that monitors selected applications and warns the user when they attempt to leak private data. Dexter achieves this by modifying the executable code of an Android application to dynamically track data flow using a taint-based analysis.
+Smartphones have grown to become very popular over the past few years as universal, always connected and increasingly affordable personal devices that users carry with them at all times. By integrating into many facets of our lives, we now trust smartphones with more and more sensitive data, making them attractive to criminals and marketing companies. According to a Bitdefender security specialist, nowadays one in three free applications on Android collects private data without user consent~\cite{web:HuffingtonOneInThree}. 
+
+The rest of this dissertation describes Dexter, a tool that monitors behaviour of selected applications through dynamic taint-based data flow analysis, and informs the user about attemps to leak private data. It was implemented in 23,000 lines of Java code, and its data-tracking logic was shown to work at scale on real applications, with overhead competitive with best similar systems. Unlike previous work, it does not require modifying the operating system.
 
 \section{Problem Statement}
 
 Applications for smartphones have access to a startling amount of personal information which is often highly beneficial to the user. They can access the contact list, calendar, call log, browser history or even the current location of the user, and combine these in novel ways that render everyday tasks simpler. But as studies have shown~\cite{web:Appthority, web:HuffingtonOneInThree}, applications can and \emph{do} misuse the permissions they were given in good faith, and leak collected data to remote servers where user has no control over them. These fall into three categories:
 \begin{description}
 \item \textbf{Data Stealing} \\
-Due to Android's openness, it is not uncommon for programs to contain some form of malicious code. Usually these masquerade as legitimate applications but run a background trojan that sends premium text messages, logs keystrokes and sends data useful for spamming or identity theft to its authors. Malware is present mainly on alternative markets and in illegal pirated software~\cite{Zhou:2012:DRS:2133601.2133640}, but from time to time appears even on the official store~\cite{web:LookoutPlayRemoval}.
+Due to Android's openness, it is not uncommon for programs to contain some form of malicious code. Usually these masquerade as legitimate applications but run a background trojan that sends premium-rate text messages, logs keystrokes and sends data useful for spamming or identity theft to its authors. Malware is present mainly on alternative markets and in illegal pirated software~\cite{Zhou:2012:DRS:2133601.2133640}, but from time to time appears even on the official store~\cite{web:LookoutPlayRemoval}.
 
 \item \textbf{Mismatch of Expectations} \\
 Behaviour that is not deliberately malicious but might pose security risks defines a group of applications referred to as \emph{grayware}. These are typically advertising libraries which collect private data in order to uniquely identify the person and to show tailored ads, all without an adequate warning.
@@ -288,7 +290,7 @@ The community around Android has built an entire ecosystem of tools that help se
 
 In terms of techniques, a lot of attention has been paid to automated malware detection, in order to instantly prevent its distribution through both the official and alternative market stores. Projects like RiskRanker~\cite{Grace:2012:RSA:2307636.2307663} and DroidRanger~\cite{Yajin:12NDSS} look for behavioural patterns common to known spyware and malware, while for example DroidMoss~\cite{Zhou:2012:DRS:2133601.2133640} focuses on identifying repackaged applications that could have been trojanized. 
 
-Another large set of projects, including TaintDroid, puts effort into enhancing the runtime privacy policies of the platform. For instance, MockDroid~\cite{Beresford:2011:MTP:2184489.2184500} allows fine-grained permission removal through resource mocking, and Aurasium ~\cite{Xu:2012:APP:2362793.2362820} can intercept and prevent interactions of applications with the OS by repackaging them in order to insert its monitor between the kernel and the VM. In the enterprise sector, virtualization~\cite{web:Virtualization} and app wrapping~\cite{web:AppWrapping} are gaining popularity as ways of creating a separate corporate workspace on personal devices.
+Another large set of projects, including TaintDroid, puts effort into enhancing the runtime privacy policies of the platform. For instance, MockDroid~\cite{Beresford:2011:MTP:2184489.2184500} allows fine-grained permission removal through resource mocking, and Aurasium~\cite{Xu:2012:APP:2362793.2362820} can intercept and prevent interactions of applications with the OS by repackaging them in order to insert its monitor between the kernel and the VM. In the enterprise sector, virtualization~\cite{web:Virtualization} and app wrapping~\cite{web:AppWrapping} are gaining popularity as ways of creating a separate corporate workspace on personal devices.
 
 \cleardoublepage
 \chapter{Preparation}
