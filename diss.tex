@@ -23,6 +23,7 @@
 \usepackage{hyperref}
 \usepackage{paralist}
 \usepackage{subfigure}
+\usepackage{datetime}
 
 % \usepackage{dejavu}
 % \usepackage{courier}
@@ -40,12 +41,12 @@
 \clubpenalty1000%
 \widowpenalty1000%
 
+\newcommand{\strTitle}{Taint-based Data Flow Analysis on Android} % title page does not use this
 \newcommand{\strAuthor}{David Brazdil}
 \newcommand{\strCollege}{Trinity Hall}
-\newcommand{\strTitle}{Taint-based Data Flow Analysis\\on Android}
 \newcommand{\strExamination}{Computer Science Tripos, Part II}
 \newcommand{\strYear}{June 2013}
-\newcommand{\strSupervisor}{Dr A. Beresford}
+\newcommand{\strSupervisor}{Dr Alastair Beresford}
 
 \addtolength{\oddsidemargin}{6mm}       % adjust margins
 \addtolength{\evensidemargin}{-8mm}
@@ -104,6 +105,8 @@
 
 \begin{document}
 
+\newdateformat{ukdate}{\ordinal{DAY} \monthname[\THEMONTH] \THEYEAR}
+
 \bibliographystyle{plain}
 
 \lstset{
@@ -128,13 +131,14 @@
 \vspace*{60mm}
 \begin{center}
 \Huge
-{\bf \strTitle} \\
-\vspace*{5mm}
+{\bf Taint-based Data Flow Analysis\\on Android} \\
+\vspace*{10mm}
+\Large
 \strExamination \\
 \vspace*{5mm}
 \strCollege \\
 \vspace*{5mm}
-\today  % today's date
+\ukdate\today  % today's date
 \end{center}
 
 \cleardoublepage
@@ -148,17 +152,16 @@
 
 \chapter*{Proforma}
 
-{\large
 \begin{tabular}{ll}
-Name:               & \bf \strAuthor \\
-College:            & \bf \strCollege \\
-Project Title:      & \bf \strTitle \\
-Examination:        & \bf \strExamination, \strYear \\
-Word Count:         & \bf \input{word_count}\footnotemark[1] \\
-Project Originator: & \strSupervisor \\
-Supervisor:         & \strSupervisor \\ 
+{\bf Name:}          & \strAuthor \\
+{\bf College:}       & \strCollege \\
+{\bf Project Title:} & \strTitle \\
+{\bf Examination:}   & \strExamination, \strYear \\
+{\bf Word Count:}    & \input{word_count}\footnotemark[1] \\
+{\bf Project Originator:} & \strSupervisor \\
+{\bf Supervisor:}    & \strSupervisor \\ 
 \end{tabular}
-}
+
 \footnotetext[1]{Computed
 by: {\tt detex -n diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
 }
@@ -199,11 +202,12 @@ I give permission for my dissertation to be made available in the archive
 area of the Laboratory's website.
 
 \bigskip
-\medskip
-\leftline{Signed}
+\bigskip
+\leftline{\hspace*{2mm}Signed:}
 
 \bigskip
-\leftline{Date}
+\medskip
+\leftline{\hspace*{2mm}Date:\hspace*{20mm}\ukdate\today}
 
 \cleardoublepage
 
