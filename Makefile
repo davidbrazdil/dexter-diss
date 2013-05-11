@@ -4,7 +4,7 @@
 # Note that continuation lines require '\'
 # and that TAB is used after ':' and before unix commands.
 
-DISS = diss.tex refs.bib propbody.tex figs/* makefile.txt report*.tex
+DISS = diss.tex refs.bib propbody.tex figs/* makefile.txt report*.tex example_source.tex
 
 PROP = proposal.tex propbody.tex
 
