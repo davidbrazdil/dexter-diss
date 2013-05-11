@@ -1382,7 +1382,7 @@ focus is on security experts (log is MORE HELPFUL)!!!!
 
 \subsection{Android/GoneSixty}
 
-Gone in 60 Seconds is a spyware which the author claims was written for educational purposes only. Initially available on the Google Play market, users would download the application and then watch it swiftly send their sensitive data to a remote server immediately after first launch. Even though GoneSixty is virtually harmless and its methods of distribution and data collection unsophisticated, it nicely demonstrates how various data sources are accessed, and also propagates the data to a sink in a nontrivial way. Security report by AVG, with more details on how GoneSixty works, can be found in Appendix~\ref{chapter:Report_Gone60}.
+Gone in 60 Seconds is a piece of spyware which the author claims was written for educational purposes only. Initially available on the Google Play market, users would download the application and then watch it swiftly send their sensitive data to a remote server immediately after first launch. Even though GoneSixty is virtually harmless and its methods of distribution and data collection unsophisticated, it nicely demonstrates how various data sources are accessed, and also propagates the data to a sink in a nontrivial way. A security report by AVG, with more details on how GoneSixty works, can be found in Appendix~\ref{chapter:Report_Gone60}.
 
 \begin{figure}[t]
 	\scriptsize
@@ -1400,18 +1400,18 @@ I/System.out(10912): $! tainted Apache HTTPClient request executed => T=23
 	\label{figure:Evaluation_GoneSixty}
 \end{figure}
 
-Manual inspection of the bytecode showed that GoneSixty runs five threads. First four acquire:
+Manual inspection of the bytecode showed that GoneSixty runs five threads. The first four acquire:
 \begin{inparaenum}[(i)]
 \item contact list,
 \item text messages,
 \item recent calls,
 \item browser history,
 \end{inparaenum}
-and store the data into commonly accessible class fields. The fifth thread waits for the other four to finish and combines the data into a single JSON structure, converting them to base64 first. They are then sent to to a remote server as an HTTP POST request using the Apache client. Output of the instrumented application in Figure~\ref{figure:Evaluation_GoneSixty} shows that Dexter correctly identified access to all four of these sources, successfully propagated the taint tags all the way to the HTTP request execution and printed a leakage warning. 
+and store the data into commonly accessible class fields. The fifth thread waits for the other four to finish and combines the data into a single JSON structure first. They are then sent to to a remote server as an HTTP POST request using the Apache client. Output of the instrumented application in Figure~\ref{figure:Evaluation_GoneSixty} shows that Dexter correctly identified access to all four of these sources, successfully propagated the taint tags all the way to the HTTP request execution and printed a leakage warning. 
 
 \subsection{Android/BgServ}
 
-Second analyzed application was infected with the BgServ trojan, which is significantly more dangerous and complex than GoneSixty. Discovered in March 2011, it was inserted into various ordinary applications and then distributed through third party application markets. It runs in the background, sends sensitive data to a remote location and opens a backdoor. Getting orders from the server, it sends premium SMS messages or changes Internet connection settings. Appendix~\ref{chapter:Report_BgServ} contains a security report by Symantec with further details. 
+The second analyzed application was infected with the BgServ trojan, which is significantly more dangerous and complex than GoneSixty. Discovered in March 2011, it was inserted into various ordinary applications and then distributed through third party application markets. It runs in the background, sends sensitive data to a remote location and opens a backdoor. The trojan receives orders from a remote server, and sends premium-rate SMS messages or changes Internet connection settings. Appendix~\ref{chapter:Report_BgServ} contains a security report by Symantec with further details. 
 
 \begin{figure}[t]
 	\scriptsize
@@ -1437,23 +1437,23 @@ D/FlurryAgent(  712): Ending session
 	\label{figure:Evaluation_BgServ}
 \end{figure}
 
-Unlike GoneSixty which steals personal data, BgServ is interested in information that can identify the device: phone number, IMEI, version of the system, etc. These are accessed through system service managers and from the output in Figure~\ref{figure:Evaluation_BgServ} we see that Dexter recognized access to location and phone service managers, and that the data are again being leaked via HTTP. This is consistent with findings made by the TaintDroid team, who analyzed it as well.
+Unlike GoneSixty, which steals personal data, BgServ is interested in information that can identify the device: phone number, IMEI, version of the system, etc. These are accessed through system service managers and from the output in Figure~\ref{figure:Evaluation_BgServ} we see that Dexter recognized access to location and phone service managers, and that the data are again being leaked via HTTP. This is consistent with findings made by the TaintDroid team, who analyzed it as well.
 
-As one can also see from the output, Bgserv requests access to few other system services and reads network settings from the database. These are not being tracked at the moment, but support could easily be added. Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses \verb$XmlSerializer$\weblink{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}, which is currently not a recognized sink.
+As one can also see from the output, Bgserv requests access to a few other system services and reads network settings from the database. These are not being tracked at the moment, but support could easily be added. Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses \verb$XmlSerializer$\weblink{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}, which is currently not a recognized sink, but could be easily added to the Dexter framework.
 
 \subsection{Find\&Call}
 
-Find\&Call is a contact organizer, whose iOS version became known as the first malware for the platform, approved by Apple and distributed through App Store. Likewise, it briefly appeared on the open Google Play before it was removed in July 2012. While logging into user's online account, Find\&Call leaks contact list and phone number which are used by the server to send spam via text messages that seem to have been sent by the user. A blog entry~\cite{report:FindAndCall} by a Kaspersky Lab expert provides more information.
+Find\&Call is a contact organizer, whose iOS version became known as the first malware for the platform, approved by Apple and distributed through App Store. It also briefly appeared on Google Play before it was removed in July 2012. Find\&Call leaks contact list and phone number data which are used by the server to send spam via text messages that appear to be sent by the user. A blog entry~\cite{report:FindAndCall} by a Kaspersky Lab expert provides more information.
 
-Dexter discovered multiple HTTP requests leaking the contents of the phonebook and user's location. Access to the service providing phone number information was also identified, but tagged data never reached the sink, which might indicate a bug in the implementation or they simply were not leaked. Since the application is complex and its bytecode had been obfuscated, further investigation of this problem was not successful. 
+Dexter discovered multiple HTTP requests leaking the contents of the phonebook and user's location. Access to the service providing phone number information was also identified, but tagged data never reached the sink, which might indicate a bug in the implementation of Dexter or they simply were not leaked. Since the application is complex and its bytecode had been obfuscated, further investigation of this by hand was not successful. 
 
-On the other hand, output also shows that sensitive data are being shared between application's components (activities) through IPC calls, and that these correctly propagate taint without any extra instrumentation necessary.
+The Dexter output also shows that sensitive data are being shared between application's components (activities) through IPC calls, and that these correctly propagate taint without requiring any extra instrumentation.
 
 \section{Performance Overhead}
 
-The extra work done by taint tracking instructions naturally has negative effect on the overall performance of the application. Similar systems tend to incur 2-20 times slowdown~\cite{Yin:2007:PCS:1315245.1315261, Chow:2004:UDL:1251375.1251397}, but this is usually acceptable because these techniques are generally used with applications that mostly wait for user's input and perform very little computation. 
+The extra work done by taint tracking instructions naturally has a negative effect on the overall performance of the application. Similar systems tend to incur 2-20 times slowdown~\cite{Yin:2007:PCS:1315245.1315261, Chow:2004:UDL:1251375.1251397}, but this is usually acceptable because these techniques are generally used with applications that mostly wait for user's input and perform very little computation. 
 
-Nevertheless, the overhead of Dexter's instrumentation was assessed and the results are presented in this section. All experiments were conducted on Google Nexus One running Android 2.3. 
+The overhead of Dexter's instrumentation was assessed and the results are presented in this section. All experiments were conducted on Google Nexus One running Android 2.3. 
 
 \subsection{Benchmark}
 
@@ -1467,11 +1467,11 @@ Nevertheless, the overhead of Dexter's instrumentation was assessed and the resu
 
 To measure the overhead of heavily processor-bound computation, a benchmark application was downloaded from the official market, instrumented and results compared with the original. Unfortunately, benchmarks commonly used by the community, like AnTuTu or Quadrant, run their tests in native code which is not instrumented. A lesser known QuickBenchmark therefore had to be chosen instead. Results are summarized in Figure~\ref{figure:Evalutaion_QuickBench}. 
 
-First two tests simply run a loop in which they perform integer and float computation respectively. Even though for each such instruction, the instrumentation adds an OR of the taint tags, the difference was less than 2\% and well within the margin of error in both cases. The reason probably lies in the fact that the original computation and taint tracking have zero data dependencies between each other, which allows the superscalar CPU to execute them out of order and hence fill pipeline stalls.
+The first two tests simply run a loop in which they perform integer and float computation respectively. Even though for each such instruction, the instrumentation adds an OR of the taint tags, the difference was less than 2\% and well within the margin of error in both cases. The reason probably lies in the fact that the original computation and taint tracking have zero data dependencies between each other, which allows the superscalar CPU to execute them out of order and hence fill pipeline stalls.
 
-Third test draws 2D shapes on the screen, animates them and measures the frame rate. Similarly to the first two, it runs a loop with some floating point computation, but also calls external drawing methods. Since it operates only with primitives, with no dependencies whatsoever, and instrumentation of external calls is cheap, we still do not see a speed drop. On average, the benchmark actually awarded slightly more points to the instrumented version, but the results are still within one standard deviation of each other. 
+The third test draws 2D shapes on the screen, animates them and measures the frame rate. Similarly to the first two, it runs a loop with some floating point computation, but also calls external drawing methods. Since it operates only with primitives, with no dependencies whatsoever, and instrumentation of external calls is cheap, we still do not see a speed drop. On average, the benchmark actually awarded slightly more points to the instrumented version, but the results are still within one standard deviation of each other. 
 
-It is the last test that finally shows how expensive taint tracking can be. It draws two rotating cubes in 3D with OpenGL, which would make it equivalent to the 2D test, but now represents each cube as an independent instance of a cube class. The additional use of expensive internal calls results in a 65\% performance drop.
+The last test shows how expensive taint tracking can be. The test draws two rotating cubes in 3D with OpenGL, which is roughly equivalent to the 2D test, except each cube is represented as an instance of a cube class. The additional use of expensive internal calls results in a 65\% performance drop.
 
 \subsection{Source Access}
 
@@ -1485,9 +1485,9 @@ It is the last test that finally shows how expensive taint tracking can be. It d
 
 Since the benchmark works nearly exclusively with primitives and does not access any sensitive data, further experiments were conducted on an in-house testing application. Measured operations are equivalent to those assessed under TaintDroid for comparison. Graph in Figure~\ref{figure:Evalutaion_TestAppBench} shows the results.
 
-Load time of the application was hardly affected by the instrumentation, slowing down from 70ms to 72ms and exactly matching TaintDroid. 
+Load time of the application was hardly affected by the instrumentation, slowing down from 70ms to 72ms, and exactly matching TaintDroid in performance. 
 
-Reading the phonebook, just like was shown in Listing~\ref{listing:Source_DatabaseQuery}, saw a significant decrease in performance, taking nearly three times as long to finish. This is partially caused by the analysis of the database query, but mainly by the propagation of taint into returned string objects, which all collide when stored in the object taint map. According to the academic paper, similar operation on TaintDroid had overhead of mere eighteen percent. 
+Reading the phonebook, as shown in Listing~\ref{listing:Source_DatabaseQuery}, saw a significant decrease in performance, taking nearly three times as long. This is partially caused by the analysis of the database query, but mainly by the propagation of taint into returned string objects, which all collide when stored in the object taint map. According to the academic paper, a similar operation on TaintDroid had overhead of eighteen percent. 
 
 Access time was also measured for the web browsing history, similar to that in Listing~\ref{listing:Source_Browser}. Slowing down by approximately a quarter, the difference is considerably smaller because no string comparisons of the query are carried out, and far fewer strings are tainted as only a single column is read from the results, in contrast to four in the previous test.
 
@@ -1503,7 +1503,7 @@ Access time was also measured for the web browsing history, similar to that in L
 
 Next we study the difference in the size of the instrumented file and the change in distribution of instruction types. Rather than being a performance metric, this creates a bigger picture of what flow analysis involves.
 
-Looking at the data in Figure~\ref{figure:Evalutaion_FileSize}, one can see that the overall size of the \emph{classes.dex} file approximately doubles, ranging between 90-140\% increase. This accounts for all sections of the file, i.e.\ bytecode, class definitions, constants, etc. On modern smartphones this should not be an issue as these executables are typically not bigger than few hundred kilobytes.
+Figure~\ref{figure:Evalutaion_FileSize} shows that the overall size of the \emph{classes.dex} file approximately doubles, ranging between 90-140\% increase. This accounts for all sections of the file, i.e.\ bytecode, class definitions, constants, etc. On modern smartphones this should not be an issue as these executables are typically not bigger than few hundred kilobytes.
 
 \begin{figure}
 	\centerline{	
