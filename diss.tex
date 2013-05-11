@@ -1122,6 +1122,7 @@ While the majority of inserted code is generated based on the content of the fil
 These classes could be generated in the same way as the rest of the instrumentation, directly as intermediate code, but for clarity they were written in regular Java. Their source files are compiled using the standard toolchain into a single DEX file that is distributed with Dexter. During instrumentation, this file is converted into IR and the two data structures are merged, effectively statically linking the two files, It is ensured the names of classes do not conflict.
 
 \subsection{Object Taint Map}
+\label{section:Code_ObjectTaintMap}
 
 Preparation introduced the idea of a global hash table serving as runtime taint tag storage for objects, and we mentioned above that it is one of the auxiliary classes written in Java and linked in. This section will explain the details and complications of its design.
 
@@ -1469,7 +1470,7 @@ To measure the overhead of heavily processor-bound computation, a benchmark appl
 
 The first two tests simply run a loop in which they perform integer and float computation respectively. Even though for each such instruction, the instrumentation adds an OR of the taint tags, the difference was less than 2\% and well within the margin of error in both cases. The reason probably lies in the fact that the original computation and taint tracking have zero data dependencies between each other, which allows the superscalar CPU to execute them out of order and hence fill pipeline stalls.
 
-The third test draws 2D shapes on the screen, animates them and measures the frame rate. Similarly to the first two, it runs a loop with some floating point computation, but also calls external drawing methods. Since it operates only with primitives, with no dependencies whatsoever, and instrumentation of external calls is cheap, we still do not see a speed drop. On average, the benchmark actually awarded slightly more points to the instrumented version, but the results are still within one standard deviation of each other. 
+The third test draws 2D shapes on the screen, animates them and measures the frame rate. Similarly to the first two, it runs a loop with some floating point computation, but also calls external drawing methods. Since it operates only with primitives, with no dependencies whatsoever, and instrumentation of external calls is cheap, we still do not see a speed drop. On average, the benchmark actually awarded slightly more points to the instrumented version. possibly due to better register allocation, but the results are still within one standard deviation of each other. 
 
 The last test shows how expensive taint tracking can be. The test draws two rotating cubes in 3D with OpenGL, which is roughly equivalent to the 2D test, except each cube is represented as an instance of a cube class. The additional use of expensive internal calls results in a 65\% performance drop.
 
@@ -1487,7 +1488,7 @@ Since the benchmark works nearly exclusively with primitives and does not access
 
 Load time of the application was hardly affected by the instrumentation, slowing down from 70ms to 72ms, and exactly matching TaintDroid in performance. 
 
-Reading the phonebook, as shown in Listing~\ref{listing:Source_DatabaseQuery}, saw a significant decrease in performance, taking nearly three times as long. This is partially caused by the analysis of the database query, but mainly by the propagation of taint into returned string objects, which all collide when stored in the object taint map. According to the academic paper, a similar operation on TaintDroid had overhead of eighteen percent. 
+Reading the phonebook, as shown in Listing~\ref{listing:Source_DatabaseQuery}, saw a significant decrease in performance, taking nearly three times as long. This is partially caused by the analysis of the database query, but mainly by the propagation of taint into returned string objects, which all collide when stored in the object taint map. According to the academic paper, a similar operation on TaintDroid had overhead of eighteen percent. A better global hashmap implementation, as suggested in section~\ref{section:Code_ObjectTaintMap}, is likely to help.
 
 Access time was also measured for the web browsing history, similar to that in Listing~\ref{listing:Source_Browser}. Slowing down by approximately a quarter, the difference is considerably smaller because no string comparisons of the query are carried out, and far fewer strings are tainted as only a single column is read from the results, in contrast to four in the previous test.
 
@@ -1513,24 +1514,24 @@ Figure~\ref{figure:Evalutaion_FileSize} shows that the overall size of the \emph
 	\label{figure:Evalutaion_CodeBloat}
 \end{figure}
 
-The change in distribution of opcodes is substantial. Figure~\ref{figure:Evalutaion_CodeBloat} shows some selected intermediate instruction types and how many times they appeared in the parsed, instrumented and post-assembly representation of the GoneSixty spyware. We see instructions that are virtually unaffected, like \verb$BinaryOpLiteral$ and \verb$ReturnVoid$ that are only added with the linked auxiliary classes, and that there are slightly more \emph{if} statements, mostly used for decisions during method calls and source/sink identification. On the other hand, increase in number of instructions directly involved in tainting is radical, especially looking at \verb$invoke$ opcodes that jumped from 400 to more than 3000 occurrences. These are nearly exclusively \verb$taint-get$ and \verb$taint-set$ calls, which go hand in hand with insertion of \verb$BinaryOp$ \emph{OR} instructions to combine tags. Also notice that \verb$move$s are added during the assembly phase as a result of register spilling.
+The change in distribution of opcodes is substantial. Figure~\ref{figure:Evalutaion_CodeBloat} shows some selected intermediate instruction types and how many times they appeared in the parsed, instrumented and post-assembly representation of the GoneSixty spyware. We see instructions that are virtually unaffected, like \verb$BinaryOpLiteral$ and \verb$ReturnVoid$ that are only added with the linked auxiliary classes, and that there are slightly more \emph{if} statements, mostly used for decisions during method calls and source/sink identification. On the other hand, the increase in the number of instructions directly involved in tainting is radical, especially \verb$invoke$ opcodes which jump from 400 to more than 3,h000 occurrences. These are nearly exclusively \verb$taint-get$ and \verb$taint-set$ calls, which go hand in hand with insertion of bitwise OR operations (\verb$BinaryOp$) to combine tags. Also notice that \verb$move$s are added during the assembly phase as a result of register spilling.
 
 \section{Limitations}
 
 The case studies above proved that taint tracking can indeed provide useful information about data leakage, but the approach naturally has its limits which will be discussed in this section. 
 
-In terms of flow analysis, Dexter is by design restricted to tracking taint only from within a running VM and the code of the application. Hence it cannot compete with the the system wide, VM modifying solution of TaintDroid that can propagate taint through the framework, between applications, through the filesystem, and also through reflective calls which Dexter simply treats as external. The same applies to dynamically loaded code, but since Dexter is implemented in Java, it could potentially be linked into the application and the code instrumented on-the-fly before being passed to the class loader.
+In terms of flow analysis, Dexter is by design restricted to tracking taint only from within a running VM and the code of the application. Hence it cannot compete with the system wide, VM modifying solution of TaintDroid that can propagate taint through the framework, between applications, through the filesystem, and also through reflective calls which Dexter simply treats as external. The same applies to dynamically loaded code, but since Dexter is implemented in Java, it could potentially be linked into the application and the code instrumented on-the-fly before being passed to the class loader.
 
 As we saw in the BgServ case study, correct identification of sources and sinks requires information about \emph{all} framework methods that provide access to them. These definitions can be created very easily, but unfortunately this does not scale well. Covering all exotic ways of leaking data is therefore unrealistic in the light of the sheer size of the framework and its frequent updates. On the other hand, taint tracking systems are never perfectly leak-proof since there always exists a way of bypassing the taint propagation, for example through implicit data flow.
 
-During testing, the greatest limiting factor of the actual implementation turned out to be the register allocating algorithm, incapable of dealing with very constrained methods. Even though SSA was implemented to solve this problem, conversion of IR to the internal representation of the standard JVM-DEX compiler, and making use of its existing advanced allocation and optimization techniques, would be a better solution but beyond the time frame of the project.
+During testing, the greatest limiting factor of the actual implementation turned out to be the register allocating algorithm, which was incapable of dealing with very constrained methods. Even though SSA was implemented to solve this problem, conversion of IR to the internal representation of the standard JVM-DEX compiler, and making use of its existing advanced allocation and optimization techniques, would be a better solution but beyond the time frame of the project.
 
 \section{Success Criteria}
 
 \begin{description}
 	\item \textbf{Criterion 1} \emph{Application must communicate with Android devices and be able to download/upload application packages (APKs).}
 
-	The SDK's \verb$adb$ tool was used both to download and upload APKs and framework files. By executing of shell commands on the device, it was also used to print the list of installed applications. Further integration with Dexter was not implemented.
+	The SDK's \verb$adb$ tool was used both to download and upload APKs and framework files. Shell commands were executed to list installed applications.
 
 	\item \textbf{Criterion 2} \emph{Application must be able to extract content of APK files and to repackage them after instrumentation.}
 
@@ -1538,7 +1539,7 @@ During testing, the greatest limiting factor of the actual implementation turned
 
 	\item \textbf{Criterion 3} \emph{Specification of sources, sinks and sanitizers has to be designed and these properly identified by the instrumenting application.}
 
-	Sources and sinks were defined by extending \verb$ExternalCallInstrumentor$ class, not through XML files as originally proposed. No sanitizers were implemented but could be defined the same way.
+	Sources and sinks were defined by extending \verb$ExternalCallInstrumentor$ class. No sanitizers were needed in the end, but could easily be defined in the same way.
 
 	\item \textbf{Criterion 4} \emph{Instrumentation of DEX files for both explicit and implicit flow analysis needs to be designed, implemented and shown to propagate taint correctly.}
 
