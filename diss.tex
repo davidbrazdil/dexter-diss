@@ -1400,7 +1400,7 @@ The necessity to support the SSA transformation was also not initially identifie
 
 \subsection{Testing}
 
-Implementation of internal algorithms followed the Test-Driven Development philosophy by building a set of JUnit tests. The rules of taint propagation, the main subject of research, were tested on small programs, written in Java or assembly, each focusing on an individual feature of the bytecode. In the end, the final solution was applied on a series of real applications downloaded directly from the official market, and on samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
+Test-Driven Development philosophy~\cite{Beck:2002:TDD:579193} was adopted for the implementation of individual features, resulting in a large set of JUnit tests for the internal algorithms, and a smaller set of Java and assembly programs testing the instrumentation. The final solution was applied on a series of real applications downloaded directly from the official market, and on samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
 
 \subsection{User Interaction}
 
