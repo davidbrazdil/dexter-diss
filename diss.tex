@@ -517,6 +517,7 @@ The five types of method invocation supported by Dalvik are listed in Table~\ref
 
 \begin{table}[h]
 	\begin{center}
+	\begin{footnotesize}
 	\begin{tabular}{|l|c|l|}
 		\firsthline
 		\textbf{Opcode}         & \footnotesize{\textbf{vtable}} & \textbf{Usage} \\
@@ -529,12 +530,13 @@ The five types of method invocation supported by Dalvik are listed in Table~\ref
 		\verb$invoke-super$     & \tick           & call to closest parent implementing the method \\
 		\lasthline
 	\end{tabular}
+	\end{footnotesize}
 	\end{center}
 	\caption{Method call types supported by Dalvik}
 	\label{table:TaintPropagation_MethodCallTypes}
 \end{table}
 
-\begin{figure}
+\begin{figure}[h]
 	\centerline{	
 		\includegraphics[width=0.7\textwidth]{figs/fig_virtual_call_tree.png}
 	}
@@ -949,7 +951,9 @@ Existing reverse-engineering tools for Android provide an API for simple impleme
 	\label{fig:Preparation_Spiral}
 \end{figure}
 
-The requirements of the system were properly defined since the beginning of the project, but it was not clear how much effort the individual subtasks would require, or where the risks were. The Spiral development model~\cite{Boehm:1988:SMS:45797.45801} was selected as a form of iterative, prototyping approach, combined with the systematic aspects of the waterfall model. The work plan was initially divided into roughly two-week development cycles. Each of these cycles would finish with a period for testing and evaluation of the risk issues, and potential plan refinements before continuing to the next iteration. This risk-driven approach would enable me to incrementally build the system, yet iteratively improve risky areas~\cite{web:IncrementalVsIterative}.
+The requirements of the system were properly defined since the beginning of the project, but it was not clear how much effort the individual subtasks would require, or where the risks were. The Spiral development model~\cite{Boehm:1988:SMS:45797.45801} was selected as a form of iterative, prototyping approach, combined with the systematic aspects of the waterfall model. 
+
+The work plan was initially divided into roughly two-week development cycles. Each of these cycles would finish with a period for testing and evaluation of the risk issues, and potential plan refinements before continuing to the next iteration. This risk-driven approach would enable me to incrementally build the system, yet iteratively improve risky areas~\cite{web:IncrementalVsIterative}.
 
 \subsection{Tools}
 
