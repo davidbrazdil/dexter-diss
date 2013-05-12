@@ -582,9 +582,7 @@ if (a == null) {
 	\end{lstlisting}
 \end{figure}
 
-Code could be further analyzed to narrow down the number of callable implementations, e.g.\ by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds a special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflection. A slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in Listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation of public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is nonetheless obvious that these are both very expensive operations. 
-
-A native method is always marked as an external call.
+Code could be further analyzed to narrow down the number of callable implementations, e.g.\ by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds a special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflection. A slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in Listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation of public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is nonetheless obvious that these are both very expensive operations. A native method is always marked as an external call.
 
 \subsection{External Method Calls}
 \label{section:TaintPropagation_MethodCalls_External}
@@ -592,22 +590,6 @@ A native method is always marked as an external call.
 External method calls are the border between trackable and untrackable code, and as such, their instrumentation will have to propagate taint conservatively, accounting for every possible action that the untrackable code could do. The approach adopted by Dexter is simple: the taint of all parameters is combined and assigned to the result and all \emph{mutable} parameters. The assumptions made here are that the method can access only data passed to it, and that it can return them or move them into any mutable parameter. If this proves to cause problematic over-tainting in some cases, Dexter offers a way of defining custom policies.
 
 Unfortunately, these assumptions are not safe, as we can see in Listing~\ref{listing:ExternalMethodCalls_LogicHole}. The logic hole depends on the external environment providing a class that stores data inside invisible fields and then accesses and \emph{leaks} these data. From the Android documentation, it seems that sinks currently identified by Dexter do not have this property. However, it could be abused by serializing the object and leaking the untainted byte array. A solution to this problem would be to unify taints of interacting objects, so that tainting \verb$objB$ would automatically taint \verb$objA$ because they interacted on the previous line. But this could easily result in taint explosion.
-
-\begin{figure}[H]
-	\centering
-	\begin{tabular}{c}
-	\begin{lstlisting}
-ClassA objA = new ClassA();     // external class
-ClassB objB = new ClassB();     // internal class
-objA.setX(objB);                // store B inside A
-objB.setY(getSensitiveData());  // taint B
-objA.useX();                    // use B inside
-	\end{lstlisting}
-	\end{tabular}
-	\begin{lstlisting}[caption={Example of a propagation logic hole},
-	                   label={listing:ExternalMethodCalls_LogicHole}]
-	\end{lstlisting}
-\end{figure}
 
 \begin{figure}
 	\centering
@@ -634,6 +616,22 @@ public int externalMethod (Object rArg1, int rArg2, String rArg3);
 	\end{tabular}
 	\begin{lstlisting}[caption={Instrumentation of external method calls. The second and third arguments do not inherit combined taint because they are immutable.},
 	                   label={listing:TaintPropagation_ExternalMethodCall}]
+	\end{lstlisting}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\begin{tabular}{c}
+	\begin{lstlisting}
+ClassA objA = new ClassA();     // external class
+ClassB objB = new ClassB();     // internal class
+objA.setX(objB);                // store B inside A
+objB.setY(getSensitiveData());  // taint B
+objA.useX();                    // use B inside
+	\end{lstlisting}
+	\end{tabular}
+	\begin{lstlisting}[caption={Example of a propagation logic hole},
+	                   label={listing:ExternalMethodCalls_LogicHole}]
 	\end{lstlisting}
 \end{figure}
 
@@ -898,11 +896,10 @@ Socket socket = new Socket("hackers.com", 1234);
 OutputStream sos = socket.getOutputStream();
 PrintWriter writer = new PrintWriter(sos);
 
-`\lsthl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0) \{~~~}`
-`\lsthl{~~if ((TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{~}`
-`\lsthl{~~~~// warn the user~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\lsthl{~~\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0 \&\&}`
+`\lsthl{~~~~(TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{}`
+`\lsthl{~~// leakage identified~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 writer.println(data);
 
 writer.close();
@@ -921,11 +918,10 @@ String data = getSomeData();
 ByteArrayOutputStream baos = new ByteArrayOutputStream();
 PrintWriter writer = new PrintWriter(baos);
 
-`\lsthl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0) \{~~~}`
-`\lsthl{~~if ((TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{~}`
-`\lsthl{~~~~// warn the user~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\lsthl{~~\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0 \&\&}`
+`\lsthl{~~~~(TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{}`
+`\lsthl{~~// leakage identified~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 writer.println(data);
 
 writer.close();
@@ -1394,6 +1390,14 @@ Since APKs are mere ZIP files, the Zip4j\weblink{http://www.lingala.net/zip4j/} 
 \cleardoublepage
 \chapter{Evaluation}
 
+\section{Development}
+
+Dexter was built 
+
+\subsection{Testing}
+
+Implementation of internal algorithms followed the Test-Driven Development philosophy by building a set of JUnit tests. The rules of taint propagation, the main subject of research, were tested on small programs, written in Java or assembly, each focusing on an individual feature of the bytecode. In the end, the final solution was applied on a series of real applications downloaded directly from the official market, and on samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
+
 \subsection{User Interaction}
 
 When imminent data leakage is identified, the instrumented application should ideally display a dialog, providing information about the event and offering either to continue or to terminate itself. However, the standard Android programming model does not provide any form of execution pausing mechanism which could be used to show a modal window without the application being killed by the operating system for non-responsiveness. In addition, background-running threads are not even allowed access to the UI. Implementation of this feature therefore proved extremely complicated, requiring deeper access to the system message loop, and Dexter currently only prints its warnings into the system log.
@@ -1401,10 +1405,6 @@ When imminent data leakage is identified, the instrumented application should id
 focus is on security experts (log is MORE HELPFUL)!!!!
 
 into eval: worked well, iterative allowed to come back as things were realized - SSA, propagation into immutables - eventually ran out of time, but still ended up with a working solution which met the success criteria and enabled evaluation \\
-
-\subsection{Testing}
-
-Implementation of internal algorithms followed the Test-Driven Development philosophy by building a set of JUnit tests. The rules of taint propagation, the main subject of research, were tested on small programs, written in Java or assembly, each focusing on an individual feature of the bytecode. In the end, the final solution was applied on a series of real applications downloaded directly from the official market, and on samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
 
 \section{Case Studies}
 
