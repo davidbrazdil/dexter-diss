@@ -1531,7 +1531,7 @@ Access time was also measured for the web browsing history, similar to that in L
 
 Next we study the difference in the size of the instrumented file and the change in distribution of instruction types. Rather than being a performance metric, this creates a bigger picture of what flow analysis involves.
 
-Figure~\ref{figure:Evalutaion_FileSize} shows that the overall size of the \emph{classes.dex} file approximately doubles, ranging between 90-140\% increase. This accounts for all sections of the file, i.e.\ bytecode, class definitions, constants, etc. On modern smartphones this should not be an issue as these executables are typically not bigger than few hundred kilobytes.
+Figure~\ref{figure:Evalutaion_FileSize} shows that the overall size of the DEX file approximately doubles, ranging between 90-140\% increase. This accounts for all sections of the file, i.e.\ bytecode, class definitions, etc. On modern smartphones this should not be an issue as these executables are typically not bigger than few hundred kilobytes.
 
 \begin{figure}
 	\centerline{	
@@ -1591,14 +1591,17 @@ During testing, the greatest limiting factor of the implementation turned out to
 
 \section{Achievements}
 
-This project was a success. It met all the success criteria.
+This project was a success. It met all the success criteria, and demonstrated that dynamic taint-based data flow analysis can be applied on individual Android applications without having to modify the operating system. 
 
-- shows taint tracking of individual apps possible without OS mods \\
-- working intents \\
-- reasonable performance \\
-- easily extensible \\
-- shown to work on real life apps \\
-- fixed bug in smali \\
+Dexter represents an easily extensible framework for precise tracking of data throughout instrumented applications. 
+
+
+% - working intents \\
+% - reasonable performance \\
+% - shown to work on real life apps \\
+% - fixed bug in smali \\
+
+% - can it be useful? 
 
 \section{Lessons Learnt}
 
@@ -1606,7 +1609,7 @@ This project was a success. It met all the success criteria.
 
 \section{Future Work}
 
-In its current state, Dexter is very near being ready for deployment. With the implementation of SSA finished, it would be capable of instrumenting any available application. Future development could focus on:
+In its current state, Dexter is nearly ready for deployment. With the implementation of SSA finished, it would be capable of instrumenting any available application. Future development could focus on:
 \begin{description}
 \item \textbf{Android Toolchain Integration} \\
 The official Dalvik compiler implements advanced optimization techniques. Even though it was designed to convert JVM bytecode to DEX, utilizing parts of its pipeline to generate more efficient code should be feasible.
