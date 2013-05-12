@@ -1175,7 +1175,7 @@ The graph in question is called a Clash Graph (CG). Its nodes represent variable
 
 \begin{figure}
 	\centerline{	
-		\includegraphics[width=0.9\textwidth]{figs/fig_implementation_gc.png}
+		\includegraphics[width=\textwidth]{figs/fig_implementation_gc.png}
 	}
 	\caption{Flow chart of commonly used greedy graph-colouring heuristic.}
 	\label{fig:Implementation_GraphColouring}
@@ -1308,7 +1308,7 @@ However, not all node runs can be spilled this way because \texttt{move} instruc
 
 The described algorithm successfully allocates most methods, yet it is not uncommon for an application to contain one on which it fails. Through a mixture of wide register operations and \texttt{/range} method calls, such code typically defines an unspillable node run of 20 or even 30 intermediate registers, completely polluting the 4-bit range, leaving no room for the taint registers, and consequently preventing Dexter from generating the instrumented executable. Static Single-Assignment (SSA) form, a result of another intermediate code transformation, breaks node runs into the smallest possible pieces.
 
-SSA form is defined as one where each variable is written to only once, and is created by renaming variables. Looking back on the spilling example in Figure~\ref{figure:Reassembling_VariableSpilling}, both of the instructions wrote to \texttt{rA2} which created the three-element run. By renaming the variables we get two smaller, more easily allocatable runs \texttt{{[}rA1$_1$, rA2$_1$]} and \texttt{{[}rA2$_2$, rA3$_1$]} without changing the behaviour.
+SSA form is defined as one where each variable is written to only once, and is created by renaming variables. Looking back on the spilling example in Figure~\ref{figure:Reassembling_VariableSpilling}, both of the instructions wrote to \texttt{rA2} which created the three-element run. By renaming the variables we get two smaller, more easily allocatable runs \mbox{\texttt{{[}rA1$_1$, rA2$_1$]}} and \mbox{\texttt{{[}rA2$_2$, rA3$_1$]}} without changing the behaviour.
 
 \begin{figure}
   \centering
@@ -1339,7 +1339,7 @@ Transformation to SSA is done in three steps:
 \end{inparaenum}
 These rely on further analysis of the code. For instance, the points of definition conflict are found by converting CFG to \emph{Dominator Tree} and performing \emph{Dominance Frontier Analysis} on it~\cite{Appel:2003:MCI:599718}.
 
-The principles behind SSA transformation are not complicated but its implementation for specific platform requires careful adaption, e.g.\ with Dalvik by propagating type information to insert valid \texttt{move}s. The transformation was fully implemented and shown to work on small methods otherwise impossible to allocate, but it would require more time to make it production-ready. Applications presented in Evaluation were instrumented without it.
+The principles behind SSA transformation are not complicated but its implementation for specific platform requires careful adaption, e.g.\ with Dalvik by propagating type information to insert valid \texttt{move}s.
 
 \subsection{Offset Computation}
 
@@ -1392,7 +1392,11 @@ Since APKs are mere ZIP files, the Zip4j\weblink{http://www.lingala.net/zip4j/} 
 
 \section{Development}
 
-Dexter was built 
+A working prototype was implemented in 15,000 lines of Java code, with additional 8,000 lines of regression unit tests. 
+
+The adopted risk-driven iterative development model worked very well for the project because it allowed to come back to already implemented components as issues were encountered. For instance, late testing revealed that taint could spread between unrelated parts of the application through equivalent \texttt{String} constants which the VM represents as a single object. Instrumentation of external calls was revisited and modified to not propagate taint into immutable arguments. 
+
+The necessity to support the SSA transformation was also not initially identified and the work plan had to be changed accordingly. SSA was fully implemented and shown to work on small methods otherwise impossible to assemble, but would require further debugging to become production-ready. Since SSA is only an extension enabling Dexter to instrument a wider range of applications, the solution could still be fully evaluated without it.
 
 \subsection{Testing}
 
@@ -1403,8 +1407,6 @@ Implementation of internal algorithms followed the Test-Driven Development philo
 When imminent data leakage is identified, the instrumented application should ideally display a dialog, providing information about the event and offering either to continue or to terminate itself. However, the standard Android programming model does not provide any form of execution pausing mechanism which could be used to show a modal window without the application being killed by the operating system for non-responsiveness. In addition, background-running threads are not even allowed access to the UI. Implementation of this feature therefore proved extremely complicated, requiring deeper access to the system message loop, and Dexter currently only prints its warnings into the system log.
 
 focus is on security experts (log is MORE HELPFUL)!!!!
-
-into eval: worked well, iterative allowed to come back as things were realized - SSA, propagation into immutables - eventually ran out of time, but still ended up with a working solution which met the success criteria and enabled evaluation \\
 
 \section{Case Studies}
 
