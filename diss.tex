@@ -939,16 +939,21 @@ byte[] array = baos.toByteArray();
 
 Existing reverse-engineering tools for Android provide an API for simple implementation of custom static analyses, but they do not offer means of instrumenting and recompiling the bytecode as was described in this section. Hence an entirely new tool designed specifically for this purpose was built.
 
-Java was chosen as the programming language, as opposed to Python used by the existing tools, in order to utilize DexLib, a DEX-manipulating library built as the core of the Smali assembler. Strict use of Java could also potentially allow Dexter to integrate with the official compilation toolchain, or to run directly on the device. Project Lombok\weblink{http://projectlombok.org/}, a tool extending the features of the language, was incorporated, and source code was managed by the Git\weblink{https://git.kernel.org/} revision control system, in a repository hosted at the GitHub\weblink{https://github.com/} cloud storage.
-
 \subsection{Development Model}
 
-Spiral model~\cite{Boehm:1988:SMS:45797.45801}
-Incremental vs Iterative~\cite{web:IncrementalVsIterative}
+\begin{figure}
+	\centerline{	
+		\includegraphics[width=0.6\textwidth]{figs/fig_prep_spiral.eps}
+	}
+	\caption{Schematic diagram of the Spiral development model}
+	\label{fig:Preparation_Spiral}
+\end{figure}
 
-\subsection{Testing}
+The requirements of the system were properly defined since the beginning of the project, but it was not clear how much effort the individual subtasks would require, or where the risks were. The Spiral development model~\cite{Boehm:1988:SMS:45797.45801} was selected as a form of iterative, prototyping approach, combined with the systematic aspects of the waterfall model. The work plan was initially divided into roughly two-week development cycles. Each of these cycles would finish with a period for identification and evaluation of the risk issues, and potential plan refinements before continuing to the next iteration. This risk-driven approach would enable me to incrementally build the system, yet iteratively improve risky areas~\cite{web:IncrementalVsIterative}.
 
-Implementation of internal algorithms followed the Test-Driven Development philosophy by building a set of JUnit tests. The rules of taint propagation, the main subject of research, were tested on small programs, written in Java or assembly, each focusing on an individual feature of the bytecode. In the end, the final solution was applied on a series of real applications downloaded directly from the official market, and on samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
+\subsection{Tools}
+
+Java was chosen as the programming language, as opposed to Python used by the existing tools, in order to utilize DexLib, a DEX-manipulating library built as the core of the Smali assembler. Strict use of Java could also potentially allow Dexter to integrate with the official compilation toolchain, or to run directly on the device. Project Lombok\weblink{http://projectlombok.org/}, a tool extending the features of the language, was incorporated, and source code was managed by the Git\weblink{https://git.kernel.org/} revision control system, in a repository hosted at the GitHub\weblink{https://github.com/} cloud storage.
 
 \cleardoublepage
 \chapter{Implementation}
@@ -1390,6 +1395,12 @@ Since APKs are mere ZIP files, the Zip4j\weblink{http://www.lingala.net/zip4j/} 
 When imminent data leakage is identified, the instrumented application should ideally display a dialog, providing information about the event and offering either to continue or to terminate itself. However, the standard Android programming model does not provide any form of execution pausing mechanism which could be used to show a modal window without the application being killed by the operating system for non-responsiveness. In addition, background-running threads are not even allowed access to the UI. Implementation of this feature therefore proved extremely complicated, requiring deeper access to the system message loop, and Dexter currently only prints its warnings into the system log.
 
 focus is on security experts (log is MORE HELPFUL)!!!!
+
+into eval: worked well, iterative allowed to come back as things were realized - SSA, propagation into immutables - eventually ran out of time, but still ended up with a working solution which met the success criteria and enabled evaluation \\
+
+\subsection{Testing}
+
+Implementation of internal algorithms followed the Test-Driven Development philosophy by building a set of JUnit tests. The rules of taint propagation, the main subject of research, were tested on small programs, written in Java or assembly, each focusing on an individual feature of the bytecode. In the end, the final solution was applied on a series of real applications downloaded directly from the official market, and on samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
 
 \section{Case Studies}
 
