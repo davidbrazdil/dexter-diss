@@ -1392,7 +1392,7 @@ Since APKs are mere ZIP files, the Zip4j\weblink{http://www.lingala.net/zip4j/} 
 
 \section{Development}
 
-A working prototype was implemented in 15,000 lines of Java code, with additional 8,000 lines of regression unit tests. 
+A working prototype of Dexter was implemented in 15,000 lines of Java code, with additional 8,000 lines of regression unit tests. 
 
 The adopted risk-driven iterative development model worked very well for the project because it allowed to come back to already implemented components as issues were encountered. For instance, late testing revealed that taint could spread between unrelated parts of the application through equivalent \texttt{String} constants which the VM represents as a single object. Instrumentation of external calls was revisited and modified to not propagate taint into immutable arguments. 
 
