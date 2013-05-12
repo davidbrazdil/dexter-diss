@@ -882,7 +882,7 @@ The situation is more complicated for sinks build around the \verb$Writer$ class
 
 We handle this by labelling the \verb$Socket$ object when it is initialized, i.e.\ making the \verb$Socket.<init>$ method a source of \verb$TAINT_SINK_SOCKET$ data. This taint propagates into the output stream and eventually into the \verb$Writer$ object. Code inserted for the \verb$println$ method then checks whether its object carries a sink taint and only proceeds to checking the argument taint if it does.
 
-The example uses the \verb$TAINT_SOURCE$ and \verb$TAINT_SINK$ constants. These are bit masks that correspond to the regions of tag representation reserved for source and sink flags as defined in Table~\ref{table:TaintTagStorage_BitMeaning}.
+The example uses the \verb$TAINT_SOURCE$ and \verb$TAINT_WRITER_SINK$ constants. These are bit masks that correspond to the regions of tag representation reserved for source and sink flags as defined in Table~\ref{table:TaintTagStorage_BitMeaning}.
 
 \begin{figure}[h]
 	\centering
@@ -896,10 +896,10 @@ Socket socket = new Socket("hackers.com", 1234);
 OutputStream sos = socket.getOutputStream();
 PrintWriter writer = new PrintWriter(sos);
 
-`\lsthl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0 \&\&}`
-`\lsthl{~~~~(TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{}`
-`\lsthl{~~// leakage identified~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{if ((TaintMap.get(writer) \& TAINT\_WRITER\_SINK) != 0 \&\&}`
+`\lsthl{~~~~(TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{~~~~~~~}`
+`\lsthl{~~// leakage identified~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 writer.println(data);
 
 writer.close();
@@ -918,10 +918,10 @@ String data = getSomeData();
 ByteArrayOutputStream baos = new ByteArrayOutputStream();
 PrintWriter writer = new PrintWriter(baos);
 
-`\lsthl{if ((TaintMap.get(writer) \& TAINT\_SINK) != 0 \&\&}`
-`\lsthl{~~~~(TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{}`
-`\lsthl{~~// leakage identified~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{if ((TaintMap.get(writer) \& TAINT\_WRITER\_SINK) != 0 \&\&}`
+`\lsthl{~~~~(TaintMap.get(data) \& TAINT\_SOURCE) != 0) \{~~~~~~~}`
+`\lsthl{~~// leakage identified~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 writer.println(data);
 
 writer.close();
