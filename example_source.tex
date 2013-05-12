@@ -1,87 +1,6 @@
-\section{Source\_Browser.java}
+\section{Live Variable Analysis}
 
 \begin{lstlisting}
-public class Source_Browser extends FallbackInstrumentor {
-
-  /*
-   *  Apply instrumentation only if the instruction calls:
-   *  - Cursor android.provider.Browser.getAllBookmarks(ContentResolver cr), or
-   *  - Cursor android.provider.Browser.getAllVisitedUrls(ContentResolver cr)
-   *  Both of these are declared 'public static final'.
-   */
-  @Override
-  public boolean canBeApplied(DexPseudoinstruction_Invoke insn) {
-    val insnInvoke = insn.getInstructionInvoke();
-
-    val callType = insnInvoke.getCallType();
-    val className = insnInvoke.getClassType().getDescriptor();
-    val methodName = insnInvoke.getMethodName();
-    val methodPrototype = insnInvoke.getMethodPrototype();
-    val methodReturnType = methodPrototype.getReturnType().getDescriptor();
-    val methodParameters = methodPrototype.getParameterTypes();
-
-    return insn.movesResult() && // only instrument if result is used
-           callType == Opcode_Invoke.Static &&
-           className.equals("Landroid/provider/Browser;") &&
-           (methodName.equals("getAllBookmarks") || 
-           	methodName.equals("getAllVisitedUrls")) &&
-           methodReturnType.equals("Landroid/database/Cursor;") &&
-           methodParameters.size() == 1 &&
-           methodParameters.get(0).getDescriptor().equals(
-           	"Landroid/content/ContentResolver;");
-  }
-
-  /*
-   * Generate Browser source instrumentation.
-   */
-  @Override
-  public Pair<List<DexCodeElement>, List<DexCodeElement>> generateInstrumentation(
-      DexPseudoinstruction_Invoke insn, DexCode_InstrumentationState state) {
-    val code = insn.getMethodCode();
-
-    /*
-     * generate default external call instrumentation,
-     * because it automatically handles exceptions
-     */
-    val defaultInstrumentation = super.generateDefaultInstrumentation(
-      insn, state,
-      Collections.<Integer> emptySet(), // collect taint of the argument
-      Arrays.asList(0),                 // do not propagate taint into the argument
-      false);                           // assign taint to the result
-    val codeBefore = defaultInstrumentation.getValA();
-    val codeAfter = defaultInstrumentation.getValB();
-
-    // set the Browser flag in the combined taint of the method call
-    val instrumentation = new ArrayList<DexCodeElement>(2);
-    instrumentation.add(new DexInstruction_BinaryOpLiteral(
-      code, 
-      regCombinedTaint, regCombinedTaint, TaintConstants.TAINT_SOURCE_BROWSER, 
-      Opcode_BinaryOpLiteral.Or));
-    instrumentation.add(new DexMacro_PrintStringConst(
-      code, "browser data => " + TaintConstants.TAINT_SOURCE_BROWSER, true));
-
-    // insert instrumentation right after the method call
-    codeAfter.addAll(0, instrumentation);
-
-    return new Pair<>(codeBefore, codeAfter);
-  }
-}
-\end{lstlisting}
-
-\section{LiveVarAnalysis.java}
-
-\begin{lstlisting}
-public class LiveVarAnalysis {
-
-  @Getter private final DexCode code;
-  private Map<DexCodeElement, Set<DexRegister>> liveVarsOut;
-  private Map<DexCodeElement, Set<DexRegister>> liveVarsIn;
-
-  public LiveVarAnalysis(DexCode code) {
-    this.code = code;
-    generateLVA();
-  }
-
   private void generateLVA() {
     val CFG = new ControlFlowGraph(code);
     val basicBlocks = CFG.getBasicBlocks();
@@ -101,8 +20,7 @@ public class LiveVarAnalysis {
 
       // iterate through basic blocks in reverse order (converges faster)
       for (val block : new ListReverser<CfgBasicBlock>(basicBlocks)) {
-
-    	// combine variable lists of successors   
+        // combine variable lists of successors   
         Set<DexRegister> insnLiveIn = new HashSet<>();
         for (val succ : block.getSuccessors())
           if (succ instanceof CfgBasicBlock)
@@ -135,13 +53,36 @@ public class LiveVarAnalysis {
       }
     } while (somethingChanged);
   }
+\end{lstlisting}
 
-  public Set<DexRegister> getLiveVarsBefore(DexCodeElement insn) {
-    return liveVarsOut.get(insn);
-  }
+\section{Live Variable Analysis Unit Test}
 
-  public Set<DexRegister> getLiveVarsAfter(DexCodeElement insn) {
-    return liveVarsIn.get(insn);
+\begin{lstlisting}
+  @Test
+  public void testLoopingBlock() {
+    val r0 = new DexRegister();
+    val r1 = new DexRegister();
+    val r2 = new DexRegister();
+    val r3 = new DexRegister();
+
+    val code = new DexCode();
+    val i0 = new DexInstruction_Const(code, r0, 1);
+    val i1 = new DexInstruction_Const(code, r1, 2);
+    val l0 = new DexLabel(code);
+    val i2 = new DexInstruction_Const(code, r2, 3);
+    val i3 = new DexInstruction_BinaryOp(code, r3, r0, r0, Opcode_BinaryOp.AddInt);
+    val i4 = new DexInstruction_IfTest(code, r1, r1, l0, Opcode_IfTest.eq);
+    val i5 = new DexInstruction_BinaryOp(code, r3, r2, r2, Opcode_BinaryOp.AddInt);
+    
+    code.addAll(Arrays.asList(i0, i1, l0, i2, i3, i4, i5));
+    val lva = new LiveVarAnalysis(code);
+
+    assertEquals(Collections.emptySet(), lva.getLiveVarsBefore(i0));
+    assertEquals(createSet(r0), lva.getLiveVarsBefore(i1));
+    assertEquals(createSet(r0, r1), lva.getLiveVarsBefore(l0));
+    assertEquals(createSet(r0, r1), lva.getLiveVarsBefore(i2));
+    assertEquals(createSet(r0, r1, r2), lva.getLiveVarsBefore(i3));
+    assertEquals(createSet(r0, r1, r2), lva.getLiveVarsBefore(i4));
+    assertEquals(createSet(r2), lva.getLiveVarsBefore(i5));
   }
-}
 \end{lstlisting}
