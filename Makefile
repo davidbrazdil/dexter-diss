@@ -15,10 +15,10 @@ diss.pdf:	$(DISS)
 	make count 2>&1 | tail -n 2 | head -n 1 > word_count.tex	
 	pdflatex diss
 	bibtex diss
-	# pdflatex diss
-	# bibtex diss
-	# pdflatex diss
-	# bibtex diss
+	pdflatex diss
+	bibtex diss
+	pdflatex diss
+	bibtex diss
 
 help:
 	@echo
