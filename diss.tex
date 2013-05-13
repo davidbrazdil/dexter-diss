@@ -262,7 +262,7 @@ Taint-based dynamic data flow analysis is a technique to examine the runtime beh
 	\centerline{	
 		\includegraphics[width=0.8\textwidth]{figs/fig_intro_tainting.png}
 	}
-	\caption{Overview of the taint analysis.}
+	\caption{Overview of the taint analysis}
 	\label{fig:Introduction_TaintingOverview}
 \end{figure}
 
@@ -487,7 +487,7 @@ Taint of 64-bit primitives is stored only in the taint register of the higher of
 	\end{figure}
 
 \subsubsection{Instructions Throwing Exceptions}
-
+\label{section:Preparation_Analysis_Throwing}
 Some of Dalvik instructions can throw exceptions depending on the values of arguments. This is a form of implicit data flow which could potentially leak data. For example, integer division will throw \verb$ArithmeticException$ iff the divisor is zero, making this information deducible from the fact that the exception was thrown. Such instructions are wrapped in a try block, and the exception caught, tainted and thrown again.
 
 	\begin{figure}[H]
@@ -503,8 +503,8 @@ Some of Dalvik instructions can throw exceptions depending on the values of argu
 			\asmExtra{throw pException~~~~~~~~~~~~~~~~~~~~~~~~} \\	
 			\asmExtra{LABEL\_XYZ:~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}
 		}
-		\caption{Example instrumentation of the division instruction}
-		\label{figure:TaintPropagation_ThrowingInstructions}
+%		\caption{Example instrumentation of the division instruction}
+%		\label{figure:TaintPropagation_ThrowingInstructions}
 	\end{figure}
 
 \subsection{Method Call Destination Decidability}
@@ -538,7 +538,7 @@ The five types of method invocation supported by Dalvik are listed in Table~\ref
 	\centerline{	
 		\includegraphics[width=0.7\textwidth]{figs/fig_virtual_call_tree.png}
 	}
-	\caption{Example class hierarchy for a method call.}
+	\caption{Example class hierarchy for a method call}
 	\label{fig:TaintPropagation_DestDecision_ClassHierarchy}
 \end{figure}
 
@@ -683,7 +683,7 @@ rResult = obj.internalMethod(rArg1, rArg2, rArg3);
 `\lsthl{InternalMethodCall.S\_RES.release();}`
 	\end{lstlisting}
 	\end{tabular}
-	\begin{lstlisting}[caption={Instrumentation of internal method calls and origin-deciding logic.},
+	\begin{lstlisting}[caption={Instrumentation of internal method calls and origin-deciding logic},
 	                   label={listing:TaintPropagation_InternalMethodCall}]
 	\end{lstlisting}
 \end{figure}
@@ -903,7 +903,7 @@ writer.println(data);
 writer.close();
 	\end{lstlisting}
 	\end{tabular}
-	\begin{lstlisting}[caption={Writer interface used for network communication, with sink instrumentation.},
+	\begin{lstlisting}[caption={Writer interface used for network communication, with sink instrumentation},
 	                   label={listing:Sink_Socket}]
 	\end{lstlisting}
 \end{figure}
@@ -926,7 +926,7 @@ writer.close();
 byte[] array = baos.toByteArray();
 	\end{lstlisting}
 	\end{tabular}
-	\begin{lstlisting}[caption={Writer interface used to turn data into a byte array, with sink instrumentation.},
+	\begin{lstlisting}[caption={Writer interface used to turn data into a byte array, with sink instrumentation},
 	                   label={listing:Sink_ByteArray}]
 	\end{lstlisting}
 \end{figure}
@@ -941,7 +941,7 @@ Existing reverse-engineering tools for Android provide an API for simple impleme
 	\centerline{	
 		\includegraphics[width=0.6\textwidth]{figs/fig_prep_spiral.eps}
 	}
-	\caption{Schematic diagram of the Spiral development model}
+	\caption{The Spiral development model}
 	\label{fig:Preparation_Spiral}
 \end{figure}
 
@@ -1062,7 +1062,7 @@ return invokedMethodName.equals("execute") &&
        );
 	\end{lstlisting}
 	\end{tabular}
-	\begin{lstlisting}[caption={Code that decides whether a method call given by instruction in \texttt{insnInvoke} should be instrumented as an Apache HTTP Client sink.},
+	\begin{lstlisting}[caption={Code that decides whether a method call should be instrumented as an Apache HTTP Client sink},
 	                   label={listing:Sink_ApacheHTTPClient_CanBeApplied}]
 	\end{lstlisting}
 \end{figure}
@@ -1083,7 +1083,7 @@ Every node of the IR is responsible for instrumenting itself, so for example a n
 
 Method body IR nodes generate the analysis-performing instrumentation we are after, and place these new instructions into the code. Implementation of the generators exactly follows the principles of taint propagation explained in section~\ref{section:DataFlowAnalysis} and therefore will not be discussed further. Likewise, the node is responsible for inserting the taint register initialization we saw in section~\ref{section:TaintPropagation_MethodCalls_Internal} at the beginning of the instruction list.
 
-However, the instrumented code might not be valid because instructions which throw exceptions wrap themselves in a try block, like we saw in Figure~\ref{figure:TaintPropagation_ThrowingInstructions}. Had some of these already been in one, the code would now contain two nested try blocks which is an illegal construct. To keep the instrumentation rules simple, we let instructions generate such code and fix it afterwards.
+However, the instrumented code might not be valid because instructions which throw exceptions wrap themselves in a try block (section~\ref{section:Preparation_Analysis_Throwing}). Had some of these already been in one, the code would now contain two nested try blocks which is an illegal construct. To keep the instrumentation rules simple, we let instructions generate such code and fix it afterwards.
 
 % \begin{figure}[h]
 % 	\centering
@@ -1175,7 +1175,7 @@ The graph in question is called a Clash Graph (CG). Its nodes represent variable
 	\centerline{	
 		\includegraphics[width=\textwidth]{figs/fig_implementation_gc.png}
 	}
-	\caption{Flow chart of commonly used greedy graph-colouring heuristic.}
+	\caption{Flow chart of commonly used greedy graph-colouring heuristic}
 	\label{fig:Implementation_GraphColouring}
 \end{figure}
 
@@ -1292,7 +1292,7 @@ We already mentioned that if a colouring cannot be found the compiler spills som
 	\end{minipage}
 }
 
-	\caption{Example of variable spilling transformation and change in constraints.}
+	\caption{Example of variable spilling transformation and change in constraints}
 	\label{figure:Reassembling_VariableSpilling}
 \end{figure}
 
@@ -1373,7 +1373,7 @@ The algorithm starts by creating a list of sizes initially set to one, passing i
 	\end{tabular}
 	\end{footnotesize}
 	\end{minipage}
-	\caption{Example of an \texttt{if} instruction fixing unreachable target.}
+	\caption{Example of an \texttt{if} instruction fixing unreachable target}
 	\label{figure:Reassembling_FixLongJump}
 \end{figure}
 
@@ -1426,7 +1426,7 @@ I/System.out(10912): $ content query: content://call_log/calls => T=4
 I/System.out(10912): $ content query: content://com.android.contacts/data/phones => T=1
 I/System.out(10912): $! tainted Apache HTTPClient request executed <= T=23
 	\end{verbatim}
-	\caption{Log output generated by the instrumented version of GoneSixty.}
+	\caption{Log output generated by the instrumented version of GoneSixty}
 	\label{figure:Evaluation_GoneSixty}
 \end{figure}
 
@@ -1527,7 +1527,7 @@ Access time was also measured for the web browsing history, similar to that in L
 	\centerline{
 		\includegraphics[width=0.7\textwidth]{figs/fig_eval_filesize.eps}
 	}
-	\caption{Increase in size of the executable DEX file caused by instrumentation.}
+	\caption{Increase in size of the executable DEX file caused by instrumentation}
 	\label{figure:Evalutaion_FileSize}
 \end{figure}
 
@@ -1595,9 +1595,7 @@ Data protection has undoubtedly become an important issue on modern mobile phone
 
 The suggested approach monitors runtime behaviour through the means of taint analysis, applied on the application by instrumenting its executable file. The developed prototype is fully-functional and instrumented applications able to correctly identify and track selected types of data, and to print warnings when these are about to be leaked. Performance overhead is on par with best similar systems, and certainly acceptable for I/O bound programs. Furthermore, the proposed adjustments can surmount current shortcomings of the analysis.
 
-Future development could focus on extending the system log output for experts to provide more detailed information about the context of the warnings, and implementing a runtime interface for blocking resources or termination of the application when leakage is imminent. Further efforts could be made towards utilizing parts of the pipeline of the official Dalvik compiler to generate more efficient bytecode.
-
-Implementing these measures would lower the barriers to widespread and convenient use of the system.
+Future development could focus on extending the system log output for experts to provide more detailed information about the context of the warnings, and implementing a runtime interface for blocking resources or termination of the application when leakage is imminent. Further efforts could be made towards utilizing parts of the pipeline of the official Dalvik compiler to generate more efficient bytecode. Implementing these measures would lower the barriers to widespread and convenient use of the system.
 
 \cleardoublepage
 
