@@ -151,7 +151,7 @@
 \pagestyle{plain}
 
 \chapter*{Proforma}
-
+\vspace{-10mm}
 \begin{tabular}{ll}
 {\bf Name:}          & \strAuthor \\
 {\bf College:}       & \strCollege \\
@@ -162,6 +162,8 @@
 {\bf Supervisor:}    & \strSupervisor \\ 
 \end{tabular}
 
+\vspace{-4mm}
+
 \footnotetext[1]{Computed
 by: {\tt detex -n diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
 }
@@ -169,13 +171,23 @@ by: {\tt detex -n diss.tex | tr -cd '0-9A-Za-z $\tt\backslash$n' | wc -w}
 
 \section*{Original Aims of the Project}
 
+\vspace{-5mm}
+
 The project set out towards developing a dependable executable code instrumentation which would reliably track sensitive data throughout Android applications and inform users about their leakage, with the prospect of becoming a lightweight platform for enhancing data protection measures against untrusted pieces of software, or simply an analytical tool for security experts. It builds on the work of TaintDroid, a system capable of data tracking via taint-based data flow analysis, but reliant on deep integration into the operating system which creates a barrier to wider adoption.
+
+\vspace{-5mm}
 
 \section*{Work Completed}
 
-Suitable form of code instrumentation was proposed, and 
+\vspace{-5mm}
+
+Suitable form of code instrumentation was proposed, and the system developed into a Java application able to parse, instrument and recompile Android application packages. The prototype was fully-functional and testing on real-life applications demonstrated that the instrumentation works correctly. Performance overhead and code bloat were measured and contrasted against the results achieved by TaintDroid.
+
+\vspace{-5mm}
 
 \section*{Special Difficulties}
+
+\vspace{-5mm}
 
 None.
  
