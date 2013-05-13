@@ -232,7 +232,7 @@ This project would not have been possible without the invaluable help of two ind
 
 Smartphones have grown to become very popular over the past few years as universal, always connected and increasingly affordable personal devices that users carry with them at all times. By integrating into many facets of our lives, we now trust smartphones with more and more sensitive data, making them attractive to criminals and marketing companies. According to a Bitdefender security specialist, nowadays one in three free applications on Android collects private data without user consent~\cite{web:HuffingtonOneInThree}. 
 
-The rest of this dissertation describes Dexter, a tool that monitors behaviour of selected applications through dynamic taint-based data flow analysis, and informs the user about attemps to leak private data. It was implemented in 23,000 lines of Java code, and its data-tracking logic was shown to work at scale on real applications, with overhead competitive with best similar systems. Unlike previous work, it does not require modifying the operating system.
+The rest of this dissertation describes Dexter, a tool that monitors behaviour of selected applications through dynamic taint-based data flow analysis, and informs the user about attempts to leak private data. It was implemented in 23,000 lines of Java code, and its data-tracking logic was shown to work at scale on real applications, with overhead competitive with best similar systems. Unlike previous work, it does not require modifying the operating system.
 
 \section{Problem Statement}
 
@@ -1469,7 +1469,7 @@ D/FlurryAgent(  712): Ending session
 
 Unlike GoneSixty, which steals personal data, BgServ is interested in information that can identify the device: phone number, IMEI, version of the system, etc. These are accessed through system service managers and from the output in Figure~\ref{figure:Evaluation_BgServ} we see that Dexter recognized access to location and phone service managers, and that the data are again being leaked via HTTP. This is consistent with findings made by the TaintDroid team, who analyzed it as well.
 
-As one can also see from the output, Bgserv requests access to a few other system services and reads network settings from the database. These are not being tracked at the moment, but support could easily be added. Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses \verb$XmlSerializer$\weblink{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}, which is currently not a recognized sink, but could be easily added to the Dexter framework.
+As one can also see from the output, BgServ requests access to a few other system services and reads network settings from the database. These are not being tracked at the moment, but support could easily be added. Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses \verb$XmlSerializer$\weblink{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}, which is currently not a recognized sink, but could be easily added to the Dexter framework.
 
 \subsection{Find\&Call}
 
@@ -1517,7 +1517,7 @@ Since the benchmark works nearly exclusively with primitives and does not access
 
 Load time of the application was hardly affected by the instrumentation, slowing down from 70ms to 72ms, and exactly matching TaintDroid in performance. 
 
-Reading the phonebook, as shown in Listing~\ref{listing:Source_DatabaseQuery}, saw a significant decrease in performance, taking nearly three times as long. This is partially caused by the analysis of the database query, but mainly by the propagation of taint into returned string objects, which all collide when stored in the object taint map. According to the academic paper, a similar operation on TaintDroid had overhead of eighteen percent. A better global hashmap implementation, as suggested in section~\ref{section:Code_ObjectTaintMap}, is likely to help.
+Reading the phonebook, as shown in Listing~\ref{listing:Source_DatabaseQuery}, saw a significant decrease in performance, taking nearly three times as long. This is partially caused by the analysis of the database query, but mainly by the propagation of taint into returned string objects, which all collide when stored in the object taint map. According to the academic paper, a similar operation on TaintDroid had overhead of eighteen percent. A better global hash map implementation, as suggested in section~\ref{section:Code_ObjectTaintMap}, is likely to help.
 
 Access time was also measured for the web browsing history, similar to that in Listing~\ref{listing:Source_Browser}. Slowing down by approximately a quarter, the difference is considerably smaller because no string comparisons of the query are carried out, and far fewer strings are tainted as only a single column is read from the results, in contrast to four in the previous test.
 
