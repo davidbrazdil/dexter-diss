@@ -284,7 +284,7 @@ Of course tainting brings complications as well. Most notably, it often struggle
 
 From the user's perspective, the process of application protection enhancement is simple. A smartphone is connected to a PC running Dexter, and the user is presented with a list of applications installed on the device. The selected app is downloaded into the computer, instrumented, repackaged and uploaded back to the device where it replaces its original counterpart. This application then runs the taint analysis in the background and warns the user when tainted data reaches a monitored sink. In the future, Dexter could be shipped as an app and run on the device itself.
 
-Even though the aim of Dexter is to make TaintDroid functionality available on every Android device, it is still a tool that only security experts and cautious power users would use. Its biggest potential however lies in the enterprise sector, protecting corporate data on personal phones of the employees, much like increasingly popular \emph{app wrapping}~\cite{web:AppWrapping}. With some modifications it could also replace TaintDroid as the flow tracking component inside CleanOS~\cite{Tang:2012:CLM:2387880.2387888}, another security-enhancing project that prevents data theft.
+Even though the aim of Dexter is to make TaintDroid functionality available on every Android device, it is still a tool that only security experts and cautious power users would use. Its biggest potential however lies in the enterprise sector, protecting corporate data on personal phones of the employees~\cite{web:BYOD}, much like increasingly popular \emph{app wrapping}~\cite{web:AppWrapping}. With some modifications it could also replace TaintDroid as the flow tracking component inside CleanOS~\cite{Tang:2012:CLM:2387880.2387888}, another security-enhancing project that prevents data theft.
 
 \section{Related Work}
 
@@ -1400,6 +1400,8 @@ The necessity to support the SSA transformation was also not initially identifie
 
 Test-Driven Development philosophy~\cite{Beck:2002:TDD:579193} was adopted for the implementation of individual features, resulting in a large set of JUnit tests for the internal algorithms, and a smaller set of Java and assembly programs testing the instrumentation. The final solution was applied on a series of real applications downloaded directly from the official market, and on samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
 
+Testing also revealed a bug in the implementation of DexLib, which was reported and eventually fixed by the author.
+
 \subsection{Analysis Output}
 
 Being primarily a tool for security experts, Dexter prints its warnings into the system log which makes them easy to filter and further analyze. With the default level of verbosity, it logs every source access and data leakage together with the involved data taint tag, and adds information about method calls in debug mode.
@@ -1545,13 +1547,13 @@ The change in distribution of opcodes is substantial. Figure~\ref{figure:Evaluta
 
 \section{Limitations}
 
-The case studies above proved that taint tracking can indeed provide useful information about data leakage, but the approach naturally has its limits which will be discussed in this section. 
+The case studies above proved that taint tracking can indeed provide useful information about data leakage, but the approach naturally has its limits. 
 
-In terms of flow analysis, Dexter is by design restricted to tracking taint only from within a running VM and the code of the application. Hence it cannot compete with the system wide, VM modifying solution of TaintDroid that can propagate taint through the framework, between applications, through the filesystem, and also through reflective calls which are currently treated as external but their support could be easily added. The same applies to dynamically loaded code, because Dexter is implemented in Java and so it could potentially be linked into the application and the code instrumented on-the-fly before being passed to the class loader.
+In terms of flow analysis, Dexter is by design restricted to tracking taint only from within a running VM and the code of the application. Hence it cannot compete with the system wide, VM modifying solution of TaintDroid that can propagate taint through the framework, the filesystem or between applications. Reflective calls are also currently treated as external but their support could be added as method call destinations are already decided through reflection. Dynamically loaded code could be instrumented on-the-fly if Dexter itself was linked into the application.
 
-As we saw in the BgServ case study, correct identification of sources and sinks requires information about \emph{all} framework methods that provide access to them. These definitions can be created very easily, but unfortunately this does not scale well. Covering all exotic ways of leaking data is therefore unrealistic in the light of the sheer size of the framework and its frequent updates. On the other hand, taint tracking systems are never perfectly leak-proof since there always exists a way of bypassing the taint propagation, for example through implicit data flow.
+As we saw in the BgServ case study, correct identification of sources and sinks requires information about \emph{all} framework methods that provide access to them. These definitions can be created very easily, but unfortunately this does not scale well. Covering all exotic ways of leaking data is therefore unrealistic in the light of the sheer size of the framework and its frequent updates. On the other hand, taint tracking systems are never perfectly leak-proof since there always exists a way of circumventing the taint propagation, for example through implicit flow.
 
-During testing, the greatest limiting factor of the implementation turned out to be the register allocating algorithm, which was incapable of dealing with very constrained methods. Even though SSA was implemented to solve this problem, conversion of IR to the internal representation of the official JVM-DEX compiler, and making use of its existing advanced allocation and optimization techniques, would be a better solution but beyond the time frame of the project.
+During testing, the greatest limiting factor of the implementation turned out to be the register allocating algorithm, which was incapable of dealing with very constrained methods. Even though SSA was implemented to solve this problem, conversion of IR to the internal representation of the official JVM-DEX compiler, and utilizing its existing advanced allocation and optimization techniques, would be a better solution, but beyond the time frame of the project.
 
 \section{Success Criteria}
 
@@ -1589,38 +1591,13 @@ During testing, the greatest limiting factor of the implementation turned out to
 \cleardoublepage
 \chapter{Conclusion}
 
-\section{Achievements}
+Data protection has undoubtedly become an important issue on modern mobile phones, especially in the context of employees using their diverse personal phones for work-related tasks necessarily involving corporate data. The existing solutions are either too restrictive because they completely prevent access to certain resources, or too invasive and inflexible due to relying on modifications to the operating system of the device. This paper presented a lightweight, universally applicable alternative, capable of precisely tracking sensitive data within a single application, and blocking resource access only if leakage is identified.
 
-This project was a success. It met all the success criteria, and demonstrated that dynamic taint-based data flow analysis can be applied on individual Android applications without having to modify the operating system. 
+The suggested approach monitors runtime behaviour through the means of taint analysis, applied on the application by instrumenting its executable file. The developed prototype is fully-functional and instrumented applications able to correctly identify and track selected types of data, and to print warnings when these are about to be leaked. Performance overhead is on par with best similar systems, and certainly acceptable for I/O bound programs. Furthermore, the proposed adjustments can surmount current shortcomings of the analysis.
 
-Dexter represents an easily extensible framework for precise tracking of data throughout instrumented applications. 
+Future development could focus on extending the system log output for experts to provide more detailed information about the context of the warnings, and implementing a runtime interface for blocking resources or termination of the application when leakage is imminent. Further efforts could be made towards utilizing parts of the pipeline of the official Dalvik compiler to generate more efficient bytecode.
 
-
-% - working intents \\
-% - reasonable performance \\
-% - shown to work on real life apps \\
-% - fixed bug in smali \\
-
-% - can it be useful? 
-
-\section{Lessons Learnt}
-
-- algorithms learned, Dalvik learned
-
-\section{Future Work}
-
-In its current state, Dexter is nearly ready for deployment. With the implementation of SSA finished, it would be capable of instrumenting any available application. Future development could focus on:
-\begin{description}
-\item \textbf{Android Toolchain Integration} \\
-The official Dalvik compiler implements advanced optimization techniques. Even though it was designed to convert JVM bytecode to DEX, utilizing parts of its pipeline to generate more efficient code should be feasible.
-
-\item \textbf{User Interface} \\
-The system log output for security analysts could be extended to provide more detailed information about the context of the warnings. Further efforts could be made towards implementing a runtime warning dialog which would allow to terminate the application at imminent leakage alerts.
-
-\item \textbf{On-device Instrumentation} \\
-Distributing Dexter as a stand-alone Android app would it to run directly on the device. By linking Dexter into applications, dynamically loaded bytecode could be instrumented before being passed to the loader.
-
-\end{description}
+Implementing these measures would lower the barriers to widespread and convenient use of the system.
 
 \cleardoublepage
 
