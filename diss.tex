@@ -219,7 +219,7 @@ area of the Laboratory's website.
 \newpage
 \section*{Acknowledgments}
 
-This project would not have been possible without the invaluable help of two individuals. Dr Alastair Beresford guided the project through from conception to completion, and I could not have embarked on this dissertation without his enthusiastic support and input. I also owe a great deal of gratitude to Dr Simon Moore for his insight and feedback on this paper.
+This project would not have been possible without the invaluable help of two individuals. Dr Alastair Beresford guided the project through from conception to completion, and I could not have embarked on this dissertation without his enthusiastic support and input. I also owe a great deal of gratitude to Dr Simon Moore for his insight and feedback on this dissertation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % now for the chapters
@@ -369,6 +369,7 @@ All variants of semantically equivalent instructions are parsed as the same inst
 \label{section:DataFlowAnalysis}
 
 \subsection{Taint Tags}
+\label{section:Preparation_TaintTags}
 
 Different tainting systems choose different ways of representing tags. This fundamental choice has a large effect on the overall design of the system, its capabilities and limits, as well as performance and memory overhead. The authors of TaintDroid decided to store taints as 32-bit integers where each bit represents one source of sensitive data. This is a very efficient and compact format, sufficient for the purposes of TaintDroid, but quickly reaches its limits as the functionality is extended. One of the challenges faced by the CleanOS project~\cite{Tang:2012:CLM:2387880.2387888}, which builds on TaintDroid, was the necessity to potentially track millions of taint sources. Their solution alters TaintDroid to store taint as a 32-bit pointer into an SQL database, which increases the number of trackable sources, but significantly impedes performance. 
 
@@ -944,7 +945,7 @@ Existing reverse-engineering tools for Android provide an API for simple impleme
 	\centerline{	
 		\includegraphics[width=0.8\textwidth]{figs/fig_prep_spiral.eps}
 	}
-	\caption{The Spiral development model}
+	\caption{The Spiral development model. Source: Wikipedia}
 	\label{fig:Preparation_Spiral}
 \end{figure}
 
@@ -1307,11 +1308,7 @@ However, not all node runs can be spilled this way because \texttt{move} instruc
 
 \subsection{Static Single-Assignment Form}
 
-The described algorithm successfully allocates most methods, yet it is not uncommon for an application to contain one on which it fails. Through a mixture of wide register operations and \texttt{/range} method calls, such code typically defines an unspillable node run of 20 or even 30 intermediate registers, completely polluting the 4-bit range, leaving no room for the taint registers, and consequently preventing Dexter from generating the instrumented executable. Static Single-Assignment (SSA) form, a result of another intermediate code transformation, breaks node runs into the smallest possible pieces.
-
-SSA form is defined as one where each variable is written to only once, and is created by renaming variables. Looking back on the spilling example in Figure~\ref{figure:Reassembling_VariableSpilling}, both of the instructions wrote to \texttt{rA2} which created the three-element run. By renaming the variables we get two smaller, more easily allocatable runs \mbox{\texttt{{[}rA1$_1$, rA2$_1$]}} and \mbox{\texttt{{[}rA2$_2$, rA3$_1$]}} without changing the behaviour.
-
-\begin{figure}
+\begin{figure}[t!]
   \centering
   \subfigure[Original code]{
   	\includegraphics[width=16pc]{figs/fig_implementation_ssa1.png}
@@ -1321,6 +1318,7 @@ SSA form is defined as one where each variable is written to only once, and is c
   	\includegraphics[width=16pc]{figs/fig_implementation_ssa2.png}
   }
   \label{figure:Implementation_SSA2}
+  \vspace{10mm}
   \subfigure[$\Phi$ function converted to \texttt{move} instructions]{
   	\includegraphics[width=16pc]{figs/fig_implementation_ssa3.png}
   }
@@ -1329,6 +1327,10 @@ SSA form is defined as one where each variable is written to only once, and is c
   \caption{Example of SSA transformation}
   \label{figure:Implementation_SSA}
 \end{figure}
+
+The described algorithm successfully allocates most methods, yet it is not uncommon for an application to contain one on which it fails. Through a mixture of wide register operations and \texttt{/range} method calls, such code typically defines an unspillable node run of 20 or even 30 intermediate registers, completely polluting the 4-bit range, leaving no room for the taint registers, and consequently preventing Dexter from generating the instrumented executable. Static Single-Assignment (SSA) form, a result of another intermediate code transformation, breaks node runs into the smallest possible pieces.
+
+SSA form is defined as one where each variable is written to only once, and is created by renaming variables. Looking back on the spilling example in Figure~\ref{figure:Reassembling_VariableSpilling}, both of the instructions wrote to \texttt{rA2} which created the three-element run. By renaming the variables we get two smaller, more easily allocatable runs \mbox{\texttt{{[}rA1$_1$, rA2$_1$]}} and \mbox{\texttt{{[}rA2$_2$, rA3$_1$]}} without changing the behaviour.
 
 Figure~\ref{figure:Implementation_SSA} shows that the transformation is not as straightforward in the general case. Variable $rY$ is defined in both branches of the \texttt{if} statement, and so renaming these to $rY_1$ and $rY_2$ also requires combining their values into $rY_3$ before referencing them later on. 
 
@@ -1348,7 +1350,7 @@ Returning to the generation of Dalvik bytecode, intermediate instructions still 
 
 The algorithm starts by creating a list of sizes initially set to one, passing it together with register allocation to the instructions and letting them generate their most optimized Dalvik variants. Instruction sizes are updated and previous steps repeated until convergence is reached. The algorithm is guaranteed to terminate since instructions can only grow in size because offsets overflowling the space reserved in the current variant forces generation of a bigger one, or causes failure if such variant does not exist.
 
-\begin{figure}[t]
+\begin{figure}[H]
 	\centering
 	\begin{minipage}{0.28\textwidth}
 	\begin{footnotesize}
@@ -1401,7 +1403,7 @@ The necessity to support the SSA transformation was also not initially identifie
 
 \subsection{Testing}
 
-Test-Driven Development philosophy~\cite{Beck:2002:TDD:579193} was adopted for the implementation of individual features, resulting in a large set of JUnit tests for the internal algorithms, and a smaller set of Java and assembly programs testing the instrumentation. The final solution was applied on a series of real applications downloaded directly from the official market, and on samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
+A test-driven development philosophy~\cite{Beck:2002:TDD:579193} was adopted for the implementation of individual features, resulting in a large set of JUnit tests for the internal algorithms, and a smaller set of Java and assembly programs testing the instrumentation. The final solution was applied to a series of real applications downloaded directly from the official market, and to samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
 
 Testing also revealed a bug in the implementation of DexLib, which was reported and eventually fixed by the author.
 
@@ -1429,7 +1431,7 @@ I/System.out(10912): $ content query: content://call_log/calls => T=4
 I/System.out(10912): $ content query: content://com.android.contacts/data/phones => T=1
 I/System.out(10912): $! tainted Apache HTTPClient request executed <= T=23
 	\end{verbatim}
-	\caption{Log output generated by the instrumented version of GoneSixty}
+	\caption{Log output generated by the instrumented version of GoneSixty. Access to four different sources was identified (contacts accessed twice), and taint tags were assigned to the acquired data ("\texttt{=> T=$x$}"). Executed HTTP request carried a taint tag with all four source flags set ("\texttt{<= T=23}") and hence a warning was printed. The format of taint tags was described in section~\ref{section:Preparation_TaintTags}.}
 	\label{figure:Evaluation_GoneSixty}
 \end{figure}
 
@@ -1490,9 +1492,9 @@ The overhead of Dexter's instrumentation was assessed and the results are presen
 
 \subsection{Benchmark}
 
-\begin{figure}
+\begin{figure}[t]
 	\centerline{
-		\includegraphics[width=0.7\textwidth]{figs/fig_eval_quickbench.eps}
+		\includegraphics[width=0.9\textwidth]{figs/fig_eval_quickbench.eps}
 	}
 	\caption{Points scored in QuickBenchmark. Error bars represent interval of one standard deviation. Each version of the application was run 37 times.}
 	\label{figure:Evalutaion_QuickBench}
@@ -1508,9 +1510,9 @@ The last test shows how expensive taint tracking can be. The test draws two rota
 
 \subsection{Source Access}
 
-\begin{figure}
+\begin{figure}[t]
 	\centerline{	
-		\includegraphics[width=0.7\textwidth]{figs/fig_eval_testappbench.eps}
+		\includegraphics[width=0.9\textwidth]{figs/fig_eval_testappbench.eps}
 	}
 	\caption{Time taken to initialize the application and access sources. Error bars represent interval of one standard deviation. Each test was executed 100 times.}
 	\label{figure:Evalutaion_TestAppBench}
@@ -1526,9 +1528,9 @@ Access time was also measured for the web browsing history, similar to that in L
 
 \section{Code Bloat}
 
-\begin{figure}
+\begin{figure}[t]
 	\centerline{
-		\includegraphics[width=0.7\textwidth]{figs/fig_eval_filesize.eps}
+		\includegraphics[width=0.9\textwidth]{figs/fig_eval_filesize.eps}
 	}
 	\caption{Increase in size of the executable DEX file caused by instrumentation}
 	\label{figure:Evalutaion_FileSize}
@@ -1538,15 +1540,15 @@ Next we study the difference in the size of the instrumented file and the change
 
 Figure~\ref{figure:Evalutaion_FileSize} shows that the overall size of the DEX file approximately doubles, ranging between 90-140\% increase. This accounts for all sections of the file, i.e.\ bytecode, class definitions, etc. On modern smartphones this should not be an issue as these executables are typically not bigger than few hundred kilobytes.
 
-\begin{figure}
+\begin{figure}[t]
 	\centerline{	
-		\includegraphics[width=\textwidth]{figs/fig_eval_codebloat.eps}
+		\includegraphics[width=1.1\textwidth]{figs/fig_eval_codebloat.eps}
 	}
 	\caption{Number of occurrences of selected instructions in GoneSixty. First column represents the original count, second the state after application of instrumentation rules, and third the total count after assembling.}
 	\label{figure:Evalutaion_CodeBloat}
 \end{figure}
 
-The change in distribution of opcodes is substantial. Figure~\ref{figure:Evalutaion_CodeBloat} shows some selected intermediate instruction types and how many times they appeared in the parsed, instrumented and post-assembly representation of the GoneSixty spyware. We see instructions that are virtually unaffected, like \verb$BinaryOpLiteral$ and \verb$ReturnVoid$ that are only added with the linked auxiliary classes, and that there are slightly more \emph{if} statements, mostly used for decisions during method calls and source/sink identification. On the other hand, the increase in the number of instructions directly involved in tainting is radical, especially \verb$invoke$ opcodes which jump from 400 to more than 3,h000 occurrences. These are nearly exclusively \verb$taint-get$ and \verb$taint-set$ calls, which go hand in hand with insertion of bitwise OR operations (\verb$BinaryOp$) to combine tags. Also notice that \verb$move$s are added during the assembly phase as a result of register spilling.
+The change in distribution of opcodes is substantial. Figure~\ref{figure:Evalutaion_CodeBloat} shows some selected intermediate instruction types and how many times they appeared in the parsed, instrumented and post-assembly representation of the GoneSixty spyware. We see instructions that are virtually unaffected, like \verb$BinaryOpLiteral$ and \verb$ReturnVoid$ that are only added with the linked auxiliary classes, and that there are slightly more \emph{if} statements, mostly used for decisions during method calls and source/sink identification. On the other hand, the increase in the number of instructions directly involved in tainting is radical, especially \verb$invoke$ opcodes which jump from 400 to more than 3,000 occurrences. These are nearly exclusively \verb$taint-get$ and \verb$taint-set$ calls, which go hand in hand with insertion of bitwise OR operations (\verb$BinaryOp$) to combine tags. Also notice that \verb$move$s are added during the assembly phase as a result of register spilling.
 
 \section{Limitations}
 
@@ -1581,7 +1583,7 @@ During testing, the greatest limiting factor of the implementation turned out to
 	\item \textbf{Criterion 5} \emph{Capabilities of the information-flow analysis must be demonstrated on examples of real applications.}
 
 	Five small applications known to spy on users were instrumented and Dexter successfully identified data leakage in all cases. Unfinished SSA prevented instrumentation of larger apps.
-      
+
 	\item \textbf{Criterion 6} \emph{Advantages and limitations of system-level integration versus per-application bytecode instrumentation for the purpose of taint-based flow analysis must be appraised.}
 
 	Both approaches were thoroughly analyzed and their merits and limits explained.
@@ -1594,9 +1596,9 @@ During testing, the greatest limiting factor of the implementation turned out to
 \cleardoublepage
 \chapter{Conclusion}
 
-Data protection has undoubtedly become an important issue on modern mobile phones, especially in the context of employees using their diverse personal phones for work-related tasks necessarily involving corporate data. The existing solutions are either too restrictive because they completely prevent access to certain resources, or too invasive and inflexible due to relying on modifications to the operating system of the device. This paper presented a lightweight, universally applicable alternative, capable of precisely tracking sensitive data within a single application, and blocking resource access only if leakage is identified.
+Data protection has undoubtedly become an important issue on modern mobile phones, especially in the context of employees using a diverse array of personal phones for work-related tasks necessarily involving corporate data. The existing solutions are either too restrictive because they completely prevent access to certain resources, or too invasive and inflexible due to relying on modifications to the operating system of the device. This paper presented a lightweight, universally applicable alternative, capable of precisely tracking sensitive data within a single application, and blocking resource access only if leakage is identified.
 
-The suggested approach monitors runtime behaviour through the means of taint analysis, applied on the application by instrumenting its executable file. The developed prototype is fully-functional and instrumented applications able to correctly identify and track selected types of data, and to print warnings when these are about to be leaked. Performance overhead is on par with best similar systems, and certainly acceptable for I/O bound programs. Furthermore, the proposed adjustments can surmount current shortcomings of the analysis.
+The suggested approach monitors runtime behaviour through the means of taint analysis, applied on the application by instrumenting its executable file. The developed prototype is fully-functional and instrumented applications are able to correctly identify and track selected types of data, and to print warnings when these are about to be leaked. Performance overhead is on a par with best similar systems, and certainly acceptable for I/O bound and interactive programs. Furthermore, the proposed adjustments can surmount current shortcomings of the analysis.
 
 Future development could focus on extending the system log output for experts to provide more detailed information about the context of the warnings, and implementing a runtime interface for blocking resources or termination of the application when leakage is imminent. Further efforts could be made towards utilizing parts of the pipeline of the official Dalvik compiler to generate more efficient bytecode. Implementing these measures would lower the barriers to widespread and convenient use of the system.
 
