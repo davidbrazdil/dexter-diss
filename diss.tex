@@ -1438,10 +1438,10 @@ Manual inspection of the bytecode showed that GoneSixty runs five threads. The f
 \begin{inparaenum}[(i)]
 \item contact list,
 \item text messages,
-\item recent calls,
+\item recent calls and
 \item browser history,
 \end{inparaenum}
-and store the data into commonly accessible class fields. The fifth thread waits for the other four to finish and combines the data into a single JSON structure first. They are then sent to to a remote server as an HTTP POST request using the Apache client. Output of the instrumented application in Figure~\ref{figure:Evaluation_GoneSixty} shows that Dexter correctly identified access to all four of these sources, successfully propagated the taint tags all the way to the HTTP request execution and printed a leakage warning. 
+and store the data into commonly accessible class fields. The fifth thread waits for the other four to finish, and then sends the data, combined into a JSON structure, to a remote server using the Apache client as an HTTP POST request. Output of the instrumented application in Figure~\ref{figure:Evaluation_GoneSixty} shows that Dexter correctly identified access to all four of these sources, successfully propagated the taint tags all the way to the HTTP request execution and printed a leakage warning. 
 
 \subsection{Android/BgServ}
 
@@ -1473,7 +1473,7 @@ D/FlurryAgent(  712): Ending session
 
 Unlike GoneSixty, which steals personal data, BgServ is interested in information that can identify the device: phone number, IMEI, version of the system, etc. These are accessed through system service managers and from the output in Figure~\ref{figure:Evaluation_BgServ} we see that Dexter recognized access to location and phone service managers, and that the data are again being leaked via HTTP. This is consistent with findings made by the TaintDroid team, who analyzed it as well.
 
-As one can also see from the output, BgServ requests access to a few other system services and reads network settings from the database. These are not being tracked at the moment, but support could easily be added. Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses \verb$XmlSerializer$\weblink{https://developer.android.com/reference/org/xmlpull/v1/XmlSerializer.html}, which is currently not a recognized sink, but could be easily added to the Dexter framework.
+As one can also see from the output, BgServ requests access to a few other system services and reads network settings from the database. These are not being tracked at the moment, but support could easily be added. Moreover, the security report mentions that data are written into a temporary file before they are sent to the server. Bytecode inspection revealed that BgServ uses \verb$XmlSerializer$ for this purpose. It is currently not a recognized sink, but again could be easily added to the Dexter framework.
 
 \subsection{Find\&Call}
 
@@ -1553,7 +1553,7 @@ The change in distribution of opcodes is substantial. Figure~\ref{figure:Evaluta
 
 The case studies above proved that taint tracking can indeed provide useful information about data leakage, but the approach naturally has its limits. 
 
-In terms of flow analysis, Dexter is by design restricted to tracking taint only from within a running VM and the code of the application. Hence it cannot compete with the system wide, VM modifying solution of TaintDroid that can propagate taint through the framework, the filesystem or between applications. Reflective calls are also currently treated as external but their support could be added as method call destinations are already decided through reflection. Dynamically loaded code could be instrumented on-the-fly if Dexter itself was linked into the application.
+In terms of flow analysis, Dexter is by design restricted to tracking taint only from within a running VM and the code of the application. Hence it cannot compete with the system wide, VM modifying solution of TaintDroid that can propagate taint through the framework, the filesystem or between applications. Reflective calls are currently always treated as external but their support could be added as statically undecidable method call destinations are already resolved through reflection. Dynamically loaded code could be instrumented on-the-fly if Dexter itself was linked into the application.
 
 As we saw in the BgServ case study, correct identification of sources and sinks requires information about \emph{all} framework methods that provide access to them. These definitions can be created very easily, but unfortunately this does not scale well. Covering all exotic ways of leaking data is therefore unrealistic in the light of the sheer size of the framework and its frequent updates. On the other hand, taint tracking systems are never perfectly leak-proof since there always exists a way of circumventing the taint propagation, for example through implicit flow.
 
