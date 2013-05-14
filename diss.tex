@@ -80,7 +80,7 @@
 	\end{center}
 }
 
-\definecolor{lightOrange}{HTML}{FBD2AF}
+\definecolor{lightOrange}{HTML}{FBDFC7}
 \sethlcolor{lightOrange}
 \definecolor{lightGreen}{HTML}{E3FFD5}
 \sethlcolor{lightGreen}
@@ -600,19 +600,19 @@ Unfortunately, these assumptions are not safe, as we can see in Listing~\ref{lis
 public int externalMethod (Object rArg1, int rArg2, String rArg3);
 
 // method call
-`\lsthl{int taintCombined = TaintMap.get(obj);~~~}`
-`\lsthl{taintCombined |= TaintMap.get(rArg1);~~~~}`
-`\lsthl{taintCombined |= tArg2;~~~~~~~~~~~~~~~~~~}`
-`\lsthl{taintCombined |= TaintMap.get(rArg3);~~~~}`
-`\lsthl{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\lsthl{try \{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\lsthl{~~TaintMap.set(taintCombined, rArg1);~~~~}`
-~~rResult = obj.externalMethod(rArg1, rArg2, rArg3);
-`\lsthl{~~tResult = taintCombined;~~~~~~~~~~~~~~~}`
-`\lsthl{\} catch-all (rException) \{~~~~~~~~~~~~~~~}`
+`\lsthl{int taintCombined = TaintMap.get(obj);~~~~}`
+`\lsthl{taintCombined |= TaintMap.get(rArg1);~~~~~}`
+`\lsthl{taintCombined |= tArg2;~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{taintCombined |= TaintMap.get(rArg3);~~~~~}`
+`\lsthl{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{try \{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{~~TaintMap.set(taintCombined, rArg1);~~~~~}`
+~~rResult = obj.externalMethod(rArg1, rArg2, rArg3~);
+`\lsthl{~~tResult = taintCombined;~~~~~~~~~~~~~~~~}`
+`\lsthl{\} catch-all (rException) \{~~~~~~~~~~~~~~~~}`
 `\lsthl{~~TaintMap.set(taintCombined, rException);}`
 `\lsthl{~~throw rException;~~~~~~~~~~~~~~~~~~~~~~~}`
-`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 	\end{lstlisting}
 	\end{tabular}
 	\begin{lstlisting}[caption={Instrumentation of external method calls. The second and third arguments do not inherit combined taint because they are immutable.},
