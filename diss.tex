@@ -1395,13 +1395,13 @@ Since APKs are mere ZIP files, the Zip4j\weblink{http://www.lingala.net/zip4j/} 
 
 A working prototype of Dexter was implemented in 15,000 lines of Java code, with additional 8,000 lines of regression unit tests. 
 
-The adopted risk-driven iterative development model worked very well for the project because it allowed to come back to already implemented components as issues were encountered. For instance, late testing revealed that taint could spread between unrelated parts of the application through equivalent \texttt{String} constants which the VM represents as a single object. Instrumentation of external calls was revisited and modified to not propagate taint into immutable arguments. 
+The adopted risk-driven iterative development model worked very well for the project because it allowed me to come back to already implemented components as issues were encountered. For instance, late testing revealed that taint could spread between unrelated parts of the application through equivalent \texttt{String} constants which the VM represents as a single object. Instrumentation of external calls was revisited and modified to not propagate taint into immutable arguments. 
 
 The necessity to support the SSA transformation was also not initially identified and the work plan had to be changed accordingly. SSA was fully implemented and shown to work on small methods otherwise impossible to assemble, but would require further debugging to become production-ready. Since SSA is only an extension enabling Dexter to instrument a wider range of applications, the solution could still be fully evaluated without it.
 
 \subsection{Testing}
 
-A test-driven development philosophy~\cite{Beck:2002:TDD:579193} was adopted for the implementation of individual features, resulting in a large set of JUnit tests for the internal algorithms, and a smaller set of Java and assembly programs testing the instrumentation. The final solution was applied to a series of real applications downloaded directly from the official market, and to samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
+A test-driven development philosophy~\cite{Beck:2002:TDD:579193} was adopted for the implementation of individual features, resulting in a large set of JUnit tests for the internal algorithms, and a smaller set of Java and assembly programs testing the instrumentation. The final solution was applied to a series of real applications downloaded directly from the official Android market, and to samples of malware-infected APKs kindly provided by the Department of Computer Science at North Carolina State University, which manages the Android Malware Genome Project\weblink{http://www.malgenomeproject.org/}.
 
 Testing also revealed a bug in the implementation of DexLib, which was reported and eventually fixed by the author.
 
@@ -1486,19 +1486,19 @@ The Dexter output also shows that sensitive data are being shared between applic
 
 The extra work done by taint tracking instructions naturally has a negative effect on the overall performance of the application. Similar systems tend to incur 2-20 times slowdown~\cite{Yin:2007:PCS:1315245.1315261, Chow:2004:UDL:1251375.1251397}, but this is usually acceptable because these techniques are generally used with applications that mostly wait for user's input and perform very little computation. 
 
-The overhead of Dexter's instrumentation was assessed and the results are presented in this section. All experiments were conducted on Google Nexus One running Android 2.3. 
+The overhead of Dexter's instrumentation was assessed and the results are presented in this section. All experiments were conducted on a Google Nexus One running Android 2.3. 
 
 \subsection{Benchmark}
 
-\begin{figure}[t]
+To measure the overhead of heavily processor-bound computation, a benchmark application was downloaded from the official market, instrumented and results compared with the original. Unfortunately, benchmarks commonly used by the community, like AnTuTu or Quadrant, run their tests in native code which is not instrumented. A lesser known QuickBenchmark therefore had to be chosen instead. Results are summarized in Figure~\ref{figure:Evalutaion_QuickBench}. 
+
+\begin{figure}[H]
 	\centerline{
-		\includegraphics[width=0.9\textwidth]{figs/fig_eval_quickbench.eps}
+		\includegraphics[width=0.89\textwidth]{figs/fig_eval_quickbench.eps}
 	}
 	\caption{Points scored in QuickBenchmark. Error bars represent interval of one standard deviation. Each version of the application was run 37 times.}
 	\label{figure:Evalutaion_QuickBench}
 \end{figure}
-
-To measure the overhead of heavily processor-bound computation, a benchmark application was downloaded from the official market, instrumented and results compared with the original. Unfortunately, benchmarks commonly used by the community, like AnTuTu or Quadrant, run their tests in native code which is not instrumented. A lesser known QuickBenchmark therefore had to be chosen instead. Results are summarized in Figure~\ref{figure:Evalutaion_QuickBench}. 
 
 The first two tests simply run a loop in which they perform integer and float computation respectively. Even though for each such instruction, the instrumentation adds an OR of the taint tags, the difference was less than 2\% and well within the margin of error in both cases. The reason probably lies in the fact that the original computation and taint tracking have zero data dependencies between each other, which allows the superscalar CPU to execute them out of order and hence fill pipeline stalls.
 
@@ -1526,7 +1526,7 @@ Access time was also measured for the web browsing history, similar to that in L
 
 \section{Code Bloat}
 
-\begin{figure}[t]
+\begin{figure}
 	\centerline{
 		\includegraphics[width=0.9\textwidth]{figs/fig_eval_filesize.eps}
 	}
@@ -1534,11 +1534,7 @@ Access time was also measured for the web browsing history, similar to that in L
 	\label{figure:Evalutaion_FileSize}
 \end{figure}
 
-Next we study the difference in the size of the instrumented file and the change in distribution of instruction types. Rather than being a performance metric, this creates a bigger picture of what flow analysis involves.
-
-Figure~\ref{figure:Evalutaion_FileSize} shows that the overall size of the DEX file approximately doubles, ranging between 90-140\% increase. This accounts for all sections of the file, i.e.\ bytecode, class definitions, etc. On modern smartphones this should not be an issue as these executables are typically not bigger than few hundred kilobytes.
-
-\begin{figure}[t]
+\begin{figure}
 	\centerline{	
 		\includegraphics[width=1.1\textwidth]{figs/fig_eval_codebloat.eps}
 	}
@@ -1546,7 +1542,13 @@ Figure~\ref{figure:Evalutaion_FileSize} shows that the overall size of the DEX f
 	\label{figure:Evalutaion_CodeBloat}
 \end{figure}
 
-The change in distribution of opcodes is substantial. Figure~\ref{figure:Evalutaion_CodeBloat} shows some selected intermediate instruction types and how many times they appeared in the parsed, instrumented and post-assembly representation of the GoneSixty spyware. We see instructions that are virtually unaffected, like \verb$BinaryOpLiteral$ and \verb$ReturnVoid$ that are only added with the linked auxiliary classes, and that there are slightly more \emph{if} statements, mostly used for decisions during method calls and source/sink identification. On the other hand, the increase in the number of instructions directly involved in tainting is radical, especially \verb$invoke$ opcodes which jump from 400 to more than 3,000 occurrences. These are nearly exclusively \verb$taint-get$ and \verb$taint-set$ calls, which go hand in hand with insertion of bitwise OR operations (\verb$BinaryOp$) to combine tags. Also notice that \verb$move$s are added during the assembly phase as a result of register spilling.
+Next we study the difference in the size of the instrumented file and the change in distribution of instruction types. Rather than being a performance metric, this creates a bigger picture of what flow analysis involves.
+
+Figure~\ref{figure:Evalutaion_FileSize} shows that the overall size of the DEX file approximately doubles, ranging between 90-140\% increase. This accounts for all sections of the file, i.e.\ bytecode, class definitions, etc. On modern smartphones this should not be an issue as these executables are typically not bigger than few hundred kilobytes.
+
+\parbox{\textwidth}{
+The change in distribution of opcodes is substantial. Figure~\ref{figure:Evalutaion_CodeBloat} shows some selected intermediate instruction types and how many times they appeared in the parsed, instrumented and post-assembly representation of the GoneSixty spyware. We see instructions that are virtually unaffected, like \texttt{BinaryOpLiteral} and \texttt{ReturnVoid} that are only added with the linked auxiliary classes, and that there are slightly more \emph{if} statements, mostly used for decisions during method calls and source/sink identification. On the other hand, the increase in the number of instructions directly involved in tainting is radical, especially \texttt{invoke} opcodes which jump from 400 to more than 3,000 occurrences. These are nearly exclusively \texttt{taint-get} and \texttt{taint-set} calls, which go hand in hand with insertion of bitwise OR operations (\texttt{BinaryOp}) to combine tags. Also notice that \texttt{move}s are added during the assembly phase as a result of register spilling.
+}
 
 \section{Limitations}
 
@@ -1582,6 +1584,8 @@ During testing, the greatest limiting factor of the implementation turned out to
 
 	Five small applications known to spy on users were instrumented and Dexter successfully identified data leakage in all cases. Unfinished SSA prevented instrumentation of larger apps.
 
+	\newpage
+
 	\item \textbf{Criterion 6} \emph{Advantages and limitations of system-level integration versus per-application bytecode instrumentation for the purpose of taint-based flow analysis must be appraised.}
 
 	Both approaches were thoroughly analyzed and their merits and limits explained.
@@ -1594,7 +1598,7 @@ During testing, the greatest limiting factor of the implementation turned out to
 \cleardoublepage
 \chapter{Conclusion}
 
-Data protection has undoubtedly become an important issue on modern mobile phones, especially in the context of employees using a diverse array of personal phones for work-related tasks necessarily involving corporate data. The existing solutions are either too restrictive because they completely prevent access to certain resources, or too invasive and inflexible due to relying on modifications to the operating system of the device. This paper presented a lightweight, universally applicable alternative, capable of precisely tracking sensitive data within a single application, and blocking resource access only if leakage is identified.
+Data protection has undoubtedly become an important issue on modern mobile phones, especially in the context of employees using a diverse array of personal phones for work-related tasks necessarily involving corporate data. The existing solutions are either too restrictive because they completely prevent access to certain resources, or too invasive and inflexible due to relying on modifications to the operating system of the device. This dissertation presented a lightweight, universally applicable alternative, capable of precisely tracking sensitive data within a single application, and blocking resource access only if leakage is identified.
 
 The suggested approach monitors runtime behaviour through the means of taint analysis, applied on the application by instrumenting its executable file. The developed prototype is fully-functional and instrumented applications are able to correctly identify and track selected types of data, and to print warnings when these are about to be leaked. Performance overhead is on a par with best similar systems, and certainly acceptable for I/O bound and interactive programs. Furthermore, the proposed adjustments can surmount current shortcomings of the analysis.
 
