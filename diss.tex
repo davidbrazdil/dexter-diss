@@ -312,7 +312,7 @@ Applications are distributed in Android Package (APK) files. These are ZIP files
 \item \emph{classes.dex} executable file,
 \item application resources (images, UI layouts, etc.),
 \item native code binaries, and
-\item a manifest.
+\item a~manifest.
 \end{inparaenum}
 
 The manifest contains essential information about the application to the operating system. Among other things, this includes its unique package name, list of permissions requested by the application, and a list of all its entry points.
@@ -555,20 +555,20 @@ All the other calls rely on dynamic dispatch, and since they are similar in prin
 	\begin{tabular}{c}
 	\begin{lstlisting}
 // original code: obj.methodName(arg1, arg2, ..., argN)
-Class c = obj.getClass();
+Class clazz = obj.getClass();
 Class[] argTypes = new Class[] { arg1.class, ..., argN.class };
 
-Method m = null;
-while (m == null) {
+Method method;
+do {
 	try {
- 		m = c.getDeclaredMethod("methodName", argTypes);
+ 		method = clazz.getDeclaredMethod("methodName", argTypes);
  	} catch (NoSuchMethodException e) {
- 		c = c.getSuperclass();
+ 		clazz = clazz.getSuperclass();
  	}
-}
+} while (method == null);
 
-Annotation a = m.getAnnotation(InternalMethodAnnotation.class);
-if (a == null) {
+Annotation anno = method.getAnnotation(InternalMethodAnnotation.class);
+if (anno == null) {
 	// external call
 	obj.methodName(arg1, ..., argN);
 } else {
@@ -582,7 +582,7 @@ if (a == null) {
 	\end{lstlisting}
 \end{figure}
 
-Code could be further analyzed to narrow down the number of callable implementations, e.g.\ by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds a special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflection. A slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in Listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation of public methods uses \verb$Class.getMethod$ to get \verb$m$ and does not need iteration through parents. It is nonetheless obvious that these are both very expensive operations. A native method is always marked as an external call.
+Code could be further analyzed to narrow down the number of callable implementations, e.g.\ by reachability analysis, but it will always be possible to produce code with a statically undecidable call. Then it is necessary to instrument the code so that the decision can be made at runtime. Dexter adds a special annotation to every method defined inside the application, which makes internal and external implementations dynamically distinguishable by reflection. A slight subtlety comes from the fact that the reflexive API handles public and non-public instance methods differently. Code for non-public methods is shown in Listing~\ref{listing:TaintPropagation_MethodCall_DestDecidability_NonPublic}. Instrumentation of public methods uses \verb$Class.getMethod$ to get \verb$method$ and does not need iteration through parents. It is nonetheless obvious that these are both very expensive operations. A native method is always marked as an external call.
 
 \subsection{External Method Calls}
 \label{section:TaintPropagation_MethodCalls_External}
@@ -606,7 +606,7 @@ public int externalMethod (Object rArg1, int rArg2, String rArg3);
 `\lsthl{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 `\lsthl{try \{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 `\lsthl{~~TaintMap.set(taintCombined, rArg1);~~~~~}`
-~~rResult = obj.externalMethod(rArg1, rArg2, rArg3~);
+  rResult = obj.externalMethod(rArg1, rArg2, rArg3);
 `\lsthl{~~tResult = taintCombined;~~~~~~~~~~~~~~~~}`
 `\lsthl{\} catch-all (rException) \{~~~~~~~~~~~~~~~~}`
 `\lsthl{~~TaintMap.set(taintCombined, rException);}`
@@ -734,7 +734,9 @@ manager.requestLocationUpdates(
 
 \subsection{Propagation Logic for Instance Fields}
 
+\parbox{\textwidth}{
 External call tainting relies on combining the taint of all data accessible to the method, even through multiple dereferences. It is possible to recursively traverse all fields of all data structures, but this would prove extremely slow as non-public fields are accessible only through reflection. Instructions storing data in instance fields are instead instrumented to propagate taint to the containing object, so that it combines taint. Internal fields also have separate taint storage to store their own subset of it, but external ones do not because their value could be overwritten by untrackable code which would not update the taint anyway.
+}
 
 This logic also contains a loophole which could lead to unidentified leakage. The problem is very similar to what we saw in section~\ref{section:TaintPropagation_MethodCalls_External}. Taint does not propagate to all parents in multi-level data structures, which could be exploited through serialization. Apart from deep traversal, one could again use taint unification to solve this issue.
 
@@ -1198,7 +1200,7 @@ To generate the CFG, code elements specify whether they start/end basic block (l
 A crucial property of the CFG is its completeness, or else incorrect liveness intervals can be produced and clashes missed. A lot of effort was therefore invested into reading the Dalvik documentation to ensure the properties of code elements correctly reflect all aspects of the execution semantics. This sometimes requires a simple code analysis, like finding the catch block the program will jump to if an exception of given type is thrown by a particular instruction. 
 
 \begin{figure}[t]
-	\centerline{	
+	\centerline{d	
 		\includegraphics[height=0.5\textheight]{figs/fig_implementation_lva.png}
 	}
 	\caption{Example of Live Variable Analysis performed on a simple program represented as a Control Flow Graph. Live variables at each execution point are in brackets.}
