@@ -200,7 +200,6 @@ hereby declare that this dissertation and the work described in it
 are my own work, unaided except as may be specified below, and
 that the dissertation does not contain material that has already
 been used to any substantial extent for a comparable purpose.
-
 I give permission for my dissertation to be made available in the archive
 area of the Laboratory's website.
 
@@ -257,7 +256,7 @@ Nevertheless, both of these policies fail to protect against applications that h
 
 \section{Project Overview}
 
-Taint-based dynamic data flow analysis is a technique to examine the runtime behaviour of applications. It is capable of monitoring access to resources and identifying data paths between them. It was previously successfully implemented on other platforms~\cite{Zhu:2011:TPS:1945023.1945039}, and recently ported to Android in the TaintDroid project~\cite{Enck:2010:TIT:1924943.1924971}, a joint study by Intel Labs, Penn State, and Duke University. However, their solution involves changes to the operating system and its virtual machine, limiting its usage to experts in possession of one of few supported devices. The goal of this project was to implement taint analysis by modifying the application rather than the operating system, to make it easier to employ.
+Taint-based dynamic data flow analysis is a technique to examine the runtime behaviour of applications. It is capable of monitoring access to resources and identifying data paths between them. It was previously successfully implemented on other platforms~\cite{Zhu:2011:TPS:1945023.1945039}, and recently ported to Android in the TaintDroid project~\cite{Enck:2010:TIT:1924943.1924971}, a joint study by Intel Labs, Penn State, and Duke University. However, their solution involves changes to the operating system and its virtual machine, limiting its usage to experts in possession of one of few supported devices. The goal of this project was to implement taint analysis by modifying the executable code of the application rather than the operating system, to make it easier to deploy.
 
 \subsection{Data Flow Analysis}
 
@@ -940,9 +939,9 @@ Existing reverse-engineering tools for Android provide an API for simple impleme
 
 \subsection{Development Model}
 
-\begin{figure}
+\begin{figure}[t]
 	\centerline{	
-		\includegraphics[width=0.75\textwidth]{figs/fig_prep_spiral.eps}
+		\includegraphics[width=1.1\textwidth]{figs/fig_prep_spiral.eps}
 	}
 	\caption{The Spiral development model. Source: Wikipedia}
 	\label{fig:Preparation_Spiral}
@@ -954,7 +953,7 @@ The work plan was initially divided into roughly two-week development cycles. Ea
 
 \subsection{Tools}
 
-Java was chosen as the programming language, as opposed to Python used by the existing tools, in order to utilize DexLib, a DEX-manipulating library built as the core of the Smali assembler. Strict use of Java could also potentially allow Dexter to integrate with the official compilation toolchain, or to run directly on the device. Project Lombok\weblink{http://projectlombok.org/}, a tool extending the features of the language, was incorporated, and source code was managed by the Git revision control system, in a repository hosted at the GitHub\weblink{https://github.com/} cloud storage.
+Java was chosen as the programming language, as opposed to Python used by the existing tools, in order to utilize DexLib, a DEX-manipulating library built as the core of the Smali assembler. Strict use of Java could also potentially allow Dexter to integrate with the official compilation toolchain, or to run directly on the device. Project Lombok\weblink{http://projectlombok.org/}, a tool extending the features of the language, was incorporated, and source code was managed by the Git\weblink{http://git-scm.com/} revision control system, in a repository hosted at the GitHub\weblink{https://github.com/} cloud storage.
 
 \cleardoublepage
 \chapter{Implementation}
