@@ -1310,7 +1310,7 @@ The described algorithm successfully allocates most methods, yet it is not uncom
 
 SSA form is defined as one where each variable is written to only once, and is created by renaming variables. Looking back on the spilling example in Figure~\ref{figure:Reassembling_VariableSpilling}, both of the instructions wrote to \texttt{rA2} which created the three-element run. By renaming the variables we get two smaller, more easily allocatable runs \mbox{\texttt{{[}rA1$_1$, rA2$_1$]}} and \mbox{\texttt{{[}rA2$_2$, rA3$_1$]}} without changing the behaviour.
 
-\begin{figure}[t!]
+\begin{figure}
   \centering
   \subfigure[Original code]{
   	\includegraphics[width=16pc]{figs/fig_implementation_ssa1.png}
@@ -1348,8 +1348,6 @@ Returning to the generation of bytecode, instruction objects still cannot produc
 
 The algorithm starts by creating a list of sizes initially set to one, passing it together with register allocation to the instructions and letting them generate their most optimized Dalvik variants. Instruction sizes are updated and previous steps repeated until convergence is reached. The algorithm is guaranteed to terminate since instructions can only grow in size because offsets overflowling the space reserved in the current variant force generation of a bigger one, or cause failure if no such variant exists.
 
-If it fails, the jumping instruction is asked to instrument itself in order to fix this problem. As one can see in Figure~\ref{figure:Reassembling_FixLongJump}, \verb$goto$ is used to do the jump for the instruction because its least optimized variant can store safe 32-bit offsets.
-
 \begin{figure}[H]
 	\centering
 	\begin{minipage}{0.28\textwidth}
@@ -1381,6 +1379,10 @@ If it fails, the jumping instruction is asked to instrument itself in order to f
 	\caption{Example of an \texttt{if} instruction fixing unreachable target}
 	\label{figure:Reassembling_FixLongJump}
 \end{figure}
+
+\parbox{\textwidth}{
+If it fails, the jumping instruction is asked to instrument itself in order to fix this problem. As one can see in Figure~\ref{figure:Reassembling_FixLongJump}, \texttt{goto} is used to do the jump for the instruction because its least optimized variant can store safe 32-bit offsets.
+}
 
 \section{APK Repackaging}
 
