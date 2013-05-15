@@ -310,7 +310,7 @@ Built around the Apache Harmony project, Dalvik runs programs that make use of a
 Applications are distributed in Android Package (APK) files. These are ZIP files signed by the publisher, which contain:
 \begin{inparaenum}[(i)]
 \item \emph{classes.dex} executable file,
-\item application resources (images, UI layouts, ...),
+\item application resources (images, UI layouts, etc.),
 \item native code binaries, and
 \item a manifest.
 \end{inparaenum}
@@ -638,12 +638,37 @@ objA.useX();                    // use B inside
 \subsection{Internal Method Calls}
 \label{section:TaintPropagation_MethodCalls_Internal}
 
-\begin{figure}
+Method calls identified as internal ought to propagate their arguments' taint into the invoked methods, and taint of their results back to the callers. Only the primitive arguments and results requires further instrumentation as objects store their taint globally. 
+
+Unfortunately, adding extra parameters to hold the taint of primitives is not an option as the method prototype could be given by an external interface. A global integer array is therefore created for this purpose, plus one more global variable for the taint of the result. In Dexter, thread-safety is guaranteed by semaphores, but a lock-free solution could be achieved by using thread-local storage, with the downside of slightly more complicated instrumentation.
+
+\begin{figure}[h]
 	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
 // method definition
-public int internalMethod (Object rArg1, float rArg2, short rArg3) {
+public int internalMethod (Object rArg1, float rArg2);
+
+// method call
+`\lsthl{InternalMethodCall.S\_ARG.acquire();}`
+`\lsthl{InternalMethodCall.ARG{[}0] = tArg2;~}`
+rResult = obj.internalMethod(rArg1, rArg2);
+`\lsthl{tResult = InternalMethodCall.RES;~~}`
+`\lsthl{InternalMethodCall.S\_RES.release();}`
+	\end{lstlisting}
+	\end{tabular}
+	\begin{lstlisting}[caption={Instrumentation of internal method calls},
+	                   label={listing:TaintPropagation_InternalMethodCall}]
+	\end{lstlisting}
+\end{figure}
+
+Inside the called method, tags are copied from the array to taint registers of the primitive arguments. But if a method is virtual, it may also be called from external code, in which case the array would not have been locked and filled, and taint should be initialized to zero. Every virtual method must therefore recognize the location of its caller, and handle each case accordingly. Since Java programs can read the stack, the name of the caller is accessible and the origin decidable using reflection. We could check the method annotation like before, but since the stack gives the implementing class, one reflexive call was saved by checking whether it carries another annotation that Dexter assigns to all internal classes. The instrumentation is shown in Listing~\ref{listing:TaintPropagation_InternalMethods}.
+
+\begin{figure}
+	\centering
+	\begin{tabular}{c}
+	\begin{lstlisting}
+public int internalMethod (Object rArg1, float rArg2) {
 	bool internalOrigin;
 
 	// origin-deciding instrumentation
@@ -658,52 +683,35 @@ public int internalMethod (Object rArg1, float rArg2, short rArg3) {
 	// initialization of taint registers
 	if (internalOrigin) {
 		tArg2 = InternalMethodCall.ARG[0];
-		tArg3 = InternalMethodCall.ARG[1];
 		InternalMethodCall.S_ARG.release();
 	} else {
 		int thisTaint = TaintMap.get(this);
 		TaintMap.set(thisTaint, rArg1);
 		tArg2 = thisTaint;
-		tArg3 = thisTaint;
 	}
 
 	// original method body
 	... 
-	`\lsthl{if (internalOrigin) \{~~~~~~~~~~~~~~~}`
-	`\lsthl{	InternalMethodCall.S\_RES.acquire();}`
-	`\lsthl{	InternalMethodCall.RES = tResult;~~}`
-	`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
+	`\lsthl{if (internalOrigin) \{~~~~~~~~~~~~~~~~}`
+	`\lsthl{~~InternalMethodCall.S\_RES.acquire();}`
+	`\lsthl{~~InternalMethodCall.RES = tResult;~~}`
+	`\lsthl{\}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
 	return rResult;
 }
-
-// method call
-`\lsthl{InternalMethodCall.S\_ARG.acquire();}`
-`\lsthl{InternalMethodCall.ARG{[}0] = tArg2;~}`
-`\lsthl{InternalMethodCall.ARG{[}1] = tArg3;~}`
-rResult = obj.internalMethod(rArg1, rArg2, rArg3);
-`\lsthl{tResult = InternalMethodCall.RES;~~}`
-`\lsthl{InternalMethodCall.S\_RES.release();}`
 	\end{lstlisting}
 	\end{tabular}
-	\begin{lstlisting}[caption={Instrumentation of internal method calls and origin-deciding logic},
-	                   label={listing:TaintPropagation_InternalMethodCall}]
+	\begin{lstlisting}[caption={Instrumentation of internal methods},
+	                   label={listing:TaintPropagation_InternalMethods}]
 	\end{lstlisting}
 \end{figure}
-
-Method calls identified as internal ought to propagate their arguments' taint into the invoked methods, and taint of their results back to the callers. Only the primitive arguments and results requires further instrumentation as objects store their taint globally. 
-
-Unfortunately, adding extra parameters to hold the taint of primitives is not an option as the method prototype could be given by an external interface. A global integer array is therefore created for this purpose, plus one more global variable for the taint of the result. In Dexter, thread-safety is guaranteed by semaphores, but a lock-free solution could be achieved by using thread-local storage, with the downside of slightly more complicated instrumentation.
-
-Inside the called method, tags are copied from the array to taint registers of the primitive arguments. But if a method is virtual, it may also be called from external code, in which case the array would not have been locked and filled, and taint should be initialized to zero. Every virtual method must therefore recognize the location of its caller, and handle each case accordingly. Since Java programs can read the stack, the name of the caller is accessible and the origin decidable using reflection. We could check the method annotation like before, but since the stack gives the implementing class, one reflexive call was saved by checking whether it carries another annotation that Dexter assigns to all internal classes.
 
 In the external origin case, instrumentation should also assign the taint of \verb$this$ to all parameters including reference-based ones, provided the method is not static or a constructor. This is useful especially for propagating taint into callbacks, for instance in situations like GPS updates shown in Listing~\ref{listing:Source_Location_Listener}, where the parameter of the \verb$onLocationChanged$ method inherits taint this way.
 
 \begin{figure}
-	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
 LocationManager manager = (LocationManager) 
-	context.getSystemService(Context.LOCATION_SERVICE);
+  context.getSystemService(Context.LOCATION_SERVICE);
 
 // define a listener that responds to location updates
 LocationListener listener = new LocationListener() {
@@ -717,7 +725,7 @@ LocationListener listener = new LocationListener() {
 // register the listener with the LocationManager
 manager.requestLocationUpdates(
   LocationManager.NETWORK_PROVIDER, 0, 0, listener);
-	\end{lstlisting}
+\end{lstlisting}
 	\end{tabular}
 	\begin{lstlisting}[caption={Example of a location-updating callback class},
 	                   label={listing:Source_Location_Listener}]
@@ -740,7 +748,7 @@ The first group uses SQL-like queries to access the contact list, recent calls, 
 
 The type of the source is given entirely by the URI argument, which is merely a textual address. Hence, Dexter only needs to insert a series of \verb$if$ statements that compare the URI against a list of recognized URIs, and assign the right taint tag to \verb$Cursor$ if a match is found.
 
-\begin{figure}
+\begin{figure}[H]
 	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
@@ -775,29 +783,25 @@ while (c.moveToNext()) {
 
 \subsubsection{System Services}
 
-Information about the operating system and access to hardware is provided through the \verb$Context.getSystemService$ method which returns a manager object being given the name of the service. Their complete list can be found in the documentation\footnote{\url{https://developer.android.com/reference/android/content/Context.html\#getSystemService(java.lang.String)}}.
+Information about the operating system and access to hardware is provided through the \verb$Context.getSystemService$ method which returns a manager object being given the name of the service. Their complete list is in the docs\footnote{\tiny\url{https://developer.android.com/reference/android/content/Context.html\#getSystemService(java.lang.String)}}.
 
 Instrumentation for system services is very similar to that of database queries. The name of the service is analyzed and the returned object tainted as necessary. Consequently, every piece of data retrieved from the manager will get tainted by the propagation logic. 
 
-\begin{figure}
+\begin{figure}[H]
 	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
 String serviceName = Context.LOCATION_SERVICE;
-
-`\lsthl{int managerTaint;~~~~~~~~~~~~~~~~~~~~~~~}`
+`\lsthl{int managerTaint = 0;~~~~~~~~~~~~~~~~~~~}`
 `\lsthl{if (serviceName.equals("location"))~~~~~}`
 `\lsthl{~~managerTaint = TAINT\_SOURCE\_LOCATION;~}`
 `\lsthl{else if (serviceName.equals("phone"))~~~}`
 `\lsthl{~~managerTaint = TAINT\_SOURCE\_DEVICE\_ID;}`
-`\lsthl{else~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}`
-`\lsthl{~~managerTaint = 0;~~~~~~~~~~~~~~~~~~~~~}`
 Object manager = this.getSystemService(serviceName);
 `\lsthl{TaintMap.set(managerTaint, manager);~~~~}`
 
-LocationManager locationManager = (LocationManager) manager;
-Location location = 
-  locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+LocationManager locManager = (LocationManager) manager;
+Location loc = locManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 	\end{lstlisting}
 	\end{tabular}
 	\begin{lstlisting}[caption={Code accessing last known GPS location, with source instrumentation},
@@ -809,7 +813,7 @@ Location location =
 
 The last category of sources had to be created because of the way browser data are accessed. Even though they are read from a \verb$Cursor$ object, it is not created by the \verb$ContentResolver$, but rather by static methods inside class \verb$Browser$. Instrumentation is trivial: insert taint assignment after every such method call.
 
-\begin{figure}
+\begin{figure}[H]
 	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
@@ -838,7 +842,7 @@ The examples use the \verb$TAINT_SOURCE$ and \verb$TAINT_WRITER_SINK$ constants.
 
 Most tracked API calls are easy to handle, because they always leak the data they get. Three sinks listed in Table~\ref{table:Sinks_AlwaysLeaking} were implemented this way.
 
-\begin{table}
+\begin{table}[h]
 	\begin{center}
 	\begin{tabular}{|l|l|}
 		\firsthline
