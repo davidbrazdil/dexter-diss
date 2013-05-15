@@ -506,8 +506,8 @@ Some of Dalvik instructions can throw exceptions depending on the values of argu
 			\asmExtra{throw pException~~~~~~~~~~~~~~~~~~~~~~~~} \\	
 			\asmExtra{LABEL\_XYZ:~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}
 		}
-%		\caption{Example instrumentation of the division instruction}
-%		\label{figure:TaintPropagation_ThrowingInstructions}
+		\caption{Example instrumentation of the division instruction}
+		\label{figure:TaintPropagation_ThrowingInstructions}
 	\end{figure}
 
 \subsection{Method Call Destination Decidability}
@@ -966,7 +966,7 @@ Java was chosen as the programming language, as opposed to Python used by the ex
 	\label{fig:Implementation_Overview}
 \end{figure}
 
-The Preparation chapter explained the principles of taint analysis and proposed suitable instrumentation that carries it out. This part of the dissertation will describe how applications are parsed, additional code inserted, and a new executable generated, a process which will encompass many aspects of compilation. We will also see that more than just a single APK is necessary to reason about the outcomes of dynamic dispatch, and will therefore build a complete picture of the runtime framework. Schematic diagram in Figure~\ref{fig:Implementation_Overview} shows an overview of the individual stages.
+The Preparation chapter explained the principles of taint analysis and proposed a suitable instrumentation that carries it out. This part of the dissertation will describe how applications are parsed, additional code inserted, and a new executable generated, a process which will encompass many aspects of compilation. We will also see that more than just a single application package (APK) is necessary to reason about the outcomes of dynamic dispatch, and will therefore build a complete picture of the runtime framework. The schematic diagram in Figure~\ref{fig:Implementation_Overview} shows an overview of the individual stages.
 
 \section{Intermediate Representation}
 
@@ -1085,45 +1085,45 @@ Every node of the IR is responsible for instrumenting itself, so for example a n
 
 Method body IR nodes generate the analysis-performing instrumentation we are after, and place these new instructions into the code. Implementation of the generators exactly follows the principles of taint propagation explained in section~\ref{section:DataFlowAnalysis} and therefore will not be discussed further. Likewise, these nodes are responsible for inserting the taint register initialization we saw in section~\ref{section:TaintPropagation_MethodCalls_Internal} at the beginning of the instruction list.
 
-However, the instrumented code might not be valid because instructions which throw exceptions wrap themselves in a try block (section~\ref{section:Preparation_Analysis_Throwing}). Had some of these already been in one, the code would now contain two nested try blocks which is an illegal construct. To keep the instrumentation rules simple, we let instructions generate such code and fix it afterwards.
+However, the instrumented code might not be valid because instructions which throw exceptions wrap themselves in a try block, just like integer division instruction in Figure~\ref{figure:TaintPropagation_ThrowingInstructions}. Had some of these already been in one, the code would now contain two nested try blocks which is an illegal construct. To keep the instrumentation rules simple, we let instructions generate such code and fix it afterwards, like shown in Figure~\ref{figure:Instrumentation_TryBlockSplitting}.
 
-% \begin{figure}[h]
-% 	\centering
-% 	\begin{minipage}{0.140\textwidth}
-% 	\begin{footnotesize}
-% 		\asm{TRY\_START\_1} \\
-% 		\asm{...} \\
-% 		\asm{TRY\_START\_2} \\
-% 		\asm{...} \\
-% 		\asm{TRY\_END\_2} \\
-% 		\asm{...} \\
-% 		\asm{TRY\_END\_1}
-% 	\end{footnotesize}
-% 	\end{minipage}
-% 	\begin{minipage}{0.09\textwidth}
-% 	\centering
-% 	$\Rightarrow$
-% 	\end{minipage}
-% 	\begin{minipage}{0.150\textwidth}
-% 	\begin{footnotesize}
-% 		\asm{TRY\_START\_1A} \\
-% 		\asm{...} \\
-% 		\asm{TRY\_END\_1A} \\
-% 		\asm{TRY\_START\_2} \\
-% 		\asm{...} \\
-% 		\asm{TRY\_END\_2} \\
-% 		\asm{TRY\_START\_1B} \\
-% 		\asm{...} \\
-% 		\asm{TRY\_END\_1B}
-% 	\end{footnotesize}
-% 	\end{minipage}
-% 	\caption{Removing nested try blocks by splitting the outer block.}
-% 	\label{figure:Instrumentation_TryBlockSplitting}
-% \end{figure}
-
-% The situation and its solution are shown in Figure~\ref{figure:Instrumentation_TryBlockSplitting}. By splitting the outer block into two parts that cover code not covered by the inner block, it becomes valid. Comparing this against the division example referenced earlier, we see that the exception handler ends up inside the second part of the split outer block, and hence re-throwing the exception preserves the original behaviour. However, since Dexter currently does not merge the handler specifications, throwing an exception inside the inner block, originally handled by the outer but now not by the inner, would change it. For this reason, catch-all handlers are used by the instrumentation rules by default. 
-
-\label{section:Code_MethodEntering}
+\begin{figure}[h]
+	\centering
+%	\fbox{
+	\begin{minipage}{0.265\textwidth}
+	\begin{footnotesize}
+		\asm{TryStart$_1$ (Handlers$_1$)} \\
+		\asm{...} \\
+		\asm{TryStart$_2$ (Handlers$_2$)} \\
+		\asm{...} \\
+		\asm{TryEnd$_2$} \\
+		\asm{...} \\
+		\asm{TryEnd$_1$}
+	\end{footnotesize}
+	\end{minipage}
+%	}
+	\begin{minipage}{0.09\textwidth}
+	\centering
+	$\Rightarrow$
+	\end{minipage}
+%	\fbox{
+	\begin{minipage}{0.42\textwidth}
+	\begin{footnotesize}
+		\asm{TryStart$_{1A}$ (Handlers$_1$)} \\
+		\asm{...} \\
+		\asm{TryEnd$_{1A}$} \\
+		\asm{TryStart$_2$ (Handlers$_1$ $\cup$ Handlers$_2$)} \\
+		\asm{...} \\
+		\asm{TryEnd$_2$} \\
+		\asm{TryStart$_{1B}$ (Handlers$_1$)} \\
+		\asm{...} \\
+		\asm{TryEnd$_{1B}$}
+	\end{footnotesize}
+	\end{minipage}
+%	}
+	\caption{Removing nested try blocks by splitting the outer block}
+	\label{figure:Instrumentation_TryBlockSplitting}
+\end{figure}
 
 \subsection{Auxiliary Classes}
 
@@ -1141,11 +1141,11 @@ These classes could be generated in the same way as the rest of the instrumentat
 \subsection{Object Taint Map}
 \label{section:Code_ObjectTaintMap}
 
-Preparation introduced the idea of a global hash table serving as runtime taint tag storage for objects, and we mentioned above that it is one of the auxiliary classes written in Java and linked in. This section will explain the details and complications of its design.
+The Preparation chapter introduced the idea of a global hash table serving as runtime taint tag storage for objects, and we mentioned above that it is one of the auxiliary classes written in Java and linked in. This section will explain the details and complications of its design.
 
 Na\"{\i}ve usage of the standard \verb$HashMap$ class will immediately fail because storing references to tainted objects in the table prevents their garbage collection. It is therefore necessary to build our hash table on the concept of \emph{weak references} which solve this problem. 
 
-Unfortunately, the standard \verb$WeakHashMap$ implementation calls the \verb$hashCode$ method of given object to determine the slot its entry should be in, and the \verb$equals$ method to compare it against other objects in the linked list of entries in that slot. Calling their default implementations does not have any side effects but they can overridden, and so insertion of the \verb$taint-get$ and \verb$taint-set$ macros could introduce method calls that were not present in the original application and potentially change its behaviour. At the same time, one can easily make all objects look equivalent which would uncontrollably spread taint. And lastly, the class does not account for the fact that these methods could throw exceptions. For all these reasons, a safe version of \verb$WeakHashMap$, which would not call any of the object's methods, had to be implemented. 
+Unfortunately, the standard \verb$WeakHashMap$ implementation calls the \verb$hashCode$ method of given object to determine the slot its entry should be in, and the \verb$equals$ method to compare it against other objects in the linked list of entries in that slot. Calling their default implementations does not have any side effects but they can be overridden, and so insertion of the \verb$taint-get$ and \verb$taint-set$ macros could introduce method calls that were not present in the original application and potentially change its behaviour. At the same time, one can easily make all objects look equivalent which would uncontrollably spread taint. And lastly, the class does not account for the fact that these methods could throw exceptions. For all these reasons, a safe version of \verb$WeakHashMap$, which would not call any of the object's methods, had to be implemented. 
 
 Removing the call to \verb$equals$ is trivial, simply by using the reference equality operator \verb$==$ instead. The \verb$obj.hashCode()$ call, on the other hand, was replaced by \verb$obj.getClass().hashCode()$. The \verb$getClass$ method cannot be overridden as it is declared \verb$final$, and it returns an instance of class \verb$Class$ which represents the type of \verb$obj$. These \verb$Class$ objects are automatically generated by the virtual machine when classes are loaded, and so its \verb$hashCode$ method cannot be overridden and always uses the original implementation which returns its address in the memory. Unfortunately, this means that all instances of one class type will generate the same hash code and will be stored in the same slot. If this ever proved to be a performance bottleneck, native code could be used to return addresses of individual objects with the cost of reducing portability of the solution. 
 
@@ -1163,7 +1163,7 @@ Similar procedures form the core of the compilation process of any programming l
 
 \subsection{Generic Register Allocation}
 
-Register allocation is an optimization problem of assigning a large number of source code variables to a small number of CPU registers. Same register can be used to hold the value of multiple variables as long as the variables are not \emph{live} at the same time, i.e.\ the intervals between storing a value and the last point of reading it back do not overlap. 
+Register allocation is an optimization problem of assigning a large number of source code variables to a small number of CPU registers. The same register can be used to hold the value of multiple variables as long as the variables are not \emph{live} at the same time, i.e.\ the intervals between storing a value and the last point of reading it back do not overlap. 
 
 If a solution cannot be found, memory storage is created for some of the variables and load/store instructions moving the value to/from designated temporary registers are inserted, so that the algorithm can be restarted with a smaller number of variables held in CPU registers at the same time. This is called \emph{variable spilling}.
 
@@ -1171,9 +1171,9 @@ If a solution cannot be found, memory storage is created for some of the variabl
 
 A compiler reduces register allocation to the isomorphic problem of graph colouring, which is proven to be NP-complete, and solves it using a heuristic that balances time complexity of the algorithm with quality of the generated code. 
 
-The graph in question is called a Clash Graph (CG). Its nodes represent variables, and two nodes are connected by an edge iff the two respective variables cannot be allocated to the same register. If this graph can be coloured with a number of colours less than or equal to the number of available CPU registers, a solution has been found. 
+The graph in question is called a Clash Graph. Its nodes represent variables, and two nodes are connected by an edge iff the two respective variables cannot be allocated to the same register. If this graph can be coloured with a number of colours less than or equal to the number of available CPU registers, a solution has been found. 
 
-\begin{figure}
+\begin{figure}[t]
 	\centerline{	
 		\includegraphics[width=\textwidth]{figs/fig_implementation_gc.png}
 	}
@@ -1185,15 +1185,15 @@ Figure~\ref{fig:Implementation_GraphColouring} shows a commonly used greedy grap
 
 \subsubsection{Building a Clash Graph}
 
-The CG is built by comparing the liveness of individual variables, which can be established by performing so-called Live Variable Analysis (LVA) on the Control Flow Graph (CFG) of the method code. Two variables simultaneously live at any point should be connected by an edge.
+The Clash Graph (CG) is built by comparing the liveness of individual variables, which can be established by performing so-called Live Variable Analysis (LVA) on the Control Flow Graph (CFG) of the method code. Two variables simultaneously live at any point should be connected by an edge.
 
 The CFG is a graph with nodes representing maximal sequences of non-jumping instructions, called basic blocks, and nodes $A$ and $B$ being connected by a directed edge iff the execution of the last instruction in $A$ can be followed by the execution of the first instruction in $B$. For example, an \verb$if$ instruction always ends its basic block as it can either proceed to the next instruction or jump to a marker. Two special nodes, \verb$START$ and \verb$EXIT$, represent the entry and exit points of the method and are connected accordingly.
 
-The principle of CFG generation is not complicated. Code elements specify whether they start/end basic block (labels, \verb$if$), or exit the method (\verb$return$), and also provide the complete list of their successors. One linear pass over the instruction list is then sufficient to split it into blocks, and one more iteration over the blocks enough to create the edges.
+To generate the CFG, code elements specify whether they start/end basic block (labels, \verb$if$), or exit the method (\verb$return$), and also provide the complete list of their successors. One linear pass over the instruction list is then sufficient to split it into blocks, and one more iteration over the blocks enough to create the edges.
 
-Crucial property of the CFG is its completeness, or else incorrect liveness intervals can be produced and clashes missed. A lot of effort was therefore invested into reading the Dalvik documentation to ensure the properties of code elements correctly reflect all aspects of the execution semantics. This sometimes requires a simple code analysis, like finding the catch block the program will jump to if an exception of given type is thrown by a particular instruction. 
+A crucial property of the CFG is its completeness, or else incorrect liveness intervals can be produced and clashes missed. A lot of effort was therefore invested into reading the Dalvik documentation to ensure the properties of code elements correctly reflect all aspects of the execution semantics. This sometimes requires a simple code analysis, like finding the catch block the program will jump to if an exception of given type is thrown by a particular instruction. 
 
-\begin{figure}
+\begin{figure}[t]
 	\centerline{	
 		\includegraphics[height=0.5\textheight]{figs/fig_implementation_lva.png}
 	}
@@ -1306,6 +1306,10 @@ However, not all node runs can be spilled this way because \texttt{move} instruc
 
 \subsection{Static Single-Assignment Form}
 
+The described algorithm successfully allocates most methods, yet it is not uncommon for an application to contain one on which it fails. Through a mixture of wide register operations and \texttt{/range} method calls, such code typically defines an unspillable node run of 20 or even 30 intermediate registers, completely polluting the 4-bit range, leaving no room for the taint registers, and consequently preventing Dexter from generating the instrumented executable. Static Single-Assignment (SSA) form, a result of another intermediate code transformation, breaks node runs into the smallest possible pieces.
+
+SSA form is defined as one where each variable is written to only once, and is created by renaming variables. Looking back on the spilling example in Figure~\ref{figure:Reassembling_VariableSpilling}, both of the instructions wrote to \texttt{rA2} which created the three-element run. By renaming the variables we get two smaller, more easily allocatable runs \mbox{\texttt{{[}rA1$_1$, rA2$_1$]}} and \mbox{\texttt{{[}rA2$_2$, rA3$_1$]}} without changing the behaviour.
+
 \begin{figure}[t!]
   \centering
   \subfigure[Original code]{
@@ -1325,10 +1329,6 @@ However, not all node runs can be spilled this way because \texttt{move} instruc
   \caption{Example of SSA transformation}
   \label{figure:Implementation_SSA}
 \end{figure}
-
-The described algorithm successfully allocates most methods, yet it is not uncommon for an application to contain one on which it fails. Through a mixture of wide register operations and \texttt{/range} method calls, such code typically defines an unspillable node run of 20 or even 30 intermediate registers, completely polluting the 4-bit range, leaving no room for the taint registers, and consequently preventing Dexter from generating the instrumented executable. Static Single-Assignment (SSA) form, a result of another intermediate code transformation, breaks node runs into the smallest possible pieces.
-
-SSA form is defined as one where each variable is written to only once, and is created by renaming variables. Looking back on the spilling example in Figure~\ref{figure:Reassembling_VariableSpilling}, both of the instructions wrote to \texttt{rA2} which created the three-element run. By renaming the variables we get two smaller, more easily allocatable runs \mbox{\texttt{{[}rA1$_1$, rA2$_1$]}} and \mbox{\texttt{{[}rA2$_2$, rA3$_1$]}} without changing the behaviour.
 
 Figure~\ref{figure:Implementation_SSA} shows that the transformation is not as straightforward in the general case. Variable $rY$ is defined in both branches of the \texttt{if} statement, and so renaming these to $rY_1$ and $rY_2$ also requires combining their values into $rY_3$ before referencing them later on. 
 
