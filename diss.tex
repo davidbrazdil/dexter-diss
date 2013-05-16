@@ -708,6 +708,7 @@ public int internalMethod (Object rArg1, float rArg2) {
 In the external origin case, instrumentation should also assign the taint of \verb$this$ to all parameters including reference-based ones, provided the method is not static or a constructor. This is useful especially for propagating taint into callbacks, for instance in situations like GPS updates shown in Listing~\ref{listing:Source_Location_Listener}, where the parameter of the \verb$onLocationChanged$ method inherits taint this way.
 
 \begin{figure}
+	\centering
 	\begin{tabular}{c}
 	\begin{lstlisting}
 LocationManager manager = (LocationManager) 
@@ -725,7 +726,7 @@ LocationListener listener = new LocationListener() {
 // register the listener with the LocationManager
 manager.requestLocationUpdates(
   LocationManager.NETWORK_PROVIDER, 0, 0, listener);
-\end{lstlisting}
+	\end{lstlisting}
 	\end{tabular}
 	\begin{lstlisting}[caption={Example of a location-updating callback class},
 	                   label={listing:Source_Location_Listener}]
@@ -1200,7 +1201,7 @@ To generate the CFG, code elements specify whether they start/end basic block (l
 A crucial property of the CFG is its completeness, or else incorrect liveness intervals can be produced and clashes missed. A lot of effort was therefore invested into reading the Dalvik documentation to ensure the properties of code elements correctly reflect all aspects of the execution semantics. This sometimes requires a simple code analysis, like finding the catch block the program will jump to if an exception of given type is thrown by a particular instruction. 
 
 \begin{figure}[t]
-	\centerline{d	
+	\centerline{
 		\includegraphics[height=0.5\textheight]{figs/fig_implementation_lva.png}
 	}
 	\caption{Example of Live Variable Analysis performed on a simple program represented as a Control Flow Graph. Live variables at each execution point are in brackets.}
